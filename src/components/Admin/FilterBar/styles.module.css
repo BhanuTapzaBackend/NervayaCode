@@ -1,0 +1,178 @@
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .bar {
+    gap: var(--space-3);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1 1 180px;
+  max-width: 220px;
+}
+
+@media (max-width: 768px) {
+  .field {
+    flex: 1 1 calc(50% - var(--space-2));
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .field {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+}
+
+.field label {
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  white-space: nowrap;
+  padding-left: var(--space-1);
+}
+
+.field input,
+.field select {
+  width: 100%;
+  background: var(--color-background);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 0 var(--space-4);
+  min-height: var(--input-height);
+  color: var(--color-text-primary);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  font-family: var(--font-body);
+  transition: all var(--transition-base);
+  box-sizing: border-box;
+}
+
+.field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-4) center;
+  background-size: 14px;
+  padding-right: var(--space-8);
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: var(--color-border-accent);
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
+}
+
+.field:focus-within label {
+  color: var(--color-accent);
+}
+
+.field input::placeholder {
+  color: var(--color-text-disabled);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-normal);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+@media (max-width: 768px) {
+  .actions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    padding-top: var(--space-2);
+  }
+}
+
+.applyButton {
+  background: var(--gradient-accent);
+  color: var(--color-text-on-dark);
+  border: none;
+  padding: 0 var(--space-6);
+  min-height: 48px;
+  border-radius: var(--radius-lg);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-caption);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-shadow: var(--shadow-btn-primary);
+}
+
+.applyButton:hover:not(:disabled) {
+  background: var(--gradient-accent-hover);
+  box-shadow: var(--shadow-btn-primary-hover);
+  transform: translateY(-1px);
+}
+
+.applyButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.resetButton {
+  background: var(--color-background);
+  color: var(--color-text-body);
+  border: 1px solid var(--color-border-subtle);
+  padding: 0 var(--space-5);
+  min-height: 48px;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.resetButton:hover {
+  background: var(--color-accent-dim-hover);
+  border-color: var(--color-border-accent);
+  color: var(--color-accent);
+}
+
+.badge {
+  font-size: var(--text-label);
+  color: var(--color-accent);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  background: var(--color-accent-dim);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+}

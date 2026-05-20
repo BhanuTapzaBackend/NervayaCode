@@ -1,0 +1,153 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Thumbnail grid ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
+  padding: 10px;
+  background: var(--color-background-page);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+}
+
+.light .grid {
+  background: var(--color-background-page);
+  border-color: var(--color-border-light);
+}
+
+.thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-background);
+  transition: all var(--transition-base);
+}
+
+.thumb:hover {
+  transform: scale(1.03);
+}
+
+.thumbImage {
+  object-fit: cover;
+}
+
+.removeBtn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: linear-gradient(135deg, var(--color-error) 0%, var(--color-error-hover) 100%);
+  color: var(--color-text-on-dark);
+  border: none;
+  border-radius: var(--radius-md);
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  opacity: 0;
+}
+
+.thumb:hover .removeBtn {
+  opacity: 1;
+}
+
+.removeBtn:hover {
+  transform: scale(1.1);
+}
+
+/* ── Dropzone ── */
+.dropzone {
+  border: 2px dashed rgba(var(--color-accent-rgb), 0.25);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: rgba(var(--color-accent-rgb), 0.02);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.dropzone:hover {
+  border-color: rgba(var(--color-accent-rgb), 0.45);
+  background: rgba(var(--color-accent-rgb), 0.06);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(var(--color-accent-rgb), 0.1);
+}
+
+.light .dropzone {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(var(--color-accent-rgb), 0.2);
+}
+
+.light .dropzone:hover {
+  background: var(--color-background);
+  border-color: rgba(var(--color-accent-rgb), 0.4);
+}
+
+.input {
+  display: none;
+}
+
+.label {
+  color: var(--color-text-secondary);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  margin: 0;
+}
+
+.hint {
+  color: var(--color-text-tertiary);
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.uploading {
+  opacity: 0.7;
+  cursor: wait;
+  pointer-events: none;
+}
+
+.loaderIcon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 0.8125rem;
+  margin: 0;
+  font-weight: var(--weight-medium);
+  background: var(--color-error-dim);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px;
+  }
+}

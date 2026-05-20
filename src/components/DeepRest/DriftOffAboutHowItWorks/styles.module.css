@@ -1,0 +1,172 @@
+.container {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    gap: var(--space-4);
+  }
+}
+
+.stepsCol {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-foreground);
+  margin: 0 0 1.25rem 0;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 768px) {
+  .sectionTitle {
+    font-size: var(--font-size-2xl);
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sectionTitle {
+    font-size: var(--font-size-xl);
+  }
+}
+
+.stepsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.stepItem {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.stepNumber {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+  color: var(--color-text-on-dark);
+  font-size: 0.9rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.2);
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.2rem;
+}
+
+.stepTitle {
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  color: var(--color-foreground);
+  margin: 0;
+}
+
+.stepDesc {
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: var(--leading-relaxed);
+  text-align: left;
+}
+
+.sessionCard {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-accent-surface-soft);
+  border: 1px solid var(--color-accent-surface-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-7);
+  text-align: left;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 768px) {
+  .sessionCard {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .sessionCard {
+    padding: var(--space-5);
+    border-radius: var(--radius-xl);
+  }
+}
+
+.sessionCardLabel {
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  margin: 0 0 0.25rem 0;
+}
+
+.sessionCardTitle {
+  font-size: var(--text-h4);
+  font-weight: var(--weight-bold);
+  color: var(--color-foreground);
+  font-family: Georgia, serif;
+  margin: 0 0 1.25rem 0;
+}
+
+.sessionContentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sessionContentItem {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  text-align: left;
+}
+
+.bullet {
+  color: var(--color-accent);
+  font-size: 0.55rem;
+  margin-top: 0.35rem;
+  flex-shrink: 0;
+}

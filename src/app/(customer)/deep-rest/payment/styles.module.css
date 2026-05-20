@@ -1,0 +1,227 @@
+.wrapper {
+  width: 100%;
+  min-height: 60vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+  padding: 2.5rem 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 1rem;
+  }
+}
+
+.card {
+  display: flex;
+  gap: 1.5rem;
+  background: var(--color-glass-bg);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: blur(var(--color-glass-blur));
+  -webkit-backdrop-filter: blur(var(--color-glass-blur));
+}
+
+@media (max-width: 768px) {
+  .card {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+.cardLeft {
+  flex: 1;
+  padding: 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .cardLeft {
+    padding: 1.75rem var(--space-5);
+  }
+}
+
+.badge {
+  display: inline-block;
+  background: var(--color-accent-dim);
+  color: var(--color-accent);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  width: fit-content;
+}
+
+.title {
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  color: var(--color-foreground);
+  margin: 0;
+  line-height: var(--leading-heading);
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: var(--text-h3);
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    gap: 0;
+    border-radius: var(--radius-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .cardLeft {
+    padding: var(--space-5) var(--space-4);
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .price {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cardRight {
+    padding: var(--space-5) var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .subtitle {
+    font-size: var(--text-caption);
+  }
+}
+
+@media (max-width: 480px) {
+  .benefitItem {
+    font-size: var(--text-label);
+  }
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.65;
+}
+
+.benefits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.benefitItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: var(--text-caption);
+  color: var(--color-foreground);
+  line-height: 1.5;
+}
+
+.checkIcon {
+  color: var(--color-success);
+  font-size: 0.85rem;
+  font-weight: var(--weight-bold);
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+
+.cardRight {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .cardRight {
+    width: 100%;
+    padding: 1.5rem var(--space-5);
+  }
+}
+
+.priceCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+  width: 100%;
+}
+
+.priceLabel {
+  font-size: 0.8rem;
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-on-dark-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.price {
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-on-dark);
+  margin: 0;
+  line-height: 1;
+}
+
+.priceNote {
+  font-size: var(--text-caption);
+  color: var(--color-text-on-dark-muted);
+  margin: 0;
+}
+
+.error {
+  background: var(--color-error-dim);
+  border: 1px solid var(--color-error-border);
+  color: var(--color-error);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-caption);
+  width: 100%;
+  text-align: left;
+  animation: slideIn var(--transition-slow) ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.actionStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}

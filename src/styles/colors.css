@@ -1,0 +1,190 @@
+/* ============================================
+   NERVAYA DESIGN SYSTEM — COLOR TOKENS
+   Inspired by Stripe's precision, Nervaya's purple identity
+   Single source of truth — components use var() only
+   ============================================ */
+
+:root {
+  /* ── Primary Brand (Locked) ── */
+  --color-accent-rgb: 83, 34, 213;
+  --color-accent: rgb(var(--color-accent-rgb));
+  --color-accent-hover: #4521a8;
+
+  /* ── Secondary Brand (lighter variant of primary) ── */
+  --color-accent-secondary-rgb: 110, 68, 217;
+  --color-accent-secondary: rgb(var(--color-accent-secondary-rgb));
+  --color-accent-secondary-hover: #5a37c1;
+  --color-accent-secondary-dim: rgba(var(--color-accent-secondary-rgb), 0.1);
+
+  /* Existing tonal ramps */
+  --color-accent-light: #7a55e0;
+  --color-accent-soft: #a78bfa;
+  --color-accent-highlight: #c4a5ff;
+  /* Light, readable purple based on #34145f */
+  --color-accent-dim: rgba(var(--color-accent-rgb), 0.1);
+  --color-accent-dim-hover: rgba(var(--color-accent-rgb), 0.06);
+
+  /* Solid accent surface tints — for opaque card backgrounds where
+     a semi-transparent dim would composite incorrectly. Matches
+     indigo-50 / indigo-100 / indigo-200 in the Stripe-inspired palette. */
+  --color-accent-surface-soft: #fdfaff;
+  --color-accent-surface: #f5f3ff;
+  --color-accent-surface-hover: #ede9fe;
+  --color-accent-surface-strong: #ddd6fe;
+  --color-accent-surface-border: #e9e3ff;
+  --color-accent-surface-border-strong: #c4b5fd;
+
+  /* ── Cream / warm background ── */
+  --color-cream-bg: #fdfcfc;
+  --color-cream-card: #fef9f4;
+
+  /* ── Calm severity palette (Japandi-inspired wellness tones) ────────────
+     Used instead of warning/error/success cues so that severity bands on
+     dashboards, key-patterns badges, etc. never feel alarming.
+     Each band has rgb / solid / soft-bg / text variants so consumers can
+     compose backgrounds, borders, and accessible text without hex literals. */
+  --color-calm-mild-rgb: 164, 180, 148;
+  /* Soft Sage */
+  --color-calm-mild: rgb(var(--color-calm-mild-rgb));
+  --color-calm-mild-bg: rgba(var(--color-calm-mild-rgb), 0.18);
+  --color-calm-mild-text: #4e6048;
+
+  --color-calm-moderate-rgb: 150, 170, 198;
+  /* Soft Sky Blue — calm, non-alarming (no amber/yellow); mental-wellness safe */
+  --color-calm-moderate: rgb(var(--color-calm-moderate-rgb));
+  --color-calm-moderate-bg: rgba(var(--color-calm-moderate-rgb), 0.2);
+  --color-calm-moderate-text: #3c4a5e;
+
+  --color-calm-severe-rgb: 168, 154, 196;
+  /* Soft Lavender — calm, supportive (no red); soothing scale: sage → sky → lavender */
+  --color-calm-severe: rgb(var(--color-calm-severe-rgb));
+  --color-calm-severe-bg: rgba(var(--color-calm-severe-rgb), 0.2);
+  --color-calm-severe-text: #4a3f63;
+
+  --color-calm-none-rgb: 165, 197, 173;
+  /* Soft Mint */
+  --color-calm-none: rgb(var(--color-calm-none-rgb));
+  --color-calm-none-bg: rgba(var(--color-calm-none-rgb), 0.18);
+  --color-calm-none-text: #3f5a4b;
+
+  /* ── Gradients (flattened — no gradient, just solid accent) ── */
+  --gradient-accent: var(--color-accent);
+  --gradient-accent-hover: var(--color-accent-hover);
+  --gradient-dark: linear-gradient(135deg, #09021d 0%, #1a0a3e 50%, #2d1566 100%);
+
+  /* ── Surfaces & Backgrounds ── */
+  --color-background: #ffffff;
+  --color-background-page: #f8f9fc;
+  --color-background-alt: #f1f5f9;
+  --color-background-dark: #09021d;
+  --color-background-dark-card: #1a0a3e;
+  --color-foreground: #0f172a;
+
+  /* ── Text & Neutrals ── */
+  --color-text-primary: #0f172a;
+  --color-text-body: #334155;
+  --color-text-secondary: #64748b;
+  --color-text-tertiary: #94a3b8;
+  --color-text-disabled: #cbd5e1;
+  --color-text-on-dark: #ffffff;
+  --color-text-on-dark-muted: rgba(255, 255, 255, 0.6);
+  --color-text-on-dark-dim: rgba(255, 255, 255, 0.3);
+
+  /* Legacy aliases (for backward compat during migration) */
+  --color-text-muted: var(--color-text-secondary);
+  --color-text-dim: var(--color-text-tertiary);
+
+  /* ── Semantic Colors ── */
+  --color-success: #10b981;
+  --color-success-dim: rgba(16, 185, 129, 0.1);
+  --color-success-border: rgba(16, 185, 129, 0.2);
+  --color-error: #ef4444;
+  --color-error-hover: #dc2626;
+  --color-error-dim: rgba(239, 68, 68, 0.1);
+  --color-error-border: rgba(239, 68, 68, 0.15);
+  --color-warning: #f59e0b;
+  --color-warning-dim: rgba(245, 158, 11, 0.1);
+  --color-warning-text: #783207;
+  --color-warning-text-strong: #6b240a;
+  --color-info: #3b82f6;
+  --color-info-dim: rgba(59, 130, 246, 0.1);
+
+  /* Legacy aliases */
+  --color-destructive: var(--color-error);
+  --color-destructive-hover: var(--color-error-hover);
+
+  /* ── Borders (Stripe-inspired whisper borders) ── */
+  --color-border: rgba(0, 0, 0, 0.06);
+  --color-border-subtle: rgba(0, 0, 0, 0.1);
+  --color-border-accent: rgba(var(--color-accent-rgb), 0.2);
+  --color-border-accent-hover: rgba(var(--color-accent-rgb), 0.15);
+  --color-border-dark: rgba(var(--color-accent-rgb), 0.1);
+
+  /* Legacy aliases */
+  --color-border-light: #e2e8f0;
+  --color-border-light-hover: #cbd5e1;
+
+  /* ── Shadows (Purple-tinted multi-layer — Stripe technique) ── */
+  --shadow-sm: rgba(var(--color-accent-rgb), 0.04) 0px 1px 3px, rgba(0, 0, 0, 0.02) 0px 1px 2px;
+  --shadow-md:
+    rgba(var(--color-accent-rgb), 0.08) 0px 4px 18px, rgba(0, 0, 0, 0.04) 0px 2px 8px, rgba(0, 0, 0, 0.02) 0px 0.8px 3px;
+  --shadow-lg:
+    rgba(var(--color-accent-rgb), 0.1) 0px 8px 32px, rgba(0, 0, 0, 0.05) 0px 4px 12px, rgba(0, 0, 0, 0.03) 0px 2px 6px,
+    rgba(0, 0, 0, 0.01) 0px 0.5px 2px;
+  --shadow-xl:
+    rgba(var(--color-accent-rgb), 0.12) 0px 16px 48px, rgba(0, 0, 0, 0.06) 0px 8px 24px,
+    rgba(0, 0, 0, 0.04) 0px 4px 10px, rgba(0, 0, 0, 0.02) 0px 1px 4px;
+  --shadow-btn-primary: none;
+  --shadow-btn-primary-hover: none;
+  --shadow-focus: 0 0 0 3px rgba(var(--color-accent-rgb), 0.1);
+  --shadow-focus-error: 0 0 0 3px rgba(239, 68, 68, 0.1);
+
+  /* Legacy aliases */
+  --color-card-shadow: var(--shadow-sm);
+  --color-card-shadow-hover: var(--shadow-md);
+
+  /* ── Glass Effects ── */
+  --color-glass-bg: rgba(255, 255, 255, 0.95);
+  --color-glass-border: var(--color-border);
+  --color-glass-blur: 12px;
+
+  /* ── Overlay ── */
+  --color-overlay: rgba(0, 0, 0, 0.4);
+  --color-overlay-dark: rgba(0, 0, 0, 0.5);
+
+  /* ── Transitions ── */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Dashboard Tile Themes ── */
+  --color-tile-indigo: #6366f1;
+  --color-tile-emerald: #10b981;
+  --color-tile-rose: #f43f5e;
+  --color-tile-amber: #f59e0b;
+  --color-tile-violet: #8b5cf6;
+
+  /* ── Extended palette (for specific component use) ── */
+  --color-indigo-500: #4f46e5;
+  --color-indigo-600: #4338ca;
+  --color-indigo-700: #3730a3;
+  --color-indigo-400: #818cf8;
+  --color-indigo-200: #a5b4fc;
+  --color-indigo-dim: rgba(79, 70, 229, 0.1);
+  --color-indigo-border: rgba(79, 70, 229, 0.2);
+  --color-indigo-border-light: rgba(79, 70, 229, 0.1);
+  --color-emerald-400: #34d399;
+  --color-emerald-dim: rgba(16, 185, 129, 0.1);
+  --color-emerald-border: rgba(16, 185, 129, 0.2);
+  --color-amber-400: #fbbf24;
+
+  /* ── Card & Dashboard backgrounds ── */
+  --color-card-bg: var(--color-background);
+  --color-card-bg-light: var(--color-background-page);
+  --color-card-bg-video: var(--color-background-alt);
+  --color-dashboard-bg: var(--color-background-page);
+  --color-text-slate-300: #334155;
+  --color-text-slate-400: #475569;
+  --color-white-dim: rgba(0, 0, 0, 0.05);
+  --color-white-bright: #ffffff;
+}

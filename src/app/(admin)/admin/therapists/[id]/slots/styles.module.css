@@ -1,0 +1,66 @@
+/* Full-bleed: negate .main-content padding (40px) + admin container padding (24px/16px/64px) */
+.fullPage {
+  margin-top: calc(-1 * max(var(--spacing-xl, 40px), var(--navbar-safe-gap, 32px)) - var(--spacing-lg, 24px));
+  margin-left: calc(-1 * var(--spacing-xl, 40px) - var(--spacing-md, 16px));
+  margin-right: calc(-1 * var(--spacing-xl, 40px) - var(--spacing-md, 16px));
+  margin-bottom: calc(-1 * var(--spacing-xl, 40px) - var(--spacing-2xl, 64px));
+  height: calc(100vh - var(--navbar-height, 82px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-width: none;
+  background: var(--color-background, var(--color-background));
+}
+
+@media (max-width: 770px) {
+  .fullPage {
+    margin-top: calc(-1 * max(var(--spacing-lg, 24px), var(--navbar-safe-gap, 24px)) - var(--spacing-md, 16px));
+    margin-left: calc(-1 * var(--spacing-lg, 24px) - var(--spacing-md, 16px));
+    margin-right: calc(-1 * var(--spacing-lg, 24px) - var(--spacing-md, 16px));
+    margin-bottom: calc(-1 * var(--spacing-lg, 24px));
+    height: calc(100vh - var(--navbar-height, 74px));
+  }
+}
+
+.errorWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.errorBox {
+  text-align: center;
+  padding: 36px 32px;
+  color: var(--color-destructive, var(--color-error));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.errorBox p {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-text-primary, var(--color-text-primary));
+}
+
+.errorBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--color-border-light, var(--color-border-light));
+  border-radius: 6px;
+  background: var(--color-background, var(--color-background));
+  color: var(--color-text-muted, var(--color-text-secondary));
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.errorBtn:hover {
+  background: var(--color-card-bg-light, var(--color-background-page));
+  color: var(--color-accent, var(--color-accent));
+}

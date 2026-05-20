@@ -1,0 +1,126 @@
+.filtersRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-5);
+  margin-bottom: 40px;
+  justify-content: flex-start;
+}
+
+@media (max-width: 768px) {
+  .filtersRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-4);
+    margin-bottom: 28px;
+  }
+}
+
+.searchWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 2;
+  min-width: 300px;
+  max-width: 480px;
+}
+
+.searchForm {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.searchForm:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
+}
+
+@media (max-width: 768px) {
+  .searchWrapper {
+    max-width: 100%;
+    min-width: 100%;
+  }
+}
+
+.searchIcon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-tertiary);
+  margin-left: var(--space-5);
+  pointer-events: none;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-4) 14px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: var(--text-body);
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.searchButton {
+  padding: var(--space-4) 20px;
+  background: var(--color-accent);
+  border: none;
+  color: var(--color-text-on-dark);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.searchButton:hover {
+  background: var(--color-accent-hover);
+}
+
+.filterSelectWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 220px;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .filterSelectWrapper {
+    min-width: 100%;
+  }
+}
+
+.filterLabel {
+  font-size: var(--text-label);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-1);
+}
+
+.filterSelect {
+  width: 100%;
+}
+
+/* Remove any ad-hoc overrides that might interfere with Dropdown's internal styling */
+.filterSelect :global(.dropdown-trigger) {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: var(--shadow-sm);
+}

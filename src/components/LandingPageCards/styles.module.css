@@ -1,0 +1,235 @@
+.cardsSection {
+  position: relative;
+  z-index: 1;
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: var(--spacing-sm);
+}
+
+@media (max-width: 768px) {
+  .cardsSection {
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+}
+
+.sectionTitle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.cardsContainer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  list-style: none;
+  padding: 0;
+}
+
+@media (max-width: 1024px) {
+  .cardsContainer {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .cardsContainer {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+  }
+}
+
+.card {
+  background: #34145f;
+  border-radius: 22px;
+  overflow: hidden;
+  transition: all var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(6px);
+  height: 100%;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-accent-hover);
+}
+
+.cardImageWrapper {
+  position: relative;
+  background: rgba(12, 4, 36, 0.45);
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .cardImageWrapper {
+    height: 240px;
+  }
+}
+
+.cardImageWrapper :global(img) {
+  object-fit: cover;
+  object-position: center;
+}
+
+.badge {
+  position: absolute;
+  top: var(--spacing-lg);
+  left: var(--spacing-lg);
+  background: rgba(248, 241, 255, 0.95);
+  color: #3d166f;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 48px;
+  font-size: var(--font-size-base, 1rem);
+  font-weight: var(--weight-semibold);
+  z-index: 10;
+  min-width: 138px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.cardImage {
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.cardContent {
+  padding: var(--spacing-lg);
+  background: #34145f;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .cardContent {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+}
+
+.cardTitle {
+  font-family: var(--font-heading) !important;
+  font-size: clamp(1.75rem, 2.35vw, 2.35rem);
+  font-weight: var(--weight-bold);
+  color: #f8f3ff;
+  margin-bottom: var(--spacing-md);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-h4);
+}
+
+@media (max-width: 768px) {
+  .cardTitle {
+    font-size: 1.85rem;
+  }
+}
+
+.cardDescription {
+  font-family: var(--font-sans) !important;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: rgba(225, 211, 255, 0.88);
+  margin-bottom: var(--spacing-lg);
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .cardDescription {
+    font-size: 1rem;
+  }
+}
+
+.cardActions {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-sm, 0.75rem);
+  width: 100%;
+  margin-top: auto;
+}
+
+@media (max-width: 1024px) {
+  .cardActions {
+    flex-direction: column;
+  }
+}
+
+.primaryButton,
+.secondaryButton {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 1rem;
+  font-size: 1.05rem;
+  font-weight: var(--weight-semibold);
+  font-family: var(--font-sans) !important;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  text-decoration: none;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+    min-height: 52px;
+  }
+}
+
+.primaryButton {
+  background: var(--gradient-accent);
+  color: var(--color-text-on-dark);
+  border: none;
+  box-shadow: var(--shadow-btn-primary);
+}
+
+.primaryButton:hover {
+  box-shadow: var(--shadow-btn-primary-hover);
+  transform: translateY(-1px);
+}
+
+.primaryButton:active {
+  transform: translateY(0);
+}
+
+.secondaryButton {
+  background: transparent;
+  color: #f4ecff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.secondaryButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.secondaryButton:active {
+  transform: translateY(0);
+}

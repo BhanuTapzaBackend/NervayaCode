@@ -1,0 +1,85 @@
+.card {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(var(--color-glass-blur));
+  -webkit-backdrop-filter: blur(var(--color-glass-blur));
+  border: 1px solid var(--color-glass-border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--accent);
+  color: var(--color-text-on-dark);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+}
+
+.label {
+  font-size: var(--font-size-lg);
+  font-weight: var(--weight-semibold);
+  margin: 0 0 var(--spacing-xs) 0;
+  color: var(--color-text-on-dark);
+}
+
+.defaultBadge {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  display: block;
+}
+
+.editButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--spacing-sm);
+  background: transparent;
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius);
+  color: var(--color-text-on-dark);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.editButton:hover {
+  background: var(--color-card-bg);
+  color: var(--accent);
+}
+
+.body {
+  padding: var(--spacing-lg);
+}
+
+.name {
+  font-size: var(--font-size-base);
+  font-weight: var(--weight-semibold);
+  color: var(--color-foreground);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+  line-height: 1.4;
+}
+
+.text:last-child {
+  margin-bottom: 0;
+}

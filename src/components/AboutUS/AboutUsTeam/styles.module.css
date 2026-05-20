@@ -1,0 +1,351 @@
+@keyframes slideInUpMobile {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.teamSection {
+  padding: 20px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1200px) {
+  .teamSection {
+    padding: 20px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .teamSection {
+    padding: 20px 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .teamSection {
+    padding: 20px 20px;
+  }
+}
+
+.teamMainCard {
+  padding: 30px 40px 30px;
+  width: 100%;
+  background: var(--color-background);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-accent-hover);
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1200px) {
+  .teamMainCard {
+    padding: 48px 40px 50px;
+  }
+}
+
+@media (max-width: 768px) {
+  .teamMainCard {
+    padding: 40px 30px 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .teamMainCard {
+    padding: 36px 20px 30px;
+  }
+}
+
+.teamHeader {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+@media (max-width: 768px) {
+  .teamHeader {
+    margin-bottom: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .teamHeader {
+    margin-bottom: 30px;
+  }
+}
+
+.teamTitle {
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: 20px;
+  letter-spacing: var(--tracking-h2);
+}
+
+@media (max-width: 1024px) {
+  .teamTitle {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    margin-bottom: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .teamTitle {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    margin-bottom: var(--space-5);
+  }
+}
+
+@media (max-width: 480px) {
+  .teamTitle {
+    font-size: clamp(1.375rem, 5vw, 1.75rem);
+    margin-bottom: 14px;
+  }
+}
+
+.teamSubtitle {
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-secondary);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .teamSubtitle {
+    font-size: clamp(0.95rem, 1.5vw, 1rem);
+  }
+}
+
+@media (max-width: 768px) {
+  .teamSubtitle {
+    font-size: clamp(0.9rem, 2vw, 0.95rem);
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 480px) {
+  .teamSubtitle {
+    font-size: var(--text-caption);
+  }
+}
+
+.teamContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-7);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow: visible;
+}
+
+@media (max-width: 1024px) {
+  .teamContainer {
+    gap: var(--space-6);
+  }
+}
+
+@media (max-width: 768px) {
+  .teamContainer {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+.memberCard {
+  background: var(--color-background);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  box-shadow: none;
+  padding: var(--space-6);
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 20px;
+  align-items: flex-start;
+  transition: transform var(--transition-slow) ease;
+  cursor: pointer;
+  overflow: visible;
+  scroll-margin-top: var(--space-12);
+  animation: slideInUpMobile 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+.memberCard:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.memberCard:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.memberCard:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.memberCard:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memberCard {
+    animation: none;
+  }
+}
+
+.memberCard:hover {
+  transform: translateY(-2px);
+}
+
+@media (max-width: 1024px) {
+  .memberCard {
+    padding: 20px;
+    gap: var(--space-5);
+  }
+}
+
+@media (max-width: 768px) {
+  .memberCard {
+    grid-template-columns: 80px 1fr;
+    padding: 20px;
+    gap: var(--space-5);
+  }
+}
+
+@media (max-width: 480px) {
+  .memberCard {
+    grid-template-columns: 1fr;
+    padding: var(--space-6);
+    gap: 20px;
+  }
+}
+
+.cardImagePlaceholder {
+  background: var(--color-accent-surface);
+  border-radius: var(--radius-lg);
+  width: 100px;
+  height: 100px;
+  min-width: 100px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.cardImage {
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .cardImagePlaceholder {
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cardImagePlaceholder {
+    width: 100%;
+    height: 200px;
+    min-width: 100%;
+  }
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (max-width: 480px) {
+  .cardContent {
+    gap: var(--space-3);
+  }
+}
+
+.memberName {
+  font-size: var(--text-h4);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.3;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 1024px) {
+  .memberName {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .memberName {
+    font-size: var(--text-body-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .memberName {
+    font-size: 1rem;
+  }
+}
+
+.memberTitle {
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  color: var(--color-indigo-400);
+  margin: 0;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 1024px) {
+  .memberTitle {
+    font-size: var(--text-caption);
+  }
+}
+
+@media (max-width: 768px) {
+  .memberTitle {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .memberTitle {
+    font-size: 0.8125rem;
+  }
+}
+
+.memberDescription {
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 1024px) {
+  .memberDescription {
+    font-size: var(--text-caption);
+  }
+}
+
+@media (max-width: 768px) {
+  .memberDescription {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 480px) {
+  .memberDescription {
+    font-size: 0.8125rem;
+  }
+}

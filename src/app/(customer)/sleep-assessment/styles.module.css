@@ -1,0 +1,217 @@
+/* ============================================================
+   Sleep Assessment — Page-level wrappers
+   Layout strategy:
+   - Mobile  ≤ 770px: full-bleed, small gutters, bottom-nav clearance
+   - Tablet  771–1023px: comfortable padding, single column
+   - Desktop ≥ 1024px: capped width, centered
+   ============================================================ */
+
+.pageContainer {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-background-page);
+  padding-bottom: var(--space-8);
+  position: relative;
+}
+
+@media (max-width: 770px) {
+  .pageContainer {
+    min-height: 0;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Auth path only (guest path has no `.main-content` wrapper):
+   - Cancel `.main-content { padding-top: navbar-safe-gap }` so the card
+     sits flush under the navbar.
+   - Cancel `.main-content > * { min-height: calc(100vh - ...) }` so a
+     short page doesn't get stretched to viewport height. */
+:global(.main-content) > .pageContainer {
+  margin-top: calc(var(--navbar-safe-gap) * -1);
+  min-height: auto;
+}
+
+.authContainer {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 0 var(--space-5) var(--space-9);
+}
+
+@media (max-width: 770px) {
+  .authContainer {
+    padding: 0 var(--space-3) 0;
+  }
+}
+
+.guestContainer {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 0 var(--space-5) var(--space-6);
+}
+
+@media (min-width: 1024px) {
+  .guestContainer {
+    max-width: 1600px;
+  }
+}
+
+@media (max-width: 770px) {
+  .guestContainer {
+    padding: var(--space-4) var(--space-3) var(--space-3);
+  }
+}
+
+/* PageHeader is rendered with empty props on this page (returns null),
+   so the spacer wraps nothing — keep it collapsed to avoid an empty
+   visual gap above the assessment card. */
+.headerSpacer {
+  margin: 0;
+}
+
+.loadingContainer {
+  min-height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 770px) {
+  .loadingContainer {
+    min-height: 300px;
+  }
+}
+
+.errorContainer,
+.emptyContainer {
+  min-height: 360px;
+  max-width: 520px;
+  margin: var(--space-8) auto;
+  border-radius: var(--radius-2xl);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+}
+
+@media (max-width: 770px) {
+  .errorContainer,
+  .emptyContainer {
+    min-height: 300px;
+    padding: 30px var(--space-5);
+    margin: var(--space-5) auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .errorContainer,
+  .emptyContainer {
+    min-height: 240px;
+    padding: var(--space-6) var(--space-4);
+    margin: var(--space-4) auto;
+    border-radius: var(--radius-xl);
+  }
+}
+
+.errorIcon,
+.emptyIcon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: var(--space-3);
+}
+
+.errorIcon svg,
+.emptyIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.errorIcon {
+  color: var(--color-error);
+}
+
+.emptyIcon {
+  color: var(--color-text-tertiary);
+}
+
+.emptyTitle {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+}
+
+@media (max-width: 480px) {
+  .emptyTitle {
+    font-size: var(--text-h4);
+  }
+}
+
+.errorText,
+.emptyText {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  line-height: var(--leading-relaxed);
+}
+
+@media (max-width: 480px) {
+  .errorText,
+  .emptyText {
+    font-size: var(--text-caption);
+  }
+}
+
+.retryButton {
+  margin-top: var(--space-4);
+  height: 46px;
+  min-width: 160px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-lg);
+  border: none;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-tile-indigo) 100%);
+  color: var(--color-text-on-dark);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  box-shadow: var(--shadow-btn-primary);
+  transition: all var(--transition-slow) cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.retryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-btn-primary-hover);
+  filter: brightness(1.1);
+}
+
+.retryButton:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 770px) {
+  .retryButton {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .retryButton {
+    min-height: 44px;
+    min-width: 140px;
+    font-size: var(--text-caption);
+  }
+}

@@ -1,0 +1,34 @@
+.section {
+  padding: var(--spacing-md);
+  min-width: 240px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .section {
+    min-width: 0;
+    width: 100%;
+    padding: var(--spacing-lg);
+  }
+}
+
+.sectionTitle {
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-foreground);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.priceDisplay {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-xs);
+}
+
+@media (max-width: 480px) {
+  .priceDisplay {
+    font-size: var(--text-caption);
+  }
+}

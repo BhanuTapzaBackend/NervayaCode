@@ -1,0 +1,239 @@
+.section {
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* Prevent shrinkwrap when this section is used inside a
+     `display: flex; align-items: center` parent — without it,
+     the inner scrolling track inherits an oversized intrinsic
+     width from its children and overflows the viewport. */
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--text-body-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent);
+  margin: 0 0 var(--space-6);
+  letter-spacing: var(--tracking-h4);
+}
+
+@media (max-width: 770px) {
+  .title {
+    padding-inline: var(--space-4);
+  }
+}
+
+.track {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-2) 0;
+  display: flex;
+  gap: var(--space-5);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 0;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 770px) {
+  .track {
+    gap: var(--space-3);
+  }
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.card {
+  flex: 0 0 360px;
+  width: 360px;
+  min-height: 220px;
+  scroll-snap-align: start;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  box-sizing: border-box;
+}
+
+/* On mobile, switch to a percentage-based width with center snap so
+   one card sits centered with a peek of the next/previous card on each
+   side — a standard mobile-carousel feel. */
+@media (max-width: 770px) {
+  .card {
+    flex: 0 0 85%;
+    width: 85%;
+    max-width: 85%;
+    min-height: 0;
+    padding: var(--space-5);
+    scroll-snap-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-dim);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+  flex-shrink: 0;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.userName {
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.stars {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.starFilled {
+  color: var(--color-warning);
+}
+
+.starEmpty {
+  color: var(--color-border-light);
+}
+
+.comment {
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Pagination dots */
+.dots {
+  list-style: none;
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--color-border-light);
+  cursor: pointer;
+  padding: 0;
+  transition: all var(--transition-base);
+}
+
+.dot:hover {
+  background: var(--color-accent-soft);
+}
+
+.dotActive {
+  width: 24px;
+  background: var(--color-accent);
+}
+
+/* ── Continuous marquee mode (autoScroll) ───────────────────────────── */
+.marqueeViewport {
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.marqueeViewport:hover .marqueeTrack,
+.marqueeViewport:focus-within .marqueeTrack {
+  animation-play-state: paused;
+}
+
+.marqueeTrack {
+  display: flex;
+  gap: var(--space-5);
+  width: max-content;
+  padding: var(--space-2) 0;
+  animation: testimonials-marquee 48s linear infinite;
+}
+
+.marqueeGroup {
+  display: flex;
+  gap: var(--space-5);
+  flex-shrink: 0;
+}
+
+.marqueeGroup .card {
+  flex: 0 0 340px;
+  width: 340px;
+  max-width: 340px;
+}
+
+@media (max-width: 770px) {
+  .marqueeGroup .card {
+    flex: 0 0 280px;
+    width: 280px;
+    max-width: 280px;
+  }
+}
+
+@keyframes testimonials-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 8px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marqueeTrack {
+    animation: none;
+  }
+}

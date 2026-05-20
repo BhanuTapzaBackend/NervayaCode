@@ -1,0 +1,145 @@
+.cartItem {
+  display: flex;
+  padding: 24px;
+  gap: 24px;
+  background: var(--color-white-bright);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+}
+
+.cartItem:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .cartItem {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+}
+
+.imageLink {
+  flex-shrink: 0;
+}
+
+.imageWrapper {
+  width: 120px;
+  height: 120px;
+  background: var(--color-card-bg-light);
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .imageWrapper {
+    width: 100%;
+    height: 200px;
+  }
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+
+.details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.nameLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.name {
+  font-size: 1.125rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.01em;
+}
+
+.name:hover {
+  color: var(--accent);
+}
+
+.price {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+  margin-top: var(--spacing-sm);
+}
+
+@media (max-width: 768px) {
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.removeButton {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-muted);
+  border-radius: var(--radius);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.removeButton:hover:not(:disabled) {
+  background: var(--color-error-dim);
+  border-color: var(--color-destructive);
+  color: var(--color-destructive);
+}
+
+.removeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .removeButton {
+    width: 100%;
+  }
+}
+
+.total {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .total {
+    justify-content: flex-start;
+  }
+}
+
+.totalPrice {
+  font-size: 1.25rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-accent);
+  letter-spacing: -0.02em;
+}

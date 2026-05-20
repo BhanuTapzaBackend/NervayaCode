@@ -1,0 +1,343 @@
+.pageContentWhite {
+  background: var(--color-accent-surface) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.section {
+  margin: var(--space-6);
+}
+
+.loadingWrap {
+  min-height: 320px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.error {
+  color: var(--color-error-hover);
+  font-size: 1rem;
+}
+
+.profileTop {
+  display: grid;
+  grid-template-columns: minmax(320px, 440px) 1fr;
+  gap: var(--space-6);
+  align-items: stretch;
+}
+
+.mediaPane {
+  border-radius: 18px;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-background-page);
+  overflow: hidden;
+  min-height: 320px;
+}
+
+.profileImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.videoPlayer {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  background: var(--color-text-primary);
+}
+
+.mediaFallback {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-bold);
+}
+
+.contentPane {
+  border-radius: 18px;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-background);
+  padding: 20px;
+}
+
+.contentPane h1 {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-primary);
+  font-size: clamp(1.8rem, 2.2vw, 2.5rem);
+  line-height: 1.15;
+}
+
+.credentials {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-slate-400);
+  font-size: 1rem;
+  font-weight: var(--weight-semibold);
+}
+
+.bio {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-body);
+  font-size: var(--text-body-lg);
+  line-height: 1.65;
+}
+
+.quote {
+  margin: 0;
+  padding: 10px var(--space-4);
+  border-left: 3px solid var(--color-accent);
+  color: var(--color-accent);
+  font-size: 1.08rem;
+  font-style: italic;
+  line-height: var(--leading-relaxed);
+  background: var(--color-accent-dim-hover);
+  border-radius: var(--radius);
+}
+
+.topActions {
+  margin-top: var(--space-5);
+  display: flex;
+  gap: 10px;
+}
+
+.primaryBtn,
+.secondaryBtn {
+  min-height: 42px;
+  padding: 0 var(--space-5);
+  border-radius: 10px;
+  border: none;
+  text-decoration: none;
+  font-weight: var(--weight-bold);
+  font-size: 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.primaryBtn {
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+}
+
+.secondaryBtn {
+  border: 1px solid var(--color-border-light);
+  background: var(--color-background);
+  color: var(--color-text-body);
+}
+
+.messageSection {
+  margin-top: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--color-accent-surface-strong);
+  background: var(--color-accent-surface);
+  padding: 20px;
+}
+
+.messageSection h2 {
+  margin: 0 0 10px;
+  color: var(--color-accent-hover);
+  font-size: 1.45rem;
+}
+
+.messageSection p {
+  margin: 0;
+  color: var(--color-text-body);
+  font-size: 1.12rem;
+  line-height: 1.8;
+}
+
+.metaGrid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.metaCard {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+  padding: 14px;
+}
+
+.metaCard h3 {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-slate-400);
+  font-size: var(--text-body);
+}
+
+.metaCard p {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: var(--weight-semibold);
+  line-height: 1.5;
+}
+
+.testimonialsSection {
+  margin-top: var(--space-6);
+}
+
+.testimonialsSection h2 {
+  margin: 0 0 10px;
+  color: var(--color-accent-hover);
+  font-size: 1.45rem;
+}
+
+.testimonialGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.testimonialCard {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+  padding: var(--space-5);
+}
+
+.testimonialMessage {
+  margin: 0;
+  color: var(--color-text-body);
+  line-height: 1.65;
+  font-size: 1rem;
+}
+
+.testimonialMeta {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.testimonialMeta strong {
+  color: var(--color-text-primary);
+}
+
+.testimonialMeta span {
+  color: var(--color-text-secondary);
+  font-size: var(--text-caption);
+}
+
+@media (max-width: 1100px) {
+  .profileTop {
+    grid-template-columns: 1fr;
+  }
+
+  .metaGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .testimonialGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    margin-left: var(--space-5);
+    margin-right: var(--space-5);
+  }
+
+  .topActions {
+    flex-direction: column;
+  }
+
+  .primaryBtn,
+  .secondaryBtn {
+    width: 100%;
+  }
+
+  .metaGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .testimonialGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .section {
+    margin: var(--space-4);
+  }
+
+  .contentPane {
+    padding: var(--space-4);
+  }
+
+  .contentPane h1 {
+    font-size: 1.5rem;
+  }
+
+  .bio {
+    font-size: var(--text-body);
+  }
+
+  .quote {
+    font-size: 0.95rem;
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .primaryBtn,
+  .secondaryBtn {
+    min-height: 44px;
+    font-size: 0.85rem;
+  }
+
+  .metaCard {
+    padding: var(--space-4);
+  }
+
+  .messageSection {
+    padding: var(--space-4);
+  }
+
+  .messageSection h2 {
+    font-size: 1.2rem;
+  }
+
+  .messageSection p {
+    font-size: 1rem;
+  }
+
+  .testimonialsSection h2 {
+    font-size: 1.2rem;
+  }
+
+  .testimonialCard {
+    padding: var(--space-4);
+  }
+}
+
+/* Carousel-section wrapper: horizontal padding shrinks at smaller
+   viewports so the carousel cards get more usable width. */
+.testimonialsCarouselWrap {
+  padding: var(--space-10) 8%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1023px) {
+  .testimonialsCarouselWrap {
+    padding: var(--space-8) var(--space-5);
+    gap: var(--space-6);
+  }
+}
+
+@media (max-width: 770px) {
+  .testimonialsCarouselWrap {
+    padding: var(--space-7) 0;
+    gap: var(--space-5);
+  }
+}

@@ -1,0 +1,116 @@
+/* ── Synchco-style day column ── */
+.column {
+  flex: 1;
+  min-width: 0;
+  border-left: 1px solid var(--color-border-light, var(--color-border-light));
+  display: flex;
+  flex-direction: column;
+}
+
+.column:first-child {
+  border-left: none;
+}
+
+.dayHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 2px 4px;
+  border-bottom: 1px solid var(--color-border-light, var(--color-border-light));
+  height: 64px; /* Consistent height */
+  user-select: none;
+  position: sticky;
+  top: 0;
+  background: var(--color-background, var(--color-background));
+  z-index: 2;
+}
+
+.dayName {
+  font-size: 0.75rem;
+  font-weight: var(--weight-medium);
+  color: var(--color-text-dim, var(--color-text-tertiary));
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.today .dayName {
+  color: var(--color-accent, var(--color-accent));
+  font-weight: var(--weight-semibold);
+}
+
+.dayNum {
+  font-size: 1.25rem;
+  font-weight: var(--weight-medium);
+  color: var(--color-text-primary, var(--color-text-primary));
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  white-space: nowrap;
+  line-height: 1;
+  transition: all var(--transition-base);
+  margin-top: 4px;
+}
+
+.dayHeader:hover .dayNum {
+  background: var(--color-card-bg-light, var(--color-background-page));
+}
+
+.todayNum {
+  background: var(--color-accent, var(--color-accent)) !important;
+  color: var(--color-text-on-dark) !important;
+  font-weight: var(--weight-semibold);
+}
+
+.slotsArea {
+  position: relative;
+  cursor: pointer;
+  flex: 1;
+  background-image: linear-gradient(var(--color-border-light, var(--color-border-light)) 1px, transparent 1px);
+  background-size: 100% 60px; /* Hour lines */
+}
+
+/* ── Current Time Indicator (Google Calendar style) ── */
+.currentTime {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.currentTimeDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-destructive, var(--color-error));
+  margin-left: -6px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px var(--color-background, var(--color-background));
+}
+
+.currentTimeLine {
+  height: 2px;
+  flex: 1;
+  background: var(--color-destructive, var(--color-error));
+}
+
+.hourLine {
+  display: none; /* Replaced by background-image for optimization */
+}
+
+.halfHourLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  opacity: 0.3;
+  pointer-events: none;
+  border-top: 1px solid var(--color-border-light, var(--color-border-light));
+}

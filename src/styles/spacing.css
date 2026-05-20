@@ -1,0 +1,161 @@
+/* ============================================
+   NERVAYA DESIGN SYSTEM — TYPOGRAPHY, SPACING, LAYOUT TOKENS
+   Stripe-inspired precision · 8px base grid
+   Single source of truth — components use var() only
+   ============================================ */
+
+:root {
+  /* ── Font Families ── */
+  --font-heading: var(--font-outfit), 'Outfit', system-ui, sans-serif;
+  --font-body: var(--font-inter), 'Inter', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'SF Mono', Menlo, Monaco, Consolas, monospace;
+
+  /* ── Font Sizes (Stripe-inspired scale) ── */
+  --text-display: 3.5rem; /* 56px — Hero headlines */
+  --text-h1: 2.75rem; /* 44px — Section headings */
+  --text-h2: 2rem; /* 32px — Sub-heading large */
+  --text-h3: 1.5rem; /* 24px — Sub-heading */
+  --text-h4: 1.25rem; /* 20px — Card titles */
+  --text-body-lg: 1.0625rem; /* 17px — Large body */
+  --text-body: 0.9375rem; /* 15px — Standard body / nav */
+  --text-caption: 0.875rem; /* 14px — Metadata, captions */
+  --text-label: 0.75rem; /* 12px — Badges, labels */
+
+  /* Legacy aliases (backward compat) */
+  --font-size-xs: var(--text-label);
+  --font-size-sm: 0.8125rem;
+  --font-size-base: var(--text-caption);
+  --font-size-md: var(--text-body);
+  --font-size-lg: 1rem;
+  --font-size-xl: var(--text-body-lg);
+  --font-size-2xl: var(--text-h4);
+  --font-size-3xl: var(--text-h3);
+  --font-size-4xl: var(--text-h2);
+  --font-size-5xl: var(--text-h1);
+  --font-size-6xl: var(--text-display);
+  --font-size-hero: var(--text-display);
+  --heading-page: var(--text-h2);
+  --heading-section: var(--text-h3);
+  --description: var(--text-body-lg);
+
+  /* ── Line Heights ── */
+  --leading-tight: 1.05; /* Display headings */
+  --leading-snug: 1.1; /* H1 headings */
+  --leading-heading: 1.2; /* H2–H3 */
+  --leading-title: 1.25; /* H3–H4 */
+  --leading-compact: 1.35; /* Badges, labels */
+  --leading-normal: 1.45; /* Captions, nav */
+  --leading-relaxed: 1.6; /* Body text (wellness reading pace) */
+
+  /* ── Letter Spacing (negative at display — Stripe signature) ── */
+  --tracking-display: -1.8px;
+  --tracking-h1: -1.4px;
+  --tracking-h2: -0.8px;
+  --tracking-h3: -0.4px;
+  --tracking-h4: -0.2px;
+  --tracking-normal: normal;
+  --tracking-wide: 0.3px;
+  --tracking-wider: 1px;
+
+  /* ── Font Weights ── */
+  --weight-light: 300; /* Display hero (Stripe confidence) */
+  --weight-normal: 400; /* Body text */
+  --weight-medium: 500; /* Nav, UI text */
+  --weight-semibold: 600; /* H3, H4, card titles, buttons */
+  --weight-bold: 700; /* H1, brand emphasis */
+
+  /* ── Spacing Scale (8px base, 12 steps) ── */
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+  --space-9: 64px;
+  --space-10: 80px;
+  --space-11: 96px;
+  --space-12: 120px;
+
+  /* Legacy aliases */
+  --spacing-xs: var(--space-2);
+  --spacing-sm: var(--space-3);
+  --spacing-md: var(--space-5);
+  --spacing-lg: var(--space-6);
+  --spacing-xl: var(--space-8);
+  --spacing-2xl: var(--space-9);
+
+  /* Legacy margin aliases (used by admin list layouts — keep in sync with --spacing-*) */
+  --margin-xs: var(--space-2);
+  --margin-sm: var(--space-3);
+  --margin-md: var(--space-5);
+  --margin-lg: var(--space-6);
+  --margin-xl: var(--space-8);
+
+  /* ── Form Control Sizing ── */
+  --input-height: 44px; /* Unified height for inputs, selects, dropdown triggers */
+
+  /* ── Border Radius Scale ── */
+  --radius-sm: 4px; /* Tags, small elements */
+  --radius-md: 6px; /* Small buttons */
+  --radius: 8px; /* Standard cards, inputs */
+  --radius-lg: 12px; /* Primary buttons, nav */
+  --radius-xl: 16px; /* Featured cards */
+  --radius-2xl: 24px; /* Hero containers */
+  --radius-full: 9999px; /* Badges, pills */
+
+  /* ── Container & Layout ── */
+  --container-max: 1200px;
+  --container-narrow: 800px;
+  --container-wide: 1400px;
+  --navbar-height: 72px;
+  --navbar-height-mobile: 64px;
+  --navbar-padding-x: 48px;
+  --navbar-padding-x-mobile: 20px;
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 72px;
+
+  /* Horizontal gutter for page-level .container wrappers. Use this — not
+     raw --space-* — when setting the side padding on a page shell, so the
+     gutter can be tuned in one place across the app. */
+  --page-gutter: 26px;
+}
+
+/* ── Responsive Typography & Spacing ── */
+@media (max-width: 768px) {
+  :root {
+    --text-display: 2rem;
+    --text-h1: 1.75rem;
+    --text-h2: 1.5rem;
+    --text-h3: 1.25rem;
+    --text-h4: 1.125rem;
+    --text-body-lg: 1rem;
+    --text-body: 0.875rem;
+    --text-caption: 0.8125rem;
+
+    --tracking-display: -0.8px;
+    --tracking-h1: -0.6px;
+    --tracking-h2: -0.4px;
+    --tracking-h3: -0.2px;
+    --tracking-h4: normal;
+
+    --navbar-height: var(--navbar-height-mobile);
+    --navbar-padding-x: var(--navbar-padding-x-mobile);
+    --page-gutter: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --text-display: 1.75rem;
+    --text-h1: 1.5rem;
+    --text-h2: 1.25rem;
+    --text-h3: 1.125rem;
+    --text-h4: 1rem;
+
+    --tracking-display: -0.5px;
+    --tracking-h1: -0.4px;
+    --page-gutter: 18px;
+  }
+}

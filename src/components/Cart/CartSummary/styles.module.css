@@ -1,0 +1,76 @@
+.summary {
+  background: var(--color-white-bright);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.title {
+  font-size: var(--text-h4);
+  font-weight: var(--weight-bold);
+  margin: 0 0 var(--spacing-lg) 0;
+  color: var(--color-text-primary);
+  letter-spacing: var(--tracking-h4);
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-body);
+  color: var(--color-text-muted);
+}
+
+.totalRow {
+  color: var(--color-text-primary);
+  font-weight: var(--weight-bold);
+  font-size: 1.125rem;
+}
+
+.totalRow span:last-child {
+  color: var(--accent);
+}
+
+.freeShipping {
+  font-size: var(--text-label);
+  color: var(--color-tile-emerald);
+  background: var(--color-emerald-dim);
+  padding: var(--space-2) 10px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-weight: var(--weight-semibold);
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-glass-border);
+  margin: var(--spacing-xs) 0;
+}
+
+.actions {
+  width: 100%;
+  margin-top: var(--spacing-lg);
+}
+
+.checkoutButton {
+  width: 100%;
+}
+
+.shopLink {
+  text-decoration: none;
+  display: block;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .summary {
+    position: static;
+    margin-top: var(--spacing-lg);
+  }
+}

@@ -1,0 +1,146 @@
+.carousel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(135deg, var(--color-accent-surface) 0%, var(--color-accent-surface-hover) 100%);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .viewport {
+    aspect-ratio: 1 / 1;
+  }
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(28px) saturate(1.2);
+  transform: scale(1.15);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+}
+
+.image {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  z-index: 1;
+}
+
+.dots {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-border-light);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    background var(--transition-base),
+    transform var(--transition-base),
+    width var(--transition-base);
+}
+
+.dot:hover {
+  background: var(--color-accent-soft, rgba(var(--color-accent-rgb), 0.4));
+}
+
+.dotActive {
+  background: var(--color-accent);
+  width: 24px;
+  border-radius: var(--radius-full);
+}
+
+.dotActive:hover {
+  background: var(--color-accent);
+}
+
+/* ── Continuous marquee mode (autoScroll) ───────────────────────────── */
+.marqueeViewport {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.marqueeViewport:hover .marqueeTrack,
+.marqueeViewport:focus-within .marqueeTrack {
+  animation-play-state: paused;
+}
+
+.marqueeTrack {
+  display: flex;
+  gap: var(--space-4);
+  width: max-content;
+  animation: gallery-marquee 36s linear infinite;
+}
+
+.marqueeGroup {
+  display: flex;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+.slide {
+  position: relative;
+  width: 320px;
+  aspect-ratio: 4 / 3;
+  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--color-accent-surface) 0%, var(--color-accent-surface-hover) 100%);
+}
+
+.slideImg {
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .slide {
+    width: 240px;
+    aspect-ratio: 1 / 1;
+  }
+}
+
+@keyframes gallery-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 6px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marqueeTrack {
+    animation: none;
+  }
+}

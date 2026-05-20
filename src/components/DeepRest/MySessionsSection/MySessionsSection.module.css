@@ -1,0 +1,130 @@
+.sessionsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.section {
+  width: 100%;
+}
+
+.contentWrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 2rem 1rem;
+}
+
+@media (max-width: 480px) {
+  .center {
+    padding: var(--space-5) var(--space-3);
+  }
+}
+
+@media (max-width: 900px) {
+  .sessionsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .sessionsGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+}
+
+.addSessionCard {
+  border-radius: 28px;
+  box-shadow: var(--color-card-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 3rem 2rem;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  min-height: 44px;
+  border: 2px dashed var(--color-border-accent);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.addSessionCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(var(--color-accent-rgb), 0.1);
+  background: var(--color-background);
+  border-color: var(--color-accent);
+  border-style: solid;
+}
+
+.addIcon {
+  color: var(--color-accent);
+  margin-bottom: 0.5rem;
+}
+
+.addTitle {
+  font-size: var(--text-h4);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.addText {
+  font-size: var(--text-body);
+  color: var(--color-text-slate-400);
+  margin: 0;
+}
+
+.btnRectangle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 2.5rem;
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-body);
+  text-decoration: none;
+  transition: all var(--transition-slow);
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(var(--color-accent-rgb), 0.3);
+}
+
+.btnRectangle:hover {
+  background: var(--color-accent);
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(var(--color-accent-rgb), 0.4);
+}
+
+.paginationWrapper {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.errorText {
+  color: var(--color-error-hover);
+  font-weight: var(--weight-medium);
+  margin-bottom: 1rem;
+}

@@ -1,0 +1,344 @@
+.loaderWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--margin-xl);
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    align-items: stretch;
+  }
+}
+
+.header h2 {
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  margin: 0;
+  color: var(--color-foreground);
+}
+
+.addButton {
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: var(--weight-semibold);
+  font-size: 0.95rem;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-btn-primary);
+}
+
+.addButton:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-btn-primary-hover);
+}
+
+@media (max-width: 768px) {
+  .addButton {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--margin-lg);
+}
+
+.card {
+  background: var(--color-white-bright);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-xl);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--color-card-shadow);
+  transition: all var(--transition-slow);
+}
+
+.card:hover {
+  box-shadow: var(--color-card-shadow-hover);
+  border-color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .card {
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+}
+
+.therapistInfo {
+  display: flex;
+  gap: var(--spacing-lg);
+  flex: 1;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .therapistInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+}
+
+.therapistImage {
+  width: 90px;
+  height: 90px;
+  border-radius: var(--radius-xl);
+  object-fit: cover;
+  background: var(--color-accent-dim);
+  border: 4px solid var(--color-white-bright);
+  flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(var(--color-accent-rgb), 0.15);
+}
+
+@media (max-width: 768px) {
+  .therapistImage {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.details h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-foreground);
+  letter-spacing: -0.02em;
+}
+
+.qualifications {
+  color: var(--color-accent);
+  font-size: 0.9rem;
+  font-weight: var(--weight-semibold);
+  margin: 0;
+}
+
+.infoRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  color: var(--color-text-slate-400);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  align-items: center;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.infoItem strong {
+  color: var(--color-text-primary);
+  font-weight: var(--weight-bold);
+  margin-right: var(--space-1);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.chip {
+  background: var(--color-accent-dim);
+  color: var(--color-accent);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  border: 1px solid transparent;
+  transition: all var(--transition-base);
+}
+
+.chip:hover {
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+.editButton {
+  background: var(--color-accent-surface);
+  color: var(--color-accent);
+  border: 1px solid var(--color-border-accent);
+  padding: var(--space-3) 18px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-decoration: none;
+  display: inline-block;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+}
+
+.editButton:hover {
+  background: var(--color-accent-dim);
+  border-color: var(--color-accent);
+}
+
+.slotsButton {
+  background: var(--color-accent-surface);
+  color: var(--color-accent);
+  border: 1px solid var(--color-border-accent);
+  padding: var(--space-3) 18px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-decoration: none;
+  display: inline-block;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+}
+
+.slotsButton:hover {
+  background: var(--color-info-dim);
+  color: var(--color-info);
+  border-color: var(--color-info);
+}
+
+.deleteButton {
+  background: var(--color-error-dim);
+  color: var(--color-destructive);
+  border: 1px solid var(--color-error-border);
+  padding: var(--space-3) 18px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-caption);
+}
+
+.deleteButton:hover {
+  background: var(--color-error-dim);
+  border-color: var(--color-destructive);
+}
+
+.confirmOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-overlay-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.confirmDialog {
+  background: var(--color-white-bright);
+  border: 1px solid var(--color-border-light);
+  padding: 28px;
+  border-radius: var(--radius-2xl);
+  max-width: 440px;
+  width: 100%;
+  box-shadow: var(--shadow-xl);
+}
+
+.confirmDialog h3 {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--text-h3);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
+}
+
+.confirmDialog p {
+  margin: 0 0 var(--space-6) 0;
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}
+
+.confirmError {
+  color: var(--color-error-border);
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--text-caption);
+}
+
+.confirmActions {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: flex-end;
+}
+
+.confirmButton {
+  padding: 10px 20px;
+  background: var(--color-error);
+  color: var(--color-text-on-dark);
+  border: none;
+  border-radius: var(--radius);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.confirmButton:hover {
+  background: var(--color-error-hover);
+}
+
+.cancelButton {
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.cancelButton:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-background-page);
+}
+
+.paginationWrap {
+  margin-top: var(--spacing-xl);
+  display: flex;
+  justify-content: center;
+}

@@ -1,0 +1,476 @@
+.card {
+  background: var(--color-background-white, var(--color-background));
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  overflow: visible;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 20px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 12px;
+  }
+}
+
+.mainInfo {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .mainInfo {
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .headerRight {
+    justify-content: flex-end;
+    gap: 8px;
+  }
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+@media (max-width: 768px) {
+  .titleGroup {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .badge {
+    display: block;
+    font-size: 11px;
+    line-height: 1.4;
+    letter-spacing: 0.3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .badge {
+    font-size: 10.5px;
+  }
+}
+
+.separator {
+  color: var(--color-border-light-hover);
+}
+
+@media (max-width: 768px) {
+  .separator {
+    display: none;
+  }
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 20px;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 18px;
+  }
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Icons */
+.graphIconWrapper {
+  width: 48px;
+  height: 48px;
+  background: var(--color-accent-surface);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .graphIconWrapper {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.graphIcon {
+  font-size: 24px;
+  color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .graphIcon {
+    font-size: 20px;
+  }
+}
+
+.bedIconWrapper {
+  width: 40px;
+  height: 40px;
+  background: var(--color-accent-surface);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .bedIconWrapper {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+}
+
+.bedIcon {
+  font-size: 20px;
+  color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .bedIcon {
+    font-size: 16px;
+  }
+}
+
+/* Content */
+.content {
+  margin-top: -8px;
+}
+
+.description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  max-width: 600px;
+  margin: 0;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+}
+
+.lastAssessed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 768px) {
+  .lastAssessed {
+    font-size: 13px;
+  }
+}
+
+.clockIcon {
+  font-size: 20px;
+  color: var(--color-accent-soft);
+}
+
+.ctaGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .ctaGroup {
+    width: 100%;
+    align-items: stretch;
+  }
+}
+
+.viewPlanBtn {
+  background: var(--color-accent-hover);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(94, 53, 177, 0.2);
+  white-space: nowrap;
+}
+
+.viewPlanBtn:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(94, 53, 177, 0.3);
+}
+
+@media (max-width: 768px) {
+  .viewPlanBtn {
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 14px;
+    text-align: center;
+  }
+}
+
+.tooltip {
+  background: white;
+  border: 1px solid var(--color-background-alt);
+  padding: 12px 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 280px;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.viewPlanBtn:hover + .tooltip,
+.tooltip:hover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.tooltip::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 40px;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-left: 1px solid var(--color-background-alt);
+  border-top: 1px solid var(--color-background-alt);
+  transform: rotate(45deg);
+}
+
+/* Tooltip is a desktop hover affordance; on touch devices there's no
+   hover, and leaving it `position: static; visibility: hidden` made
+   it occupy invisible layout space (a large empty gap between the
+   button and the severity banner) plus a brief tap-triggered hover
+   flash. Drop it from the layout entirely on mobile. */
+@media (max-width: 768px) {
+  .tooltip {
+    display: none;
+  }
+}
+
+.sparkleIcon {
+  font-size: 18px;
+  color: var(--color-accent-light);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tooltip p {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+/* Banner */
+.banner {
+  background: var(--banner-bg);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .banner {
+    padding: 14px 16px;
+    gap: 12px;
+    align-items: flex-start;
+  }
+}
+
+.bannerIconWrapper {
+  width: 32px;
+  height: 32px;
+  background: var(--banner-icon-bg);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--banner-icon-border);
+}
+
+.bannerIcon {
+  font-size: 16px;
+  color: var(--banner-icon-color);
+}
+
+.bannerText {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--banner-text);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .bannerText {
+    font-size: 13px;
+  }
+}
+
+.bannerText b,
+.bannerText strong {
+  font-weight: 700;
+  color: var(--banner-text-strong);
+}
+
+/* Calm wellness palette per severity band — no warning/error/success cues.
+   Severity is still distinguishable visually (mauve/slate/sage/mint), but
+   the dashboard never feels alarming regardless of the user's result. */
+.bannerSevere {
+  --banner-bg: var(--color-calm-severe-bg);
+  --banner-icon-bg: var(--color-background);
+  --banner-icon-border: var(--color-calm-severe-bg);
+  --banner-icon-color: var(--color-calm-severe);
+  --banner-text: var(--color-text-body);
+  --banner-text-strong: var(--color-calm-severe-text);
+}
+
+.bannerModerate {
+  --banner-bg: var(--color-calm-moderate-bg);
+  --banner-icon-bg: var(--color-background);
+  --banner-icon-border: var(--color-calm-moderate-bg);
+  --banner-icon-color: var(--color-calm-moderate);
+  --banner-text: var(--color-text-body);
+  --banner-text-strong: var(--color-calm-moderate-text);
+}
+
+.bannerMild {
+  --banner-bg: var(--color-calm-mild-bg);
+  --banner-icon-bg: var(--color-background);
+  --banner-icon-border: var(--color-calm-mild-bg);
+  --banner-icon-color: var(--color-calm-mild);
+  --banner-text: var(--color-text-body);
+  --banner-text-strong: var(--color-calm-mild-text);
+}
+
+.bannerNone {
+  --banner-bg: var(--color-calm-none-bg);
+  --banner-icon-bg: var(--color-background);
+  --banner-icon-border: var(--color-calm-none-bg);
+  --banner-icon-color: var(--color-calm-none);
+  --banner-text: var(--color-text-body);
+  --banner-text-strong: var(--color-calm-none-text);
+}
+
+/* Not started state specific */
+.startBtn {
+  background: var(--color-accent-light);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  width: fit-content;
+  transition: all 0.2s ease;
+}
+
+.startBtn:hover {
+  background: var(--color-accent-secondary);
+  transform: translateY(-1px);
+}

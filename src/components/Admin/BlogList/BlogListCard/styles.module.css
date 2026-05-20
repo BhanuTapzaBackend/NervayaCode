@@ -1,0 +1,229 @@
+.card {
+  display: flex;
+  gap: 20px;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  transition: border-color 0.18s ease;
+}
+
+.card:hover {
+  border-color: var(--color-border-light-hover);
+}
+
+.imageWrapper {
+  position: relative;
+  flex-shrink: 0;
+  width: 214px;
+  height: 138px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: linear-gradient(180deg, var(--color-border-light) 0%, var(--color-text-disabled) 100%);
+}
+
+.image {
+  object-fit: cover;
+}
+
+.noImage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 0.84rem;
+  font-weight: var(--weight-semibold);
+}
+
+.statusBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: var(--weight-bold);
+  border: 1px solid transparent;
+  backdrop-filter: blur(8px);
+}
+
+.published {
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--color-success);
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+.draft {
+  background: rgba(245, 158, 11, 0.14);
+  color: var(--color-warning);
+  border-color: rgba(245, 158, 11, 0.26);
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.blogTitle {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.35rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  color: var(--color-text-secondary);
+  font-size: 0.83rem;
+  font-weight: var(--weight-semibold);
+}
+
+.author,
+.date,
+.readTime {
+  display: inline-flex;
+  align-items: center;
+}
+
+.author::after,
+.date::after {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: rgba(148, 163, 184, 0.7);
+  margin-left: var(--space-4);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--space-2);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-accent);
+  background: rgba(var(--color-accent-rgb), 0.09);
+  color: var(--color-accent-hover);
+  font-size: 0.76rem;
+  font-weight: var(--weight-bold);
+}
+
+.moreTag {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  font-weight: var(--weight-semibold);
+  padding: 0 var(--space-2);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.editButton,
+.deleteButton {
+  min-width: 98px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 0.84rem;
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.editButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-radius: 10px;
+  background: var(--color-accent-surface);
+  border: 1px solid var(--color-border-accent);
+  color: var(--color-accent-hover);
+  font-size: 0.85rem;
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.editButton:hover {
+  background: var(--color-accent-dim);
+  border-color: var(--color-accent);
+}
+
+.deleteButton {
+  background: var(--color-error-dim);
+  color: var(--color-error-hover);
+  border-color: rgba(239, 68, 68, 0.28);
+}
+
+.deleteButton:hover {
+  background: rgba(239, 68, 68, 0.12);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 900px) {
+  .card {
+    flex-direction: column;
+  }
+
+  .imageWrapper {
+    width: 100%;
+    height: 190px;
+  }
+
+  .actions {
+    flex-direction: row;
+  }
+
+  .editButton,
+  .deleteButton {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    border-radius: 14px;
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .blogTitle {
+    font-size: 1.12rem;
+  }
+}

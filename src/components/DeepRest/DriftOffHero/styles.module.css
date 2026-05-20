@@ -1,0 +1,138 @@
+.card {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(var(--color-glass-blur));
+  -webkit-backdrop-filter: blur(var(--color-glass-blur));
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-2xl);
+  transition: all var(--transition-base);
+  margin-bottom: 0;
+  color: var(--color-foreground);
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .card {
+    padding: var(--spacing-xl);
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-xl);
+  }
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-glass-border);
+}
+
+.heroVideoCard {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  border: 1px solid var(--color-glass-border);
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .heroVideoCard {
+    border-radius: var(--radius-xl);
+  }
+}
+
+.heroVideoWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.heroPlayerAbsolute {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.heroVideoOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: var(--spacing-xl);
+  width: 100%;
+  background: linear-gradient(to top, var(--color-overlay-dark), transparent);
+  color: var(--color-foreground);
+  z-index: 10;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .heroVideoOverlay {
+    padding: var(--spacing-md);
+  }
+}
+
+.heroVideoOverlayTitle {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--weight-semibold);
+  text-shadow: 0 2px 4px var(--color-overlay-dark);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+@media (max-width: 480px) {
+  .heroVideoOverlayTitle {
+    font-size: var(--font-size-lg);
+  }
+}
+
+.heroVideoOverlayAuthor {
+  margin: 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+}
+
+.heroPlayButton {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-white-bright);
+  color: var(--accent);
+  width: 48px;
+  height: 48px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 15px var(--color-overlay);
+  z-index: 11;
+}
+
+.heroPlayButtonIcon {
+  margin-left: var(--spacing-xs);
+}
+
+.freeBadge {
+  background: var(--color-white-dim);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  margin-left: var(--spacing-sm);
+}
+
+.videoTitleDot {
+  color: var(--color-emerald-400);
+}

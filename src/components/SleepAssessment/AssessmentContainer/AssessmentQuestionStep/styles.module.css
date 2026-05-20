@@ -1,0 +1,11 @@
+.questionWrapper {
+  min-height: 320px;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .questionWrapper {
+    min-height: 0;
+  }
+}

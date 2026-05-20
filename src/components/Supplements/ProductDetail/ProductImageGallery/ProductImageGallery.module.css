@@ -1,0 +1,79 @@
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.mainWrapper {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--color-glass-border);
+}
+
+.badge {
+  position: absolute;
+  top: var(--space-5);
+  left: var(--space-5);
+  background: linear-gradient(135deg, var(--color-error) 0%, var(--color-error-hover) 100%);
+  color: var(--color-text-on-dark);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: var(--weight-bold);
+  z-index: 2;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.mainImage {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  display: block;
+}
+
+.thumbnails {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.thumb {
+  padding: 0;
+  border: 2px solid var(--color-glass-border);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  background: none;
+  transition: all var(--transition-base) ease;
+}
+
+.thumb:hover {
+  border-color: var(--color-border-light-hover);
+}
+
+.thumb.active {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
+}
+
+.thumbImage {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .thumbImage {
+    width: 60px;
+    height: 60px;
+  }
+
+  .badge {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+}

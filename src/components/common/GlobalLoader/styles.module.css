@@ -1,0 +1,61 @@
+.root {
+  --loader-width: 120px;
+  --loader-height: 120px;
+  --loader-accent: var(--color-accent);
+  --loader-size: clamp(20px, calc(var(--loader-width) * 0.34), 74px);
+  --loader-stroke: max(2px, calc(var(--loader-size) * 0.12));
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-inline: auto;
+}
+
+/* For full-page OR full-container loading: It stays INSIDE the layout flow */
+.container {
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 2rem;
+  flex: 1;
+}
+
+.inline {
+  width: auto;
+  min-height: 0;
+}
+
+.shell {
+  width: var(--loader-size);
+  height: var(--loader-size);
+  display: block;
+}
+
+.spinner {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: var(--radius-full);
+  border: var(--loader-stroke) solid var(--color-accent-dim);
+  border-top-color: var(--loader-accent);
+  animation: spin 0.85s linear infinite;
+}
+
+.label {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: var(--weight-medium);
+  color: var(--color-foreground, var(--color-background));
+  letter-spacing: 0.02em;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

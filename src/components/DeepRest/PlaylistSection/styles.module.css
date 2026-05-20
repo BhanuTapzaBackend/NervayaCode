@@ -1,0 +1,160 @@
+.card {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.playlistHeader {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+@media (max-width: 480px) {
+  .playlistHeader {
+    margin-bottom: var(--spacing-lg);
+  }
+}
+
+.accessBadge {
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+  padding: var(--space-3) var(--space-5);
+  border-radius: 10px;
+  font-weight: var(--weight-bold);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 10px rgba(var(--color-accent-rgb), 0.2);
+  transition: all var(--transition-slow);
+}
+
+.accessBadge:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+}
+
+.playlistGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 768px) {
+  .playlistGrid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-5);
+  }
+}
+
+@media (max-width: 480px) {
+  .playlistGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+}
+
+.videoCard {
+  background: var(--color-background);
+  border: 1px solid var(--color-border-light);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 16/9;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.videoCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: var(--color-accent);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.videoCardContent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: var(--space-5);
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.4) 60%, transparent 100%);
+}
+
+.videoTitle {
+  font-size: var(--text-h4);
+  font-weight: 800;
+  color: var(--color-text-on-dark);
+  line-height: var(--leading-heading);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem 0;
+}
+
+.videoDuration {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  padding: 6px var(--space-4);
+  border-radius: var(--radius);
+  font-size: var(--text-label);
+  font-weight: var(--weight-bold);
+  position: absolute;
+  top: var(--space-5);
+  right: var(--space-5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--color-text-on-dark);
+  z-index: 2;
+}
+
+.playlistVideoWrapper {
+  height: 100%;
+  background: var(--color-text-primary);
+  position: relative;
+}
+
+.playlistPlayIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-accent);
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(var(--color-accent-rgb), 0.4);
+  z-index: 2;
+  transition: all var(--transition-slow);
+  border: 2px solid var(--color-text-on-dark);
+}
+
+.playlistPlayIcon:hover {
+  transform: translate(-50%, -50%) scale(1.15) rotate(5deg);
+  background: var(--color-accent-hover);
+}
+
+.videoCardAuthor {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: var(--weight-semibold);
+}
+
+.freeBadgeSmall {
+  background: var(--color-white-dim);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  margin-left: var(--spacing-sm);
+}

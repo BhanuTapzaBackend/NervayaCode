@@ -1,0 +1,18 @@
+.container {
+  padding: var(--spacing-lg, 24px) var(--spacing-md, 16px) var(--spacing-2xl, 64px);
+  color: var(--color-text-on-dark);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--spacing-md, 16px) var(--spacing-md, 16px) var(--spacing-xl, 32px);
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: var(--spacing-sm, 12px) var(--spacing-sm, 12px) var(--spacing-lg, 24px);
+  }
+}

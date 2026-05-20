@@ -1,0 +1,101 @@
+.whatAreCard {
+  background: var(--color-accent-surface-soft);
+  border: 1px solid var(--color-accent-surface-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-8);
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 1024px) {
+  .whatAreCard {
+    padding: var(--spacing-xl);
+    gap: var(--spacing-xl);
+  }
+}
+
+@media (max-width: 768px) {
+  .whatAreCard {
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-xl);
+    gap: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .whatAreCard {
+    flex-direction: column;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    gap: var(--spacing-md);
+  }
+}
+
+.whatAreIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-dim);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-4xl);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .whatAreIcon {
+    width: 40px;
+    height: 40px;
+    font-size: var(--font-size-3xl);
+  }
+}
+
+.whatAreContent {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.whatAreText {
+  margin: 0;
+  font-size: var(--font-size-base);
+  line-height: 1.7;
+  color: var(--color-text-muted);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+@media (max-width: 480px) {
+  .whatAreText {
+    font-size: var(--font-size-sm);
+  }
+}
+
+.whatAreAction {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .whatAreAction {
+    width: 100%;
+    margin-top: var(--spacing-sm);
+  }
+
+  .whatAreAction > a {
+    width: 100%;
+  }
+}

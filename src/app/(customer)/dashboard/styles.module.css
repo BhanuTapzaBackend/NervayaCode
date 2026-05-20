@@ -1,0 +1,200 @@
+.container {
+  color: var(--color-text-primary);
+  padding: 0 var(--page-gutter) var(--space-9);
+  min-height: 70vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 var(--space-4) var(--space-7);
+  }
+}
+
+.welcomeHero {
+  margin-bottom: var(--space-8);
+  padding: var(--space-9) 0 var(--space-8);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+  position: relative;
+}
+
+@media (max-width: 480px) {
+  .welcomeHero {
+    margin-bottom: var(--space-6);
+    padding: var(--space-7) 0 var(--space-6);
+  }
+}
+
+.welcomeHero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100px;
+  right: -100px;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+@media (max-width: 480px) {
+  .welcomeHero::before {
+    left: -20px;
+    right: -20px;
+  }
+}
+
+.loadingContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-10) var(--space-8);
+  min-height: 400px;
+}
+
+@media (max-width: 768px) {
+  .loadingContainer {
+    padding: 60px var(--space-6);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .loadingContainer {
+    padding: var(--space-8) 20px;
+    gap: var(--space-5);
+  }
+}
+
+.errorRow {
+  margin: 0 0 var(--space-6) 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: 14px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--color-error-dim);
+  border: none;
+  border-left: 3px solid var(--color-error);
+  color: var(--color-error);
+  font-size: var(--text-body);
+}
+
+.retryBtn {
+  padding: 10px var(--space-5);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-foreground);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-caption);
+  cursor: pointer;
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    transform var(--transition-base);
+  flex-shrink: 0;
+}
+
+.retryBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.assessmentRow {
+  margin-bottom: var(--space-6);
+}
+
+.tilesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+@media (max-width: 1024px) {
+  .tilesGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+}
+
+@media (max-width: 770px) {
+  .tilesGrid {
+    grid-template-columns: 1fr;
+    margin-bottom: var(--space-7);
+  }
+}
+
+@media (max-width: 480px) {
+  .tilesGrid {
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+}
+
+.recentActivitySection {
+  width: 100%;
+}
+
+.emptyNote {
+  margin-top: var(--space-8);
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+  border: 1px dashed var(--color-text-disabled);
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .emptyNote {
+    margin-top: var(--space-6);
+    padding: var(--space-6);
+  }
+}
+
+.emptyNote p {
+  margin: 0 0 var(--space-5) 0;
+  color: var(--color-text-primary);
+  font-size: var(--text-body-lg);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-relaxed);
+}
+
+@media (max-width: 480px) {
+  .emptyNote p {
+    font-size: var(--text-body);
+  }
+}
+
+.muted {
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-normal);
+}
+
+.inlineHint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: opacity var(--transition-base);
+}
+
+.inlineHint:hover {
+  opacity: 0.8;
+}
+
+.accent {
+  color: var(--color-accent);
+}

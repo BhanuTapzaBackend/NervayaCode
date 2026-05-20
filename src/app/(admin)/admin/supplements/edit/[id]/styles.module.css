@@ -1,0 +1,59 @@
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  background: transparent;
+  min-height: calc(100vh - 100px);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: var(--weight-semibold);
+  transition: all var(--transition-base);
+}
+
+.error {
+  background: var(--color-error-dim);
+  color: var(--color-error-hover);
+  padding: 1rem;
+  border-radius: var(--radius);
+}
+
+.backButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 12px var(--color-accent-dim);
+}
+
+.backButton:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--color-accent-dim);
+}
+
+@media (max-width: 768px) {
+  .backLink {
+    width: 100%;
+  }
+}

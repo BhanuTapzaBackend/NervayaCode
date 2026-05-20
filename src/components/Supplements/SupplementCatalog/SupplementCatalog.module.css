@@ -1,0 +1,23 @@
+.catalog {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.main {
+  width: 100%;
+  min-width: 0;
+}
+
+.paginationWrap {
+  margin-top: var(--space-7);
+  display: flex;
+  justify-content: center;
+}

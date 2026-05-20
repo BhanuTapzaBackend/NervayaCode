@@ -1,0 +1,387 @@
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: 0;
+}
+
+.topActions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-background);
+  color: var(--color-text-slate-400);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: var(--weight-semibold);
+  transition:
+    border-color var(--transition-base),
+    color var(--transition-base),
+    transform var(--transition-base);
+}
+
+.backLink:hover {
+  border-color: rgba(var(--color-accent-rgb), 0.45);
+  color: var(--color-accent-hover);
+  transform: translateX(-1px);
+}
+
+.backLink svg {
+  width: 17px;
+  height: 17px;
+}
+
+.form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: var(--color-background);
+  box-shadow: 0 20px 42px rgba(15, 23, 42, 0.08);
+  padding: var(--space-6);
+}
+
+.errorMessage {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-error-border);
+  background: rgba(254, 242, 242, 0.95);
+  color: var(--color-error-hover);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  margin-bottom: var(--space-6);
+  align-items: stretch;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.label {
+  font-size: 0.88rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.required {
+  color: var(--color-error);
+  margin-left: var(--space-1);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: 0.94rem;
+  font-family: inherit;
+  transition: border-color var(--transition-base);
+}
+
+.input {
+  height: 44px;
+  padding: 0 var(--space-4);
+}
+
+.input:hover,
+.textarea:hover {
+  border-color: var(--color-border-light-hover);
+}
+
+.textarea {
+  min-height: 92px;
+  resize: vertical;
+  line-height: 1.55;
+  padding: var(--space-4) 14px;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border: 2px solid var(--color-accent);
+  padding-left: 11px; /* Offset for 2px border */
+  padding-right: 11px;
+}
+
+.textarea:focus {
+  padding-top: 11px;
+}
+
+.select {
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.select button,
+.select [role='button'] {
+  height: var(--input-height);
+  min-height: var(--input-height);
+  box-sizing: border-box;
+}
+
+.orderWarning {
+  color: var(--color-error);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  margin-top: var(--space-2);
+}
+
+.fieldHint {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+  line-height: 1.5;
+}
+
+.optionsSection {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.optionsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.optionsTitle {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.05rem;
+}
+
+.addOptionButton {
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border-accent);
+  background: var(--color-accent-dim);
+  color: var(--color-accent-hover);
+  font-size: 0.82rem;
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  transition:
+    transform var(--transition-base),
+    background var(--transition-base);
+}
+
+.addOptionButton:hover {
+  background: rgba(var(--color-accent-rgb), 0.16);
+  transform: translateY(-1px);
+}
+
+.addOptionButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+.optionsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.optionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.optionNumber {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.24);
+  background: rgba(var(--color-accent-rgb), 0.09);
+  color: var(--color-accent-hover);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: var(--weight-bold);
+  flex-shrink: 0;
+}
+
+.optionInputs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.optionInputs .input {
+  width: 100%;
+}
+
+.removeOptionButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--color-error-border);
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--color-error-hover);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    transform var(--transition-base),
+    background var(--transition-base);
+  flex-shrink: 0;
+}
+
+.removeOptionButton:hover {
+  background: rgba(239, 68, 68, 0.14);
+  transform: translateY(-1px);
+}
+
+.removeOptionButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+.formActions {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border-light);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-4);
+}
+
+.cancelButton,
+.submitButton {
+  height: 44px;
+  min-width: 124px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  border-radius: 11px;
+  padding: 0 18px;
+  font-size: 0.88rem;
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    background var(--transition-base);
+}
+
+.cancelButton {
+  border: 1px solid var(--color-border-light);
+  background: var(--color-background);
+  color: var(--color-text-slate-400);
+}
+
+.cancelButton:hover {
+  border-color: rgba(var(--color-accent-rgb), 0.45);
+  color: var(--color-accent-hover);
+}
+
+.submitButton {
+  border: none;
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+  box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.24);
+}
+
+.submitButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(var(--color-accent-rgb), 0.3);
+}
+
+.submitButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 900px) {
+  .formRow {
+    grid-template-columns: 1fr;
+    margin-bottom: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .topActions {
+    width: 100%;
+  }
+
+  .backLink {
+    width: 100%;
+  }
+
+  .form {
+    border-radius: var(--radius-xl);
+    padding: 18px;
+  }
+
+  .optionsHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .addOptionButton {
+    width: 100%;
+  }
+
+  .formActions {
+    flex-direction: column-reverse;
+  }
+
+  .cancelButton,
+  .submitButton {
+    width: 100%;
+  }
+}

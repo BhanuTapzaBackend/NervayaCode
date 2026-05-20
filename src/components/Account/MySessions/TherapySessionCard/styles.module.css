@@ -1,0 +1,201 @@
+.sessionCard {
+  position: relative;
+  background: var(--color-background);
+  border: 1px solid var(--color-border-light);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  gap: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.sessionCard:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 768px) {
+  .sessionCard {
+    flex-direction: column;
+    padding: 16px;
+  }
+}
+
+.statusTag {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  text-transform: capitalize;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--color-indigo-border-light);
+  color: var(--color-indigo-600);
+}
+
+.statusTag[data-status='completed'] {
+  background: var(--color-success-dim);
+  color: #047857;
+}
+
+.statusTag[data-status='cancelled'] {
+  background: var(--color-error-dim);
+  color: var(--color-error-hover);
+}
+
+.cardImagePlaceholder {
+  width: 140px;
+  height: 140px;
+  background-color: var(--color-background-page);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  position: relative;
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'><path fill='%23cbd5e1' d='M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+@media (max-width: 768px) {
+  .cardImagePlaceholder {
+    width: 100%;
+    height: 180px;
+  }
+}
+
+.therapistImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.itemTitle {
+  font-size: 20px;
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 4px;
+}
+
+.itemSubtitle {
+  font-size: 14px;
+  font-weight: var(--weight-bold);
+  color: var(--color-accent);
+  margin: 0 0 8px;
+}
+
+.itemDescription {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.infoChips {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  background-color: var(--color-accent-surface);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.chipIconWrap {
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-accent);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-on-dark);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.chipText {
+  display: flex;
+  flex-direction: column;
+}
+
+.chipLabel {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 2px;
+}
+
+.chipValue {
+  font-size: 14px;
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+}
+
+.cardActionsRow {
+  display: flex;
+  gap: 16px;
+  margin-top: auto;
+}
+
+@media (max-width: 768px) {
+  .cardActionsRow {
+    flex-direction: column;
+  }
+}
+
+.primaryActionBtn,
+.secondaryActionBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: var(--radius-lg);
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.primaryActionBtn {
+  background-color: var(--color-accent);
+  color: var(--color-text-on-dark);
+  border: none;
+}
+
+.primaryActionBtn:hover {
+  background-color: var(--color-accent);
+}
+
+.secondaryActionBtn {
+  background-color: var(--color-background);
+  color: var(--color-accent);
+  border: 1px solid var(--color-border-light);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.secondaryActionBtn:hover {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent-surface);
+}
+
+.btnIcon {
+  font-size: 20px;
+}

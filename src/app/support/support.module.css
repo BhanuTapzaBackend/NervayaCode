@@ -1,0 +1,74 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  /* Cancel the global .main-content navbar safe-gap so the full-bleed
+     hero sits flush against the navbar (no white strip on top). */
+  margin-top: calc(var(--navbar-safe-gap) * -1);
+  padding: var(--space-7) var(--space-6);
+  color: var(--color-text-primary);
+  min-height: 70vh;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.pageInner {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.consultation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  animation: fade-up var(--duration-entrance) var(--ease-spring-out) 0.22s both;
+}
+
+.consultationHead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-flex;
+  font-size: var(--text-label);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-accent);
+  background: var(--color-accent-surface-hover);
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+}
+
+.consultationTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-h2);
+  line-height: var(--leading-snug);
+  color: var(--color-text-primary);
+}
+
+.consultationSubtitle {
+  margin: 0;
+  max-width: 560px;
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-body);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: var(--space-5) var(--space-4);
+  }
+  .pageInner {
+    gap: var(--space-6);
+  }
+}

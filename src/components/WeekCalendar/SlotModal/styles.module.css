@@ -1,0 +1,272 @@
+/* ── Slot detail / create modal ── */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 2px 0;
+}
+
+.dateDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  font-weight: var(--weight-medium);
+  color: var(--color-text-primary, var(--color-text-primary));
+  padding: 8px 12px;
+  background: var(--color-card-bg-light, var(--color-background-page));
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light, var(--color-border-light));
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  color: var(--color-text-primary, var(--color-text-primary));
+}
+
+.select {
+  display: flex;
+  height: 2.25rem;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-light, var(--color-border-light));
+  background-color: var(--color-background, var(--color-background));
+  padding: 0.5rem 0.75rem;
+  font-size: var(--text-caption);
+  color: var(--color-text-primary, var(--color-text-primary));
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  transition: all var(--transition-base);
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-text-primary, var(--color-text-primary));
+  box-shadow: 0 0 0 1px var(--color-text-primary, var(--color-text-primary));
+}
+
+.slotInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.timeRange {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary, var(--color-text-primary));
+}
+
+.statusBadge {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 0.6875rem;
+  font-weight: var(--weight-semibold);
+  border: 1px solid;
+}
+
+.customBadge {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 0.6875rem;
+  font-weight: var(--weight-medium);
+  background: var(--color-accent-dim, rgba(var(--color-accent-rgb), 0.1));
+  color: var(--color-accent, var(--color-accent));
+  border: 1px solid var(--color-indigo-border-light, rgba(79, 70, 229, 0.1));
+}
+
+.lockNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 10px 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-md);
+  font-size: var(--text-label);
+  color: var(--color-text-slate-400, var(--color-text-slate-400));
+  line-height: 1.4;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: var(--weight-medium);
+  height: 2.25rem;
+  padding: 0 1rem;
+  color: var(--color-background-page);
+  background-color: var(--color-text-primary, var(--color-text-primary));
+  border: none;
+  cursor: pointer;
+  transition: opacity var(--transition-base);
+  width: 100%;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.primaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: var(--weight-medium);
+  height: 2.25rem;
+  padding: 0 1rem;
+  border: 1px solid var(--color-border-light, var(--color-border-light));
+  background-color: var(--color-background, var(--color-background));
+  color: var(--color-text-primary, var(--color-text-primary));
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.secondaryBtn:hover:not(:disabled) {
+  background-color: var(--color-background-muted, var(--color-background-alt));
+}
+
+.secondaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dangerBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: var(--weight-medium);
+  height: 2.25rem;
+  padding: 0 1rem;
+  border: none;
+  background-color: var(--color-destructive, var(--color-error));
+  color: var(--color-background-page);
+  cursor: pointer;
+  transition: opacity var(--transition-base);
+}
+
+.dangerBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.dangerBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bookedNote {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted, var(--color-text-secondary));
+  padding: 0.75rem 1rem;
+  background: var(--color-background-muted, var(--color-background-alt));
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-light, var(--color-border-light));
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Meet link section ── */
+.meetLinkSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meetLinkRow {
+  display: flex;
+  gap: 8px;
+}
+
+.meetLinkInput {
+  display: flex;
+  height: 2.25rem;
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-light, var(--color-border-light));
+  background-color: var(--color-background, var(--color-background));
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary, var(--color-text-primary));
+}
+
+.meetLinkInput:focus {
+  outline: none;
+  border-color: var(--color-text-primary, var(--color-text-primary));
+  box-shadow: 0 0 0 1px var(--color-text-primary, var(--color-text-primary));
+}
+
+.meetLinkSaveBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: var(--weight-medium);
+  height: 2.25rem;
+  padding: 0 1rem;
+  border: none;
+  background-color: var(--color-text-primary, var(--color-text-primary));
+  color: var(--color-background-page);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity var(--transition-base);
+}
+
+.meetLinkSaveBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.meetLinkSaveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.meetLinkPreview {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--color-accent, var(--color-accent));
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.meetLinkPreview:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,70 @@
+.container {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.interactive .star {
+  cursor: pointer;
+}
+
+.starButton {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1;
+  color: inherit;
+  transition: transform 0.1s ease;
+}
+
+.starButton:hover {
+  transform: scale(1.12);
+}
+
+.star {
+  color: var(--color-amber-400, var(--color-amber-400));
+}
+
+.star.full {
+  opacity: 1;
+}
+
+.star.half {
+  opacity: 0.6;
+}
+
+.star.empty {
+  color: var(--muted, var(--color-text-tertiary));
+  opacity: 0.5;
+}
+
+.sm .star {
+  font-size: var(--text-caption);
+}
+
+.sm .value {
+  font-size: var(--text-label);
+}
+
+.md .star {
+  font-size: 1rem;
+}
+
+.md .value {
+  font-size: var(--text-caption);
+}
+
+.lg .star {
+  font-size: var(--text-h4);
+}
+
+.lg .value {
+  font-size: 1rem;
+}
+
+.value {
+  margin-left: var(--space-2);
+  color: var(--foreground, var(--color-text-primary));
+  font-weight: var(--weight-medium);
+}

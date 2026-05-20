@@ -1,0 +1,64 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.uploadActions {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: var(--space-3);
+}
+
+.uploadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-width: 180px;
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  background: transparent;
+  border: 1.5px solid var(--color-border-light);
+  color: var(--color-text-muted);
+}
+
+.uploadButton:hover:not(:disabled) {
+  background: var(--color-card-bg-light);
+  border-color: var(--color-border-light-hover);
+  color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.uploadButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.uploadButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 768px) {
+  .uploadButton {
+    width: 100%;
+    padding: 14px var(--space-6);
+  }
+}
+
+.buttonContent {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.buttonContent svg {
+  width: 16px;
+  height: 16px;
+}

@@ -1,0 +1,176 @@
+.editableWrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--spacing-sm, 8px);
+  padding: var(--spacing-xs, 4px);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 4px);
+  transition: all var(--transition-base);
+  min-height: 2.5rem;
+}
+
+.editableWrapper:hover {
+  background: rgba(var(--color-accent-rgb), 0.02);
+  border-color: var(--color-border-light);
+}
+
+.editing {
+  background: white;
+  border-color: var(--color-primary-500, var(--color-accent));
+  padding: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs, 4px);
+  /* opacity: 0; removed to make icons always visible */
+  transition: opacity var(--transition-base);
+}
+
+.editButton {
+  opacity: 0.5;
+  transition: opacity var(--transition-base);
+}
+
+.editableWrapper:hover .editButton,
+.editing .editButton {
+  opacity: 1;
+}
+
+.editButton {
+  background: none;
+  border: none;
+  color: var(--color-primary-400, var(--color-accent-soft));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.editButton:hover {
+  color: var(--color-primary-300, var(--color-accent-surface-border-strong));
+}
+
+/* Tooltip Styling */
+.tooltipRoot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.infoIcon {
+  color: var(--color-primary-300, var(--color-accent-surface-border-strong));
+  font-size: 14px;
+}
+
+.tooltipText {
+  visibility: hidden;
+  width: 220px;
+  background-color: var(--color-slate-800, var(--color-text-primary));
+  color: var(--color-text-on-dark);
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px;
+  position: absolute;
+  z-index: 100;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+  font-size: var(--text-label);
+  font-weight: var(--weight-normal);
+  border: 1px solid var(--color-slate-700, var(--color-text-body));
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+.tooltipRoot:hover .tooltipText {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Input/Textarea Styling */
+.input,
+.textarea {
+  width: 100%;
+  background: white;
+  border: 1px solid var(--color-primary-500);
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  outline: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.displayValue {
+  cursor: text;
+  min-height: 1.5rem;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  text-align: inherit;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  display: block;
+}
+
+.placeholder {
+  color: var(--color-text-slate-500, var(--color-text-secondary));
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* Text Pad (List Editor) */
+.textPadWrapper {
+  margin-top: var(--spacing-sm, 8px);
+}
+
+.textPadHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: var(--color-text-slate-400, var(--color-text-tertiary));
+  font-size: 0.85rem;
+}
+
+.textPadArea {
+  width: 100%;
+  min-height: 120px;
+  background: var(--color-background, var(--color-background));
+  border: 1px solid var(--color-border-light, var(--color-border-light));
+  border-radius: var(--radius-md, 8px);
+  color: var(--color-text-primary, var(--color-text-primary));
+  padding: 12px;
+  font-family: inherit;
+  line-height: 1.6;
+  outline: none;
+  transition: all var(--transition-base);
+}
+
+.textPadArea:focus {
+  border-color: var(--color-primary-500, var(--color-accent));
+}
+
+.hint {
+  font-size: var(--text-label);
+  color: var(--color-text-slate-500, var(--color-text-secondary));
+  margin-top: 4px;
+}

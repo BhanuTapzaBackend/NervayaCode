@@ -1,0 +1,211 @@
+/* ============================================================
+   Assessment Container — Card layout
+   - Mobile  ≤ 770px: full-width card, minimal padding
+   - Tablet  771–1023px: comfortable padding
+   - Desktop ≥ 1024px: capped at min(80%, 1400px), centered
+   ============================================================ */
+
+/* ---------- Card container ----------
+   Base rule is the desktop layout (capped at 720px, centered).
+   Smaller-viewport rules override to full-bleed. This avoids an
+   !important arms race: only the responsive overrides need to win,
+   and the base rule has no inflated specificity. */
+.container {
+  width: 100%;
+  max-width: 720px;
+  box-sizing: border-box;
+  margin: 8px auto 56px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  box-shadow: var(--shadow-lg);
+  padding: 40px 56px;
+}
+
+@media (max-width: 1023px) {
+  .container {
+    max-width: 100%;
+    margin: 4px auto 32px;
+    padding: 32px;
+  }
+}
+
+@media (max-width: 770px) {
+  .container {
+    margin: 12px 0 20px;
+    padding: 20px 16px;
+    border-radius: 16px;
+    min-height: auto;
+    justify-content: flex-start;
+  }
+}
+
+.header {
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 770px) {
+  .header {
+    margin-bottom: 16px;
+  }
+}
+
+.title {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+@media (max-width: 770px) {
+  .title {
+    font-size: 18px;
+  }
+}
+
+.infoIconWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+.infoIcon {
+  color: var(--color-text-tertiary);
+  transition:
+    color var(--transition-base),
+    transform var(--transition-base);
+  display: flex;
+  align-items: center;
+}
+
+.infoIcon:hover {
+  color: var(--color-accent);
+  transform: scale(1.05);
+}
+
+.tooltipContent {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  background: var(--color-card-bg, var(--color-text-primary));
+  color: var(--color-text-primary, var(--color-background));
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 20;
+}
+
+.tooltipContent::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  margin-top: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent var(--color-card-bg, var(--color-text-primary)) transparent transparent;
+}
+
+.tooltipContent::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  margin-top: -7px;
+  border-width: 7px;
+  border-style: solid;
+  border-color: transparent var(--color-border) transparent transparent;
+  z-index: -1;
+}
+
+.infoIconWrapper:hover .tooltipContent {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+}
+
+@media (max-width: 770px) {
+  .tooltipContent {
+    display: none;
+  }
+}
+
+.progressSection {
+  margin-bottom: 48px;
+}
+
+@media (max-width: 770px) {
+  .progressSection {
+    margin-bottom: 20px;
+  }
+}
+
+.questionSection {
+  flex: 0 1 auto;
+  min-height: 280px;
+}
+
+@media (max-width: 770px) {
+  .questionSection {
+    min-height: 0;
+    margin: 4px 0 0;
+  }
+}
+
+.errorMessage {
+  margin-top: 24px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--color-error-dim);
+  background: var(--color-error-dim);
+  color: var(--color-error-hover);
+  font-size: 15px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.emptyState {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 20px;
+  padding: 40px;
+}
+
+.emptyStateIcon {
+  width: 64px;
+  height: 64px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 12px;
+}
+
+.emptyStateIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.emptyStateText {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+  font-weight: 500;
+}

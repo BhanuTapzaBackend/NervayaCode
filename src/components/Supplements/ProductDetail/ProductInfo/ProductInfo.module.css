@@ -1,0 +1,286 @@
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 24px);
+}
+
+.categoryTag {
+  display: inline-block;
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-indigo-400, var(--color-indigo-400));
+  font-weight: var(--weight-medium);
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: var(--weight-bold);
+  margin: 0;
+  color: var(--color-foreground, var(--color-text-primary));
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: var(--font-size-3xl);
+  }
+}
+
+.tagline {
+  font-size: 1.125rem;
+  color: var(--color-text-slate-400, var(--color-text-slate-400));
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+}
+
+.stars {
+  flex-shrink: 0;
+}
+
+.reviewCount {
+  font-size: var(--text-caption);
+  color: var(--color-text-muted, var(--color-text-tertiary));
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--color-border-light, var(--color-border-light));
+  border-bottom: 1px solid var(--color-border-light, var(--color-border-light));
+}
+
+.pricePair {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-lg, 24px);
+  flex-wrap: nowrap;
+}
+
+.originalPrice {
+  font-size: var(--text-h4);
+  color: var(--color-text-muted, var(--color-text-tertiary));
+  text-decoration: line-through;
+}
+
+.price {
+  font-size: 2.25rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-emerald-400, var(--color-emerald-400));
+}
+
+@media (max-width: 768px) {
+  .price {
+    font-size: 1.75rem;
+  }
+}
+
+.savings {
+  font-size: var(--text-caption);
+  color: var(--color-emerald-400, var(--color-emerald-400));
+  font-weight: var(--weight-semibold);
+  background: rgba(52, 211, 153, 0.15);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.description {
+  font-size: var(--font-size-lg);
+  line-height: 1.7;
+  color: var(--color-text-slate-400, var(--color-text-slate-400));
+  margin: 0;
+}
+
+.quantityActionsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg, 24px);
+  flex-wrap: wrap;
+}
+
+.quantityRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.unitLabel {
+  font-size: var(--text-caption);
+  color: var(--color-text-muted, var(--color-text-tertiary));
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-md, 16px);
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .quantityActionsRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+}
+
+.addButton {
+  flex: 1;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%) !important;
+  border: none !important;
+  font-weight: var(--weight-bold) !important;
+  box-shadow: 0 4px 14px rgba(var(--color-accent-rgb), 0.3) !important;
+  transition: all 0.25s ease !important;
+}
+
+.addButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(var(--color-accent-rgb), 0.35) !important;
+}
+
+.buyNowLink {
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .addButton,
+  .buyNowLink {
+    width: 100%;
+  }
+}
+
+.buyNowButton[class] {
+  min-width: 120px;
+  width: 100%;
+  background: var(--color-accent-dim-hover);
+}
+
+.buyNowButton[class]:hover:not(:disabled) {
+  background: var(--color-accent-dim);
+}
+
+.error {
+  color: var(--color-error);
+  background: var(--color-error-dim);
+  border: 1px solid var(--color-error-border);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  border-radius: 10px;
+  font-size: var(--text-caption);
+}
+
+.outOfStockSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+  margin: var(--spacing-md, 16px) 0;
+}
+
+.outOfStockBadge {
+  display: inline-block;
+  align-self: flex-start;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  background: var(--color-error-dim);
+  border: 1px solid var(--color-error-border);
+  color: var(--color-error);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.outOfStockHint {
+  margin: 0;
+  color: var(--color-text-muted, var(--color-text-tertiary));
+  font-size: 0.9rem;
+}
+
+.success {
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: var(--color-emerald-400, var(--color-emerald-400));
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  border-radius: 10px;
+  font-size: var(--text-caption);
+}
+
+.trustBadges {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 1.5rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: var(--spacing-2xl, 40px);
+  border-top: 1px solid var(--color-border-light, var(--color-border-light));
+}
+
+@media (max-width: 768px) {
+  .trustBadges {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    justify-items: center;
+    gap: var(--spacing-lg, 24px);
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+
+  .trustBadges .trustBadgeItem:nth-child(odd):last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  font-size: var(--text-caption);
+  color: var(--color-text-slate-400, var(--color-text-slate-400));
+}
+
+.trustBadgeItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  width: 88px;
+}
+
+@media (max-width: 768px) {
+  .trustBadgeItem {
+    width: 100%;
+    max-width: 120px;
+  }
+}
+
+.trustIconContainer {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trustImage {
+  object-fit: contain;
+}
+
+.trustLabelText {
+  font-size: var(--text-label);
+  color: var(--color-text-slate-400, var(--color-text-slate-400));
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+}

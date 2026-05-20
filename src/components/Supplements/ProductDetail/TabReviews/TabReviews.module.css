@@ -1,0 +1,143 @@
+.content {
+  padding: var(--space-5) 0;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-8) var(--space-6);
+  width: 100%;
+}
+
+.emptyImage {
+  margin-bottom: var(--space-6);
+}
+
+.emptyTitle {
+  font-size: var(--text-h4);
+  font-weight: var(--weight-semibold);
+  color: var(--color-foreground);
+  margin: 0 0 var(--space-3);
+}
+
+.emptyMessage {
+  font-size: var(--text-body);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.loading {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--color-text-secondary);
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-6);
+  min-height: 180px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-8);
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-glass-border);
+}
+
+@media (max-width: 768px) {
+  .summary {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+}
+
+.overall {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ratingNumber {
+  font-size: 2.5rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-foreground);
+}
+
+.reviewCount {
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+}
+
+.distribution {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: 60px 1fr 40px;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.barLabel {
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+}
+
+.barTrack {
+  height: 8px;
+  background: var(--color-glass-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-indigo-400));
+  border-radius: var(--radius-sm);
+  transition: width var(--transition-slow) ease;
+}
+
+.barPercent {
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+  text-align: right;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.retryButton {
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+  border: none;
+  border-radius: var(--radius);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-base) ease;
+}
+
+.retryButton:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+}

@@ -1,0 +1,562 @@
+.emptyState {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+}
+
+/* ─── Questions section top controls ───────────────────── */
+.questionsContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 18px 0 0;
+}
+
+.topActions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.addButton {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 20px;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+  text-decoration: none;
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  box-shadow: 0 4px 12px var(--color-accent-dim);
+  transition: all var(--transition-slow);
+}
+
+.addButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(var(--color-accent-rgb), 0.3);
+}
+
+.loadingContainer {
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Carousel ──────────────────────────────────────────── */
+.carouselContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.progressBar {
+  width: min(1120px, 100%);
+  height: var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-border-light);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  width: var(--progress, 0%);
+  border-radius: inherit;
+  background: var(--gradient-accent);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.questionCounter {
+  margin: var(--space-1) 0 var(--space-1);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1.04rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-text-body);
+}
+
+.currentNum {
+  color: var(--color-accent);
+}
+
+.separator {
+  color: var(--color-text-tertiary);
+}
+
+.totalNum {
+  color: var(--color-text-secondary);
+}
+
+.carouselRow {
+  width: min(1220px, 100%);
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 56px;
+  align-items: center;
+  gap: 26px;
+}
+
+@media (max-width: 768px) {
+  .carouselRow {
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+    gap: 10px;
+  }
+}
+
+.cardViewport {
+  min-width: 0;
+  width: 100%;
+}
+
+.questionCard {
+  width: 100%;
+  border-radius: var(--radius-2xl);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: linear-gradient(180deg, var(--color-background) 0%, var(--color-background-page) 100%);
+  box-shadow: 0 20px 44px rgba(15, 23, 42, 0.1);
+  padding: 34px;
+}
+
+@media (max-width: 768px) {
+  .questionCard {
+    border-radius: 18px;
+    padding: 22px 18px;
+  }
+}
+
+.questionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: 18px;
+}
+
+.orderBadge {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  border: 1.5px solid var(--color-accent-dim);
+  background: var(--color-white-bright);
+  color: var(--color-accent);
+  font-size: 1.125rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.questionMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.typeBadge {
+  height: 36px;
+  padding: 0 var(--space-5);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.single_choice {
+  border-color: rgba(59, 130, 246, 0.3);
+  background: var(--color-info-dim);
+  color: var(--color-info);
+}
+
+.multiple_choice {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: var(--color-success-dim);
+  color: var(--color-success);
+}
+
+.text {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: var(--color-warning-dim);
+  color: var(--color-warning-text);
+}
+
+.scale {
+  border-color: rgba(236, 72, 153, 0.3);
+  background: rgba(236, 72, 153, 0.12);
+  color: var(--color-error-hover);
+}
+
+.questionContent {
+  border-top: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border-light);
+  padding: var(--space-6) 0;
+}
+
+.questionText {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: clamp(1.5rem, 2.2vw, 2.25rem);
+  line-height: 1.35;
+  font-weight: var(--weight-bold);
+}
+
+@media (max-width: 768px) {
+  .questionText {
+    font-size: var(--text-h3);
+  }
+}
+
+.optionsPreview {
+  margin-top: 18px;
+}
+
+.optionsLabel {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.optionsList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.optionItem {
+  padding: var(--space-3) 13px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-background-page);
+  color: var(--color-text-body);
+  font-size: 0.92rem;
+  font-weight: var(--weight-semibold);
+}
+
+.questionActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding-top: 18px;
+}
+
+.editButton,
+.deleteButton {
+  height: 40px;
+  min-width: 110px;
+  border-radius: var(--radius);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.editButton {
+  background: var(--color-accent-dim);
+  border: 1px solid var(--color-accent-dim);
+  color: var(--color-accent);
+}
+
+.editButton:hover {
+  background: var(--color-white-dim);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.deleteButton {
+  background: var(--color-white-bright);
+  border: 1.5px solid var(--color-error-dim);
+  color: var(--color-destructive);
+}
+
+.deleteButton:hover {
+  background: var(--color-error-dim);
+  border-color: var(--color-error-border);
+  transform: translateY(-2px);
+}
+
+.navButton {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-white-bright);
+  color: var(--color-text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 768px) {
+  .navButton {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+.navButton svg {
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-width: 768px) {
+  .navButton svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.navPrev {
+  justify-self: start;
+}
+
+.navNext {
+  justify-self: end;
+}
+
+.navButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: var(--color-white-dim);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  box-shadow: 0 8px 20px var(--color-accent-dim);
+}
+
+.navButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.dotIndicators {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: var(--space-3);
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--radius-full);
+  border: none;
+  padding: 0;
+  background: var(--color-text-disabled);
+  cursor: pointer;
+  transition:
+    transform var(--transition-base),
+    background var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.dot:hover {
+  background: var(--color-accent-soft);
+}
+
+.dotActive {
+  background: var(--color-accent);
+  transform: scale(1.3);
+  box-shadow: 0 0 0 4px rgba(var(--color-accent-rgb), 0.15);
+}
+
+.keyboardHint {
+  margin: 6px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+@media (max-width: 768px) {
+  .keyboardHint {
+    display: none;
+  }
+}
+
+.keyboardHint kbd {
+  min-width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-background);
+  color: var(--color-text-slate-400);
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+}
+
+.cardAnimated {
+  animation-duration: 0.28s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+}
+
+.slideIn {
+  animation-name: slideIn;
+}
+
+.slideOutLeft {
+  animation-name: slideOutLeft;
+}
+
+.slideOutRight {
+  animation-name: slideOutRight;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+
+/* ─── Delete Modal ──────────────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+}
+
+.modal {
+  width: min(460px, 100%);
+  border-radius: 20px;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-background);
+  box-shadow: 0 24px 40px rgba(15, 23, 42, 0.24);
+  padding: var(--space-6);
+}
+
+.modalTitle {
+  margin: 0 0 10px;
+  color: var(--color-text-primary);
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.modalMessage {
+  margin: 0;
+  color: var(--color-text-slate-400);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.modalActions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .modalActions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}
+
+.modalButton {
+  height: 40px;
+  min-width: 98px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  font-size: 0.86rem;
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  transition: transform var(--transition-base);
+}
+
+@media (max-width: 768px) {
+  .modalButton {
+    width: 100%;
+  }
+}
+
+.cancelButton {
+  border-color: var(--color-border-light);
+  background: var(--color-background);
+  color: var(--color-text-slate-400);
+}
+
+.cancelButton:hover {
+  border-color: rgba(var(--color-accent-rgb), 0.35);
+  color: var(--color-accent-hover);
+}
+
+.confirmButton {
+  border-color: rgba(239, 68, 68, 0.38);
+  background: var(--color-error);
+  color: var(--color-text-on-dark);
+}
+
+.confirmButton:hover {
+  transform: translateY(-1px);
+  background: var(--color-error-hover);
+}

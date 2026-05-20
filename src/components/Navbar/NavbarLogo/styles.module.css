@@ -1,0 +1,50 @@
+.navbarLogo {
+  display: flex;
+  align-items: center;
+  height: var(--navbar-height);
+  width: 280px;
+  position: relative;
+  margin-left: 0;
+  overflow: visible;
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  .navbarLogo {
+    width: 200px;
+  }
+}
+
+/* The clickable target is bounded to the navbar height so the
+   (intentionally oversized) logo image can overflow the bar visually
+   without its <Link href="/"> capturing clicks on the UI beneath it
+   (e.g. the sidebar collapse toggle, which was navigating home). */
+.navbarLogo a {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: var(--navbar-height);
+  width: 100%;
+}
+
+/* Old (large) logo kept at its original size so the ™ stays legible.
+   pointer-events: none lets the portion overflowing the navbar fall
+   through to the UI below; clicks inside the bar still hit the <a>. */
+.navbarLogo img {
+  display: block;
+  height: 180px;
+  width: auto;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .navbarLogo img {
+    height: 140px;
+    /* Shift the logo image itself further left on mobile only */
+    transform: translateX(-65px);
+  }
+}

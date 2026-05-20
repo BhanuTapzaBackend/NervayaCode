@@ -1,0 +1,293 @@
+.datePicker {
+  user-select: none;
+  background: var(--color-background);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  font-family: var(--font-inter, 'Inter', sans-serif);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  .datePicker {
+    padding: var(--space-4);
+  }
+}
+
+@media (max-width: 375px) {
+  .datePicker {
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding: 0 0.5rem;
+}
+
+.monthYear {
+  text-align: center;
+}
+
+.monthDisplay {
+  font-size: 1.1rem;
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.navigation {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.navButton {
+  background: var(--color-background-page);
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-secondary);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-size: var(--text-h4);
+  line-height: 1;
+}
+
+.navButton:hover:not(:disabled) {
+  background: var(--color-background);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  box-shadow: 0 2px 8px rgba(var(--color-accent-rgb), 0.15);
+  transform: translateY(-1px);
+}
+
+.navButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.navButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dayNames {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  list-style: none;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+}
+
+.dayName {
+  text-align: center;
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--radius-sm);
+}
+
+@media (max-width: 480px) {
+  .days {
+    gap: 2px;
+  }
+}
+
+.day {
+  aspect-ratio: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: var(--weight-medium);
+  color: var(--color-text-body);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .day {
+    font-size: var(--text-caption);
+    border-radius: var(--radius);
+  }
+}
+
+@media (max-width: 375px) {
+  .day {
+    font-size: var(--text-label);
+  }
+}
+
+.dayEmpty {
+  aspect-ratio: 1;
+}
+
+.day:hover:not(.dayDisabled):not(.daySelected) {
+  background: var(--color-background-alt);
+  color: var(--color-accent);
+}
+
+.dayAvailable {
+  color: var(--color-text-primary);
+  font-weight: var(--weight-semibold);
+}
+
+.dayAvailable:hover:not(.daySelected) {
+  background: var(--color-background-alt, var(--color-background-alt));
+  color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.daySelected {
+  background: var(--color-accent) !important;
+  color: var(--color-text-on-dark) !important;
+  font-weight: var(--weight-semibold);
+  box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.3);
+  transform: scale(1.05);
+  z-index: 1;
+  text-decoration: none !important;
+  pointer-events: auto;
+}
+
+.dayDisabled {
+  color: var(--color-text-disabled, var(--color-text-disabled));
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  cursor: not-allowed;
+  background: transparent;
+  pointer-events: none;
+}
+
+.day::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--radius-sm);
+  height: var(--radius-sm);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-base);
+}
+
+.daySelected::after {
+  background: var(--color-text-on-dark) !important;
+  opacity: 0.8;
+}
+
+.dateNormal::after {
+  background: var(--color-success);
+}
+
+.dateLimited::after {
+  background: var(--color-warning);
+}
+
+.dateCritical::after {
+  background: var(--color-error);
+}
+
+.dayDisabled::after {
+  display: none;
+}
+
+.dayToday {
+  color: var(--color-accent);
+  font-weight: var(--weight-bold);
+}
+
+.dayToday::before {
+  content: '';
+  position: absolute;
+  top: var(--radius-sm);
+  right: var(--radius-sm);
+  width: var(--radius-sm);
+  height: var(--radius-sm);
+  background: var(--color-accent);
+  border-radius: var(--radius-full);
+}
+
+.daySelected.dayToday::before {
+  background: var(--color-text-on-dark);
+}
+
+.selectedDateText {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--color-background-page);
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+  color: var(--color-text-slate-400);
+  text-align: center;
+  border: 1px solid var(--color-border-light);
+}
+
+.selectedDateText strong {
+  color: var(--color-text-primary);
+  font-weight: var(--weight-semibold);
+}
+
+.errorBanner {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-error-dim);
+  border: 1px solid var(--color-error-dim);
+  border-radius: 10px;
+  color: var(--color-error-hover);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.errorIcon {
+  font-weight: var(--weight-bold);
+  background: var(--color-error);
+  color: var(--color-text-on-dark);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.retryBtn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--color-error-hover);
+  text-decoration: underline;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  padding: 0;
+}

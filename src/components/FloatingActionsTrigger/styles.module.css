@@ -1,0 +1,64 @@
+.trigger {
+  position: fixed;
+  right: 0;
+  bottom: 100px;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 48px;
+  padding: 0;
+  background: var(--gradient-accent);
+  color: var(--color-text-on-dark);
+  border: none;
+  border-top-left-radius: var(--radius-full);
+  border-bottom-left-radius: var(--radius-full);
+  box-shadow: 0 4px 14px rgba(var(--color-accent-rgb), 0.4);
+  cursor: pointer;
+  animation:
+    triggerFadeIn 0.35s ease-out 0.2s both,
+    triggerPulse 2.4s ease-in-out 0.6s infinite;
+  transition: transform var(--transition-fast);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger {
+    animation: none;
+    transition: none;
+  }
+}
+
+.trigger:hover {
+  transform: translateX(-3px);
+}
+
+.trigger:active {
+  transform: translateX(-1px);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@keyframes triggerFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes triggerPulse {
+  0%,
+  100% {
+    box-shadow: 0 4px 14px rgba(var(--color-accent-rgb), 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 22px rgba(var(--color-accent-rgb), 0.75);
+  }
+}

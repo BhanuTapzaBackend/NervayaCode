@@ -1,0 +1,108 @@
+.header {
+  background: transparent;
+  padding: 80px 40px 60px;
+  color: var(--color-text-primary);
+  position: relative;
+  border-bottom: none;
+}
+
+@media (max-width: 1024px) {
+  .header {
+    padding: 60px 30px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 40px 24px 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 32px 20px 24px;
+    background: transparent;
+    border-bottom: none;
+  }
+}
+
+.headerContent {
+  max-width: 980px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.headerTitle {
+  font-size: clamp(2.25rem, 4vw, 3.25rem);
+  font-weight: 800;
+  margin: 0 0 18px;
+  letter-spacing: -0.035em;
+  color: var(--color-text-primary);
+  line-height: 1.08;
+  font-family: var(--font-heading);
+}
+
+@media (max-width: 768px) {
+  .headerTitle {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerTitle {
+    margin-bottom: 12px;
+    font-size: clamp(1.875rem, 7vw, 2.375rem);
+    color: var(--color-text-primary);
+    font-family: var(--font-heading);
+  }
+}
+
+.headerSubtitle {
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  line-height: 1.65;
+  margin: 0 0 26px;
+  color: var(--color-text-secondary);
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  font-weight: 500;
+  font-family: var(--font-sans);
+}
+
+@media (max-width: 768px) {
+  .headerSubtitle {
+    margin-bottom: 20px;
+    font-size: clamp(0.9375rem, 2.4vw, 1.0625rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .headerSubtitle {
+    margin-bottom: 16px;
+    font-size: clamp(0.9375rem, 4vw, 1rem);
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+  }
+}
+
+.lastUpdated {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+  font-family: var(--font-sans);
+}
+
+@media (max-width: 480px) {
+  .lastUpdated {
+    font-size: 0.8125rem;
+    font-family: var(--font-sans);
+  }
+}
+
+.lastUpdated svg {
+  width: 16px;
+  height: 16px;
+}

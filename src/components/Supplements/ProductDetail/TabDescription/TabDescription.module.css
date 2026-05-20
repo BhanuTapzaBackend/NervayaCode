@@ -1,0 +1,80 @@
+.content {
+  padding: var(--spacing-md, 16px) 0;
+}
+
+.heading {
+  font-size: var(--text-h4);
+  font-weight: var(--weight-semibold);
+  margin: 0 0 var(--spacing-md, 16px) 0;
+  color: var(--color-foreground, var(--color-text-primary));
+}
+
+.paragraph {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--color-text-slate-400, var(--color-text-slate-400));
+  margin: 0 0 var(--margin-lg, 24px) 0;
+}
+
+.overview {
+  margin-bottom: 2rem;
+}
+
+.htmlContent {
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+  font-size: var(--text-body);
+}
+
+.htmlContent p {
+  margin-bottom: 1rem;
+}
+
+.htmlContent ul,
+.htmlContent ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.htmlContent li {
+  margin-bottom: 0.5rem;
+}
+
+.benefits,
+.suggestedUse,
+.ingredients {
+  margin-bottom: var(--margin-lg, 24px);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.listItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm, 8px);
+  margin-bottom: var(--spacing-sm, 8px);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text-slate-400, var(--color-text-slate-400));
+}
+
+.tickIcon {
+  color: var(--color-emerald-400, var(--color-emerald-400));
+  flex-shrink: 0;
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+}
+
+.bulletDot {
+  width: 5px;
+  height: 5px;
+  background-color: var(--color-emerald-400, var(--color-emerald-400));
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  margin-top: 8px;
+}

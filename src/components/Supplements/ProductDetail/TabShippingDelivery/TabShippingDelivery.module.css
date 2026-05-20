@@ -1,0 +1,67 @@
+.content {
+  padding: var(--spacing-md, 16px) 0;
+}
+
+.section {
+  margin-bottom: var(--margin-xl, 40px);
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.heading {
+  font-size: var(--text-h4);
+  font-weight: var(--weight-semibold);
+  margin: 0 0 var(--spacing-lg, 24px) 0;
+  color: var(--color-foreground, var(--color-background-alt));
+}
+
+.options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 24px);
+}
+
+.option {
+  display: flex;
+  gap: var(--spacing-md, 16px);
+  align-items: flex-start;
+}
+
+.optionIcon {
+  font-size: var(--text-h3);
+  flex-shrink: 0;
+}
+
+.optionTitle {
+  font-size: 1rem;
+  font-weight: var(--weight-semibold);
+  margin: 0 0 var(--spacing-xs, 4px) 0;
+  color: var(--color-foreground, var(--color-background-alt));
+}
+
+.optionDesc {
+  font-size: var(--text-body);
+  color: var(--color-text-muted, var(--color-text-tertiary));
+  margin: 0;
+  line-height: 1.5;
+}
+
+.policyBox {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-glass-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md, 16px) var(--spacing-lg, 24px);
+}
+
+.policyText {
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--color-text-slate-300, var(--color-text-disabled));
+  margin: 0;
+  white-space: pre-line;
+}

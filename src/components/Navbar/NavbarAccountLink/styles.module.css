@@ -1,0 +1,49 @@
+.accountButton {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-3);
+  box-sizing: border-box;
+  min-height: 40px;
+  background: var(--nav-pill-bg);
+  color: var(--nav-pill-text);
+  font-size: 0.96rem;
+  font-weight: var(--weight-semibold);
+  line-height: 1.2;
+  padding: var(--space-3) 18px;
+  border: 1px solid var(--nav-pill-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    color var(--transition-base),
+    background-color var(--transition-base),
+    border-color var(--transition-base);
+  position: relative;
+  overflow: visible;
+  width: 100%;
+}
+
+.desktopAccountButton {
+  width: auto;
+  flex-shrink: 0;
+  justify-content: center;
+}
+
+.desktopAccountButton span {
+  white-space: nowrap;
+}
+
+.accountButton:hover {
+  color: var(--nav-pill-hover-text);
+  background: var(--nav-pill-hover-bg);
+  border-color: var(--nav-pill-hover-border);
+}
+
+.accountButton:active {
+  background: rgba(186, 154, 255, 0.3);
+}
+
+.accountButton:focus-visible {
+  outline: 2px solid var(--nav-pill-focus);
+  outline-offset: 2px;
+}

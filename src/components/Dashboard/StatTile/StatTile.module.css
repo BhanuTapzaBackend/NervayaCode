@@ -1,0 +1,146 @@
+.tile {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    transform var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.tile:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md, 16px);
+  min-width: 0;
+}
+
+.iconWrap {
+  --tile-icon-color: var(--color-accent);
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tile-icon-color);
+  background: color-mix(in srgb, var(--tile-icon-color) 12%, transparent);
+  border: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+  font-size: 1.35rem;
+  transition: background var(--transition-base);
+}
+
+.iconWrap svg,
+.iconWrap span,
+.iconWrap [class*='icon'] {
+  color: var(--tile-icon-color) !important;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.value {
+  margin: 2px 0 0;
+  font-size: 1.35rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  line-height: 1.3;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--color-text-slate-400);
+  line-height: 1.5;
+}
+
+.ctaWrapper {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cta,
+.secondaryCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 26px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-caption);
+  transition:
+    opacity var(--transition-base),
+    filter var(--transition-base),
+    transform 0.1s ease;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.cta:active,
+.secondaryCta:active {
+  transform: scale(0.98);
+}
+
+.cta {
+  background: var(--gradient-accent);
+  border-color: transparent;
+  color: var(--color-text-on-dark);
+  box-shadow: var(--shadow-btn-primary);
+}
+
+.cta:hover {
+  box-shadow: var(--shadow-btn-primary-hover);
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.secondaryCta {
+  background: transparent;
+  border-color: var(--color-border-subtle);
+  color: var(--color-text-body);
+}
+
+.secondaryCta:hover {
+  background: var(--color-accent-dim-hover);
+  border-color: var(--color-border-accent);
+  color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .tile {
+    padding: var(--spacing-md, 16px);
+  }
+
+  .ctaWrapper {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .cta,
+  .secondaryCta {
+    width: 100%;
+  }
+}

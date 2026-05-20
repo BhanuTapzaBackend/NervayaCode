@@ -1,0 +1,519 @@
+.liveEditor {
+  background: transparent;
+  color: var(--color-foreground, var(--color-text-primary));
+  min-height: 100vh;
+  padding-bottom: 100px;
+  /* Space for floating button */
+}
+
+.multimediaStudio {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+}
+
+.studioTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: var(--weight-semibold);
+  color: var(--color-foreground, var(--color-text-primary));
+  margin: 0;
+}
+
+.imageSelectorInline {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  align-items: flex-start;
+}
+
+.urlInputBlock {
+  flex: 1;
+}
+
+.inlineUrlInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: white;
+  border: 1px solid var(--color-border-light);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.inlineUrlInput:focus {
+  border-color: var(--color-primary-500);
+}
+
+.mediaHintInline {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.galleryManagement {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.mediaLabel {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.galleryTextPad {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.galleryTextPad:focus {
+  border-color: var(--color-primary-500, var(--color-accent));
+}
+
+.galleryThumbGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.galleryThumbItem {
+  aspect-ratio: 1;
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-light);
+}
+
+.previewThumb {
+  object-fit: cover;
+}
+
+.titleEdit :global(.displayValue) {
+  font-size: 2.5rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-foreground, var(--color-text-primary));
+  line-height: 1.2;
+  text-align: left;
+  padding: 0;
+}
+
+.taglineEdit :global(.displayValue) {
+  font-size: 1.1rem;
+  color: var(--color-text-slate-400, var(--color-text-tertiary));
+  font-style: italic;
+  text-align: left;
+  padding: 0;
+}
+
+.priceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.priceColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.priceLabel {
+  font-size: var(--text-label);
+  color: var(--color-text-slate-500, var(--color-text-secondary));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.priceValue :global(.displayValue) {
+  font-size: var(--text-h3);
+  font-weight: var(--weight-semibold);
+  color: var(--color-emerald-400, var(--color-emerald-400));
+  text-align: center;
+  padding: 8px;
+  background: var(--color-background-page);
+  border-radius: 8px;
+  border: 1px solid var(--color-border-light);
+}
+
+.priceValue :global(.input) {
+  text-align: center;
+}
+
+.textPadSection {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.textPad {
+  width: 100%;
+  min-height: 200px;
+  background: var(--color-background, var(--color-background));
+  border: 1px solid var(--color-border-light, var(--color-border-light));
+  border-radius: 8px;
+  color: var(--color-text-primary, var(--color-text-primary));
+  padding: 1rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.textPad:hover {
+  border-color: var(--color-primary-300, var(--color-accent-surface-border-strong));
+}
+
+.textPad:focus {
+  border-color: var(--color-primary-500, var(--color-accent));
+}
+
+.benefitList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.benefitItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border, var(--color-border-light));
+  border-radius: 8px;
+  background: var(--color-background-subtle, var(--color-background-page));
+  transition: all 0.2s;
+}
+
+.benefitItem:hover {
+  border-color: var(--color-primary-200, var(--color-accent-surface-strong));
+  background: var(--color-white, var(--color-background));
+}
+
+.bulletDot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--color-primary-400, var(--color-accent-soft));
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 10px;
+}
+
+.benefitInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.25rem;
+  font-size: 0.95rem;
+  color: var(--color-foreground, var(--color-text-primary));
+  outline: none;
+}
+
+.benefitRemoveBtn {
+  opacity: 0;
+  background: transparent;
+  border: none;
+  color: var(--color-error, var(--color-error));
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.benefitItem:hover .benefitRemoveBtn {
+  opacity: 1;
+}
+
+.benefitRemoveBtn:hover {
+  background: var(--color-error-dim);
+}
+
+.addPointInline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px dashed var(--color-border, var(--color-border-light));
+  color: var(--color-primary-500, var(--color-accent));
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: var(--weight-medium);
+  transition: all var(--transition-base);
+  margin-top: 0.25rem;
+}
+
+.addPointInline:hover {
+  background: var(--color-background-page);
+  border-color: var(--color-border-light-hover);
+  border-style: solid;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: var(--color-primary-600, var(--color-accent));
+  font-style: italic;
+  margin: 0;
+}
+
+.helperHeader {
+  margin-bottom: 0.5rem;
+}
+
+.flexBetween {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.sectionHeadingEdit {
+  flex: 1;
+}
+
+.removeSectionInline {
+  background: var(--color-error-dim);
+  color: var(--color-error-hover);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  margin-left: 1rem;
+}
+
+.removeSectionInline:hover {
+  background: var(--color-error-border);
+  transform: scale(1.1);
+}
+
+.customSectionsList {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--color-background-soft, var(--color-background-page));
+  border-radius: 16px;
+  border: 1px solid var(--color-border-light, var(--color-border-light));
+}
+
+.customSectionsLabel {
+  font-size: 0.9rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-primary-600, var(--color-accent));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.customSectionCard {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: white;
+  border: 1px solid var(--color-border-light, var(--color-border-light));
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.customSectionCard:last-child {
+  margin-bottom: 0;
+}
+
+.addSectionBtn {
+  width: 100%;
+  padding: 1.25rem;
+  margin: 2.5rem 0;
+  background: var(--color-primary-50, var(--color-accent-surface));
+  border: 2px dashed var(--color-primary-300, var(--color-accent-surface-border-strong));
+  border-radius: 12px;
+  color: var(--color-primary-600, var(--color-accent));
+  font-weight: var(--weight-semibold);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.addSectionBtn:hover {
+  background: var(--color-background-page);
+  border-color: var(--color-primary-500, var(--color-accent));
+  transform: translateY(-1px);
+}
+
+.addSectionBtn svg {
+  font-size: 24px;
+}
+
+.tabsSection {
+  margin-top: 3rem;
+  border-top: 1px solid var(--color-border-light, var(--color-border-light));
+}
+
+.tabList {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--color-border-light, var(--color-border-light));
+}
+
+.tab {
+  background: none;
+  border: none;
+  color: var(--color-text-slate-400, var(--color-text-tertiary));
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  padding: 8px 0;
+  position: relative;
+  font-size: 1.1rem;
+}
+
+.activeTab {
+  color: var(--color-primary-400, var(--color-accent-soft));
+}
+
+.activeTab::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-primary-400, var(--color-accent-soft));
+}
+
+.tabContent {
+  padding: 2rem 0;
+}
+
+.editableTabSection {
+  margin-bottom: 2.5rem;
+}
+
+.staticContent {
+  padding: 3rem;
+  text-align: center;
+  color: var(--color-text-muted, var(--color-text-secondary));
+  background: var(--color-card-bg-light, var(--color-background-page));
+  border-radius: 12px;
+  border: 1px dashed var(--color-border-light, var(--color-border-light));
+}
+
+.saveButton {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--color-primary-600, var(--color-accent));
+  color: var(--color-text-on-dark);
+  border: none;
+  border-radius: var(--radius);
+  padding: 1rem 2.5rem;
+  font-weight: var(--weight-semibold);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.3),
+    0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-base);
+  z-index: 1000;
+}
+
+.saveButton:hover {
+  transform: translateY(-2px);
+  background: var(--color-primary-500, var(--color-accent-light));
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.4),
+    0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
+.saveButton:active {
+  transform: translateY(0);
+}
+
+.saveButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.tooltipRoot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.infoIcon {
+  color: var(--color-primary-300, var(--color-accent-surface-border-strong));
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.tooltipText {
+  visibility: hidden;
+  width: 220px;
+  background-color: var(--color-foreground, var(--color-text-primary));
+  color: var(--color-text-on-dark);
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px;
+  position: absolute;
+  z-index: 100;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+  font-size: var(--text-label);
+  font-weight: var(--weight-normal);
+  border: 1px solid var(--color-border-light, var(--color-border-light));
+  box-shadow: var(--color-card-shadow, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
+  pointer-events: none;
+}
+
+.tooltipRoot:hover .tooltipText {
+  visibility: visible;
+  opacity: 1;
+}

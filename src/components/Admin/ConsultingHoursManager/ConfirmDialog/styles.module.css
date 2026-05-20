@@ -1,0 +1,99 @@
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: var(--space-6);
+}
+
+.confirmDialog {
+  /* Renamed from .modal in instruction to match original structure */
+  background: var(--color-white-bright);
+  border: 1.5px solid var(--color-border-light);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-7);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--color-card-shadow);
+  animation: modalScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.confirmTitle {
+  font-size: 18px;
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-on-dark);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.confirmMessage {
+  /* Renamed from .confir.message in instruction to match original structure */
+  font-size: 1.125rem;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-7);
+  line-height: 1.5;
+  text-align: center;
+  font-weight: var(--weight-semibold);
+}
+
+.confirmButtons {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  /* Replaces .confirmButtonCancel */
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-white-bright);
+  color: var(--color-text-muted);
+  border: 1.5px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.cancelButton:hover {
+  background: var(--color-white-dim);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-light-hover);
+}
+
+.confirmButton {
+  /* Replaces .confirmButtonConfirm */
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-error);
+  color: var(--color-text-on-dark);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.confirmButton:hover {
+  background: var(--color-error-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+}
+
+@media (max-width: 768px) {
+  .confirmButtons {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .confirmButtonCancel,
+  .confirmButtonConfirm {
+    width: 100%;
+  }
+}

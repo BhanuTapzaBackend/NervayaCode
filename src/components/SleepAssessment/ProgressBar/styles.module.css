@@ -1,0 +1,36 @@
+.progressContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stepCounter {
+  align-self: flex-end;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-background-alt);
+  overflow: hidden;
+}
+
+.progressFill {
+  width: var(--progress, 0%);
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--color-accent);
+  transition: width var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 768px) {
+  .progressTrack {
+    height: 6px;
+  }
+}

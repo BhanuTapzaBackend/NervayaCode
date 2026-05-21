@@ -141,6 +141,12 @@
   border: 1px solid var(--color-border-accent);
 }
 
+@media (max-width: 768px) {
+  .missionTag {
+    align-self: center;
+  }
+}
+
 .cardHeading {
   font-size: var(--font-size-6xl);
   font-weight: var(--weight-semibold);

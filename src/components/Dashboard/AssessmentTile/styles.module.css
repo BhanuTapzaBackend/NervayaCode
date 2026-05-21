@@ -62,8 +62,9 @@
 
 @media (max-width: 768px) {
   .headerRight {
-    justify-content: flex-end;
-    gap: 8px;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
   }
 }
 
@@ -238,17 +239,28 @@
   gap: 8px;
   font-size: 14px;
   color: var(--color-text-secondary);
+  line-height: 1;
 }
 
 @media (max-width: 768px) {
   .lastAssessed {
     font-size: 13px;
+    gap: 6px;
   }
 }
 
 .clockIcon {
   font-size: 20px;
   color: var(--color-accent-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .clockIcon {
+    font-size: 16px;
+  }
 }
 
 .ctaGroup {

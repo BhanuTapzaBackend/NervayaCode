@@ -1,3 +1,4 @@
+import { IMAGES } from '@/utils/imageConstants';
 import { Fragment } from 'react';
 import { ICON_HEADPHONES, ICON_PILL, ICON_CLOCK, ICON_CHECK } from '@/constants/icons';
 import type { ServiceKey } from '@/utils/sleepAssessment';
@@ -34,6 +35,7 @@ function getMiniProps(key: ServiceKey, supplementName: string): PlanProductMiniP
       metaText: '1 tailored session',
       meta2Icon: ICON_HEADPHONES,
       meta2Text: 'Listen anytime',
+      imageSrc: IMAGES.PRODUCT_DEEP_REST,
     };
   }
   if (key === 'SUPPLEMENT') {
@@ -49,6 +51,7 @@ function getMiniProps(key: ServiceKey, supplementName: string): PlanProductMiniP
       metaText: '30-day supply',
       meta2Icon: ICON_CHECK,
       meta2Text: 'Daily support',
+      imageSrc: IMAGES.PRODUCT_SLEEP_SUPPLEMENT,
     };
   }
   return null;

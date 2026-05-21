@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import styles from './styles.module.css';
 
@@ -13,6 +14,7 @@ export interface PlanProductMiniProps {
   metaText: string;
   meta2Icon: string;
   meta2Text: string;
+  imageSrc?: string;
 }
 
 export function PlanProductMini({
@@ -27,6 +29,7 @@ export function PlanProductMini({
   metaText,
   meta2Icon,
   meta2Text,
+  imageSrc,
 }: Readonly<PlanProductMiniProps>) {
   const iconAccentClass = styles[`icon_${iconAccent}`];
   const chipToneClass = styles[`chip_${chipTone}`];
@@ -42,8 +45,22 @@ export function PlanProductMini({
         </div>
       </div>
 
-      <p className={styles.subtitle}>{subtitle}</p>
-      <p className={styles.desc}>{description}</p>
+      {imageSrc ? (
+        <div className={styles.contentWrap}>
+          <div className={styles.imageContainer}>
+            <Image src={imageSrc} alt={title} fill sizes="140px" className={styles.productImage} />
+          </div>
+          <div className={styles.textWrap}>
+            <p className={styles.subtitle}>{subtitle}</p>
+            <p className={styles.desc}>{description}</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <p className={styles.subtitle}>{subtitle}</p>
+          <p className={styles.desc}>{description}</p>
+        </>
+      )}
 
       <div className={styles.metaRow}>
         <span className={styles.meta}>

@@ -121,3 +121,47 @@
   font-size: 14px;
   color: var(--color-accent);
 }
+
+.contentWrap {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+@media (max-width: 640px) {
+  .contentWrap {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+  }
+}
+
+.imageContainer {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .imageContainer {
+    width: 100%;
+    height: 150px;
+  }
+}
+
+.textWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex-grow: 1;
+}
+@media (max-width: 640px) {
+  .textWrap {
+    width: 100%;
+  }
+}
+
+.productImage {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+}

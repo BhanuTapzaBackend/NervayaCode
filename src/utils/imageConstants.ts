@@ -22,6 +22,6 @@ export const IMAGES = {
   // Product photos used in the post-assessment Recommendation cards.
   // Files live in /public/images/products/ — swap the files there (keep the
   // filenames) to change what these cards show app-wide.
-  PRODUCT_SLEEP_SUPPLEMENT: '/images/products/sleep-supplement.png',
-  PRODUCT_DEEP_REST: '/images/products/deep-rest.png',
+  PRODUCT_SLEEP_SUPPLEMENT: '/card_supplement_v6.png',
+  PRODUCT_DEEP_REST: '/card_deeprest.png',
 } as const;

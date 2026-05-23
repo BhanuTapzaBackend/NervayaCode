@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/icons/nervaya-logo.jpg" alt="Nervaya Logo" width="200" />
+  <img src="public/icons/nervaya-logo.jpg" alt="Nervaya Logo" width="300" />
 </p>
 
 <h1 align="center">Nervaya</h1>

@@ -1,4 +1,3 @@
-import bcrypt from 'bcryptjs';
 import connectDB from '../src/lib/db/mongodb';
 import User from '../src/lib/models/user.model';
 import Therapist from '../src/lib/models/therapist.model';
@@ -11,17 +10,18 @@ async function seedDatabase() {
     const conn = await connectDB();
     console.log('✅ Connected to MongoDB');
 
-    // 1. Seed Admin
+    // 1. Seed Admin (passwordless — WhatsApp phone is the identifier)
     console.log('\n👤 Seeding Admin User...');
     const adminData = {
+      phone: '+919000000001',
       email: 'admin@nervaya.com',
-      password: await bcrypt.hash('admin123', 10),
       name: 'Nervaya Admin',
       role: ROLES.ADMIN,
+      phoneVerified: true,
       emailVerified: true,
     };
 
-    await User.findOneAndUpdate({ email: adminData.email }, adminData, {
+    await User.findOneAndUpdate({ phone: adminData.phone }, adminData, {
       upsert: true,
       new: true,
       runValidators: true,
@@ -31,14 +31,15 @@ async function seedDatabase() {
     // 2. Seed Normal User
     console.log('\n👤 Seeding Normal User...');
     const userData = {
+      phone: '+919000000002',
       email: 'bhanu@nervaya.com',
-      password: await bcrypt.hash('bhanu123', 10),
       name: 'Bhanu Teja',
       role: ROLES.CUSTOMER,
+      phoneVerified: true,
       emailVerified: true,
     };
 
-    await User.findOneAndUpdate({ email: userData.email }, userData, {
+    await User.findOneAndUpdate({ phone: userData.phone }, userData, {
       upsert: true,
       new: true,
       runValidators: true,
@@ -76,15 +77,16 @@ async function seedDatabase() {
 
     // Create Therapist User
     const therapistUserData = {
+      phone: '+919000000003',
       email: 'therapist@nervaya.com',
-      password: await bcrypt.hash('therapist123', 10),
       name: 'Dr. Smith',
       role: ROLES.THERAPIST,
       therapistId: therapistProfile._id,
+      phoneVerified: true,
       emailVerified: true,
     };
 
-    await User.findOneAndUpdate({ email: therapistUserData.email }, therapistUserData, {
+    await User.findOneAndUpdate({ phone: therapistUserData.phone }, therapistUserData, {
       upsert: true,
       new: true,
       runValidators: true,

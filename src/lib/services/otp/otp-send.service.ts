@@ -1,9 +1,9 @@
-import { validateEmail } from '@/lib/utils/validation.util';
+import { normalizePhone } from '@/lib/utils/validation.util';
 import { checkOTPSendLimit } from '@/lib/utils/rate-limit.util';
 import { generateOtpCode, saveOtp, type OtpPurpose } from './otp-store';
 import type { OtpDelivery } from './otp-delivery.interface';
 import { ConsoleOtpDelivery } from './console-otp-delivery';
-import { createGmailOtpDelivery } from './gmail-otp-delivery';
+import { createWhatsAppOtpDelivery } from './whatsapp-otp-delivery';
 export interface SendOtpResult {
   success: boolean;
   message?: string;
@@ -16,30 +16,23 @@ let defaultDelivery: OtpDelivery | null = null;
 
 function getDefaultDelivery(): OtpDelivery {
   if (!defaultDelivery) {
-    const gmail = createGmailOtpDelivery();
-    defaultDelivery = gmail ?? new ConsoleOtpDelivery();
+    const whatsapp = createWhatsAppOtpDelivery();
+    defaultDelivery = whatsapp ?? new ConsoleOtpDelivery();
   }
   return defaultDelivery;
 }
 
 export async function sendOtp(
-  email: string,
+  phone: string,
   purpose: OtpPurpose,
   ip: string,
   delivery: OtpDelivery = getDefaultDelivery(),
 ): Promise<SendOtpResult> {
-  const sanitizedEmail = email.trim().toLowerCase();
-  if (!sanitizedEmail) {
+  const normalizedPhone = normalizePhone(phone);
+  if (!normalizedPhone) {
     return {
       success: false,
-      message: 'Email is required',
-      statusCode: 400,
-    };
-  }
-  if (!validateEmail(sanitizedEmail)) {
-    return {
-      success: false,
-      message: 'Invalid email format',
+      message: 'Invalid phone number',
       statusCode: 400,
     };
   }
@@ -53,7 +46,7 @@ export async function sendOtp(
 
   if (purpose === 'signup') {
     const { hasPendingSignup } = await import('@/lib/services/auth');
-    if (!(await hasPendingSignup(sanitizedEmail))) {
+    if (!(await hasPendingSignup(normalizedPhone))) {
       return {
         success: false,
         message: 'Signup session expired. Please sign up again.',
@@ -62,21 +55,30 @@ export async function sendOtp(
     }
   }
 
-  const limitByEmail = await checkOTPSendLimit(sanitizedEmail);
-  if (!limitByEmail.allowed) {
+  const limitByPhone = await checkOTPSendLimit(normalizedPhone);
+  if (!limitByPhone.allowed) {
     return {
       success: false,
       message: 'Too many OTP requests. Please try again later.',
       statusCode: 429,
-      sendCount: limitByEmail.sendCount,
-      resetTime: limitByEmail.resetTime,
+      sendCount: limitByPhone.sendCount,
+      resetTime: limitByPhone.resetTime,
     };
   }
 
   const code = generateOtpCode();
-  await saveOtp(sanitizedEmail, purpose, code);
+  await saveOtp(normalizedPhone, purpose, code);
 
-  await delivery.sendOtp(sanitizedEmail, code);
+  try {
+    await delivery.sendOtp(normalizedPhone, code);
+  } catch (error) {
+    console.error('[OTP] WhatsApp delivery failed:', error);
+    return {
+      success: false,
+      message: 'Could not send WhatsApp code. Please try again.',
+      statusCode: 502,
+    };
+  }
 
   return {
     success: true,

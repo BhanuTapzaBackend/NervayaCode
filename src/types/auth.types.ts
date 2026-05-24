@@ -1,28 +1,26 @@
 export interface User {
   _id: string;
-  email: string;
+  phone: string;
   name: string;
-  password: string;
+  email?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface SignupRequest {
-  email: string;
-  password: string;
+  phone: string;
   name: string;
 }
 
 export interface LoginRequest {
-  email: string;
-  password: string;
+  phone: string;
 }
 
 export interface AuthResponse {
   success: boolean;
   message: string;
   data?: {
-    user: Omit<User, 'password'>;
+    user: User;
     token: string;
   };
   error?: string;
@@ -33,19 +31,19 @@ import { OtpPurpose } from '@/lib/constants/enums';
 export type { OtpPurpose };
 
 export interface SendOtpRequest {
-  email: string;
+  phone: string;
   purpose: OtpPurpose;
 }
 
 export interface VerifyOtpRequest {
-  email: string;
+  phone: string;
   code: string;
   purpose: OtpPurpose;
 }
 
 export interface LoginResponseData {
-  user: Omit<User, 'password'>;
+  user: User;
   token: string;
   requireOtp?: boolean;
-  email?: string;
+  phone?: string;
 }

@@ -5,8 +5,8 @@ import connectDB from '@/lib/db/mongodb';
 
 export type OtpPurpose = 'login' | 'signup';
 
-function key(email: string, purpose: OtpPurpose): string {
-  return `${email.toLowerCase().trim()}:${purpose}`;
+function key(phone: string, purpose: OtpPurpose): string {
+  return `${phone.trim()}:${purpose}`;
 }
 
 function hashCode(code: string): string {
@@ -21,16 +21,16 @@ export function generateOtpCode(): string {
   return digits.join('');
 }
 
-export async function saveOtp(email: string, purpose: OtpPurpose, code: string): Promise<void> {
+export async function saveOtp(phone: string, purpose: OtpPurpose, code: string): Promise<void> {
   await connectDB();
-  const k = key(email, purpose);
+  const k = key(phone, purpose);
   const expiresAt = new Date(Date.now() + OTP_TTL_MS);
   await OtpToken.findOneAndUpdate({ key: k }, { hashedOtp: hashCode(code), purpose, expiresAt }, { upsert: true });
 }
 
-export async function verifyAndConsumeOtp(email: string, purpose: OtpPurpose, code: string): Promise<boolean> {
+export async function verifyAndConsumeOtp(phone: string, purpose: OtpPurpose, code: string): Promise<boolean> {
   await connectDB();
-  const k = key(email, purpose);
+  const k = key(phone, purpose);
   const entry = await OtpToken.findOne({ key: k });
   if (!entry) return false;
   if (new Date() > entry.expiresAt) {
@@ -44,9 +44,9 @@ export async function verifyAndConsumeOtp(email: string, purpose: OtpPurpose, co
   return match;
 }
 
-export async function hasValidOtp(email: string, purpose: OtpPurpose): Promise<boolean> {
+export async function hasValidOtp(phone: string, purpose: OtpPurpose): Promise<boolean> {
   await connectDB();
-  const k = key(email, purpose);
+  const k = key(phone, purpose);
   const entry = await OtpToken.findOne({ key: k });
   if (!entry) return false;
   if (new Date() > entry.expiresAt) {

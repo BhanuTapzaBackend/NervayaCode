@@ -1,3 +1,3 @@
 export interface OtpDelivery {
-  sendOtp(email: string, code: string): Promise<void>;
+  sendOtp(recipient: string, code: string): Promise<void>;
 }

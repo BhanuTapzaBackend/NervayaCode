@@ -10,14 +10,14 @@ const RESEND_COOLDOWN_SEC = 60;
 const OTP_LENGTH = 6;
 
 export interface OTPVerificationStepProps {
-  email: string;
+  phone: string;
   purpose: OtpPurpose;
   onSuccess: (session?: AuthData) => void;
   onBack?: () => void;
   autoSend?: boolean;
 }
 
-export function OTPVerificationStep({ email, purpose, onSuccess, onBack, autoSend = true }: OTPVerificationStepProps) {
+export function OTPVerificationStep({ phone, purpose, onSuccess, onBack, autoSend = true }: OTPVerificationStepProps) {
   const { sendOtp, verifyOtp, loading, error, sendCount, clearError } = useOTP();
   const [code, setCode] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [cooldown, setCooldown] = useState(0);
@@ -25,9 +25,9 @@ export function OTPVerificationStep({ email, purpose, onSuccess, onBack, autoSen
 
   const sendOtpOnce = useCallback(() => {
     clearError();
-    sendOtp(email, purpose);
+    sendOtp(phone, purpose);
     setCooldown(RESEND_COOLDOWN_SEC);
-  }, [email, purpose, sendOtp, clearError]);
+  }, [phone, purpose, sendOtp, clearError]);
 
   useEffect(() => {
     if (autoSend) {
@@ -82,7 +82,7 @@ export function OTPVerificationStep({ email, purpose, onSuccess, onBack, autoSen
     const fullCode = code.join('');
     if (fullCode.length !== OTP_LENGTH) return;
     clearError();
-    const session = await verifyOtp(email, fullCode, purpose);
+    const session = await verifyOtp(phone, fullCode, purpose);
     if (session) {
       onSuccess({
         user: session.user as AuthData['user'],
@@ -100,7 +100,7 @@ export function OTPVerificationStep({ email, purpose, onSuccess, onBack, autoSen
         Enter verification code
       </h1>
       <p className={styles.description} id="otp-description">
-        We sent a 6-digit code to {email}. Enter it below.
+        We sent a 6-digit code to your WhatsApp ({phone}). Enter it below.
       </p>
 
       <div className={styles.otpInputGroup} role="group" aria-labelledby="otp-title" aria-describedby="otp-description">

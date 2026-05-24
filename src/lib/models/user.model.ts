@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
-import bcrypt from 'bcryptjs';
 
 import { ROLES, Role } from '../constants/roles';
 
@@ -18,15 +17,16 @@ export interface IAddress {
 }
 
 export interface IUser extends Document {
-  email: string;
-  password: string;
+  /** Primary identifier: WhatsApp number in E.164 (e.g. +919876543210). */
+  phone: string;
+  /** Optional — still used for receipts/CRM where the user provides it. */
+  email?: string;
   name: string;
   role: Role;
-  /** Direct mobile number on the user profile. Populated when user provides it. */
-  phone?: string;
   /** Set when role is THERAPIST: links to the Therapist profile for this user. */
   therapistId?: mongoose.Types.ObjectId;
   emailVerified?: boolean;
+  phoneVerified?: boolean;
   createdAt: Date;
   updatedAt: Date;
   addresses: IAddress[];
@@ -34,12 +34,17 @@ export interface IUser extends Document {
 
 const userSchema = new Schema<IUser>(
   {
+    phone: {
+      type: String,
+      required: [true, 'Phone is required'],
+      unique: true,
+      trim: true,
+    },
     email: {
       type: String,
-      required: [true, 'Email is required'],
-      unique: true,
       lowercase: true,
       trim: true,
+      default: null,
       match: [/^\S{1,64}@\S{1,255}\.\S{1,63}$/, 'Please enter a valid email'],
     },
     role: {
@@ -54,24 +59,16 @@ const userSchema = new Schema<IUser>(
       default: null,
       required: false,
     },
-    password: {
-      type: String,
-      required: [true, 'Password is required'],
-      minlength: [8, 'Password must be at least 8 characters'],
-      select: false,
-    },
     name: {
       type: String,
       required: [true, 'Name is required'],
       trim: true,
     },
-    phone: {
-      type: String,
-      trim: true,
-      default: null,
-      required: false,
-    },
     emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    phoneVerified: {
       type: Boolean,
       default: false,
     },
@@ -99,14 +96,8 @@ const userSchema = new Schema<IUser>(
   },
 );
 
-userSchema.pre('save', async function (this: IUser) {
-  if (!this.isModified('password')) {
-    return;
-  }
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
+// Enforce email uniqueness only when an email is actually present (it is optional).
+userSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $type: 'string' } } });
 
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', userSchema);
 

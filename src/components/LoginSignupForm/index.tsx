@@ -28,14 +28,11 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
   const { completeLoginWithOtp, clearError: clearAuthError } = useAuthContext();
   const [authStep, setAuthStep] = useState<AuthStep>(AUTH_STEP.CREDENTIALS);
   const [otpPurpose, setOtpPurpose] = useState<OtpPurpose>(OTP_PURPOSE.LOGIN);
-  const [showSignupPassword, setShowSignupPassword] = useState(false);
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const { pushLead } = useZohoLead();
 
   const {
     isRightPanelActive,
-    email,
-    password,
+    phone,
     name,
     fieldErrors,
     loading,
@@ -57,7 +54,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
           typeof response.data === 'object' &&
           'requireOtp' in response.data &&
           response.data.requireOtp &&
-          'email' in response.data
+          'phone' in response.data
         ) {
           clearAuthError();
           setOtpPurpose(OTP_PURPOSE.LOGIN);
@@ -82,7 +79,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
           typeof response.data === 'object' &&
           'requireOtp' in response.data &&
           response.data.requireOtp &&
-          'email' in response.data
+          'phone' in response.data
         ) {
           clearAuthError();
           setOtpPurpose(OTP_PURPOSE.SIGNUP);
@@ -91,7 +88,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
           // Push to Zoho CRM — captures the lead even if they abandon here
           pushLead({
             name: name,
-            email: email,
+            phone: phone,
             source: 'Nervaya Signup',
             message: 'User initiated signup and is at the OTP verification step.',
           });
@@ -102,7 +99,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
         // The error will be displayed via the error prop passed to SignupForm
       }
     },
-    [handleSignupSubmit, clearAuthError, email, name, pushLead],
+    [handleSignupSubmit, clearAuthError, phone, name, pushLead],
   );
 
   const onOtpSuccess = useCallback(
@@ -133,7 +130,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
         >
           {authStep === AUTH_STEP.OTP && otpPurpose === OTP_PURPOSE.SIGNUP ? (
             <OTPVerificationStep
-              email={email.trim().toLowerCase()}
+              phone={phone.trim()}
               purpose={OTP_PURPOSE.SIGNUP}
               onSuccess={onOtpSuccess}
               onBack={onOtpBack}
@@ -142,10 +139,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
           ) : (
             <SignupForm
               name={name}
-              email={email}
-              password={password}
-              showPassword={showSignupPassword}
-              onTogglePassword={() => setShowSignupPassword((prev) => !prev)}
+              phone={phone}
               fieldErrors={fieldErrors}
               loading={loading}
               error={error}
@@ -166,17 +160,14 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
         >
           {authStep === AUTH_STEP.OTP && otpPurpose === OTP_PURPOSE.LOGIN ? (
             <OTPVerificationStep
-              email={email.trim().toLowerCase()}
+              phone={phone.trim()}
               purpose={OTP_PURPOSE.LOGIN}
               onSuccess={onOtpSuccess}
               onBack={onOtpBack}
             />
           ) : (
             <LoginForm
-              email={email}
-              password={password}
-              showPassword={showLoginPassword}
-              onTogglePassword={() => setShowLoginPassword((prev) => !prev)}
+              phone={phone}
               fieldErrors={fieldErrors}
               loading={loading}
               error={error}

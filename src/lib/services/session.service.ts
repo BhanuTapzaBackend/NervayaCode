@@ -112,14 +112,16 @@ export async function createSession(
         createdSession.googleEventId = eventId ?? undefined;
       }
 
-      await sendSessionConfirmationEmail({
-        email: user.email,
-        name: user.name,
-        therapistName: therapist?.name || 'your Therapist',
-        date,
-        startTime,
-        meetLink: meetLink || '',
-      });
+      if (user.email) {
+        await sendSessionConfirmationEmail({
+          email: user.email,
+          name: user.name,
+          therapistName: therapist?.name || 'your Therapist',
+          date,
+          startTime,
+          meetLink: meetLink || '',
+        });
+      }
     }
   } catch (integrationError) {
     console.error('Error in post-booking integration:', integrationError);
@@ -218,14 +220,16 @@ export async function rescheduleSession(sessionId: string, userId: string, newDa
       session.meetLink = meetLink ?? undefined;
       session.googleEventId = eventId ?? undefined;
 
-      await sendSessionConfirmationEmail({
-        email: user.email,
-        name: user.name,
-        therapistName: therapist?.name || 'your Therapist',
-        date: newDate,
-        startTime: newStartTime,
-        meetLink: meetLink || '',
-      });
+      if (user.email) {
+        await sendSessionConfirmationEmail({
+          email: user.email,
+          name: user.name,
+          therapistName: therapist?.name || 'your Therapist',
+          date: newDate,
+          startTime: newStartTime,
+          meetLink: meetLink || '',
+        });
+      }
     }
   } catch (err) {
     console.error('Error updating Google Meet during reschedule:', err);

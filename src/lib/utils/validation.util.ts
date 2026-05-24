@@ -4,58 +4,37 @@ export function validateEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
-export function validatePassword(password: string): {
-  valid: boolean;
-  message?: string;
-} {
-  if (password.length < 8) {
-    return {
-      valid: false,
-      message: 'Password must be at least 8 characters long',
-    };
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    return {
-      valid: false,
-      message: 'Password must contain at least one uppercase letter',
-    };
-  }
-
-  if (!/[a-z]/.test(password)) {
-    return {
-      valid: false,
-      message: 'Password must contain at least one lowercase letter',
-    };
-  }
-
-  if (!/[0-9]/.test(password)) {
-    return {
-      valid: false,
-      message: 'Password must contain at least one number',
-    };
-  }
-
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    return {
-      valid: false,
-      message: 'Password must contain at least one special character',
-    };
-  }
-
-  const commonPasswords = ['password', '12345678', 'qwerty', 'abc123', 'password123'];
-  if (commonPasswords.some((common) => password.toLowerCase().includes(common))) {
-    return {
-      valid: false,
-      message: 'Password is too common. Please choose a stronger password',
-    };
-  }
-
-  return { valid: true };
-}
-
 export function validateName(name: string): boolean {
   return name.trim().length >= 2;
+}
+
+const E164_REGEX = /^\+[1-9]\d{7,14}$/;
+
+/**
+ * Normalize a raw phone input to canonical E.164 (e.g. +919876543210).
+ * - strips spaces, dashes, parentheses, and dots
+ * - keeps an existing leading "+"
+ * - converts a leading "00" international prefix to "+"
+ * - prepends the default country code to a bare 10-digit number
+ * Returns null when the input cannot be normalized to a valid E.164 number.
+ */
+export function normalizePhone(input: string, defaultCountry = '+91'): string | null {
+  if (typeof input !== 'string') return null;
+
+  let cleaned = input.trim().replace(/[\s\-().]/g, '');
+  if (!cleaned) return null;
+
+  if (cleaned.startsWith('00')) {
+    cleaned = `+${cleaned.slice(2)}`;
+  } else if (!cleaned.startsWith('+') && /^\d{10}$/.test(cleaned)) {
+    cleaned = `${defaultCountry}${cleaned}`;
+  }
+
+  return validatePhone(cleaned) ? cleaned : null;
+}
+
+export function validatePhone(phone: string): boolean {
+  return typeof phone === 'string' && E164_REGEX.test(phone.trim());
 }
 
 const OTP_CODE_REGEX = /^\d{6}$/;

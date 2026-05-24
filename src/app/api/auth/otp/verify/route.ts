@@ -6,19 +6,21 @@ import { handleError } from '@/lib/utils/error.util';
 import { ApiError } from '@/types/error.types';
 import { COOKIE_NAMES, getSecureCookieOptions } from '@/utils/cookieConstants';
 import { attemptGuestClaim } from '@/lib/services/guestSleepAssessment.service';
+import { normalizePhone } from '@/lib/utils/validation.util';
+import { getClientIp } from '@/lib/utils/request.util';
 import connectDB from '@/lib/db/mongodb';
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  const ip = getClientIp(request);
 
   const body = await request.json().catch(() => ({}));
-  const { email, code, purpose } = body;
+  const { phone, code, purpose } = body;
 
-  if (!email || code === undefined || code === null || !purpose) {
-    return NextResponse.json(errorResponse('Email, code, and purpose are required', null, 400), { status: 400 });
+  if (!phone || code === undefined || code === null || !purpose) {
+    return NextResponse.json(errorResponse('Phone, code, and purpose are required', null, 400), { status: 400 });
   }
 
-  if (typeof email !== 'string' || typeof code !== 'string' || typeof purpose !== 'string') {
+  if (typeof phone !== 'string' || typeof code !== 'string' || typeof purpose !== 'string') {
     return NextResponse.json(errorResponse('Invalid input format', null, 400), { status: 400 });
   }
 
@@ -26,7 +28,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(errorResponse('Purpose must be login or signup', null, 400), { status: 400 });
   }
 
-  const result = await verifyOtp(email, code, purpose, ip);
+  const normalizedPhone = normalizePhone(phone);
+  if (!normalizedPhone) {
+    return NextResponse.json(errorResponse('Invalid phone number', null, 400), { status: 400 });
+  }
+
+  const result = await verifyOtp(normalizedPhone, code, purpose, ip);
 
   if (!result.success) {
     return NextResponse.json(errorResponse(result.message ?? 'Verification failed', null, result.statusCode), {
@@ -34,11 +41,9 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const sanitizedEmail = email.trim().toLowerCase();
-
   if (purpose === 'login') {
     try {
-      const session = await createSessionAfterOtp(sanitizedEmail);
+      const session = await createSessionAfterOtp(normalizedPhone);
       const response = NextResponse.json(successResponse('Login successful', session, 200), { status: 200 });
       response.cookies.set(COOKIE_NAMES.AUTH_TOKEN, session.token, getSecureCookieOptions());
       await attemptGuestClaim(request, response, session.user._id);
@@ -56,7 +61,7 @@ export async function POST(request: NextRequest) {
       await connectDB();
 
       const { consumePendingSignup } = await import('@/lib/services/auth');
-      const pendingData = await consumePendingSignup(sanitizedEmail);
+      const pendingData = await consumePendingSignup(normalizedPhone);
 
       if (!pendingData) {
         return NextResponse.json(errorResponse('Signup session expired. Please sign up again.', null, 400), {
@@ -65,21 +70,13 @@ export async function POST(request: NextRequest) {
       }
 
       const { createUserAfterOtpVerification } = await import('@/lib/services/auth.service');
-      const session = await createUserAfterOtpVerification(
-        pendingData.email,
-        pendingData.password,
-        pendingData.name,
-        pendingData.role,
-      );
-
-      const { sendWelcomeEmail } = await import('@/lib/services/email/welcome-email.service');
-      sendWelcomeEmail(pendingData.email, pendingData.name).catch(() => undefined);
+      const session = await createUserAfterOtpVerification(pendingData.phone, pendingData.name, pendingData.role);
 
       // Push the new user to Zoho CRM as a Lead (fire-and-forget — never blocks signup)
       const { pushSignupLeadToZoho } = await import('@/lib/zoho/zoho-crm.service');
-      pushSignupLeadToZoho(pendingData.name, pendingData.email).catch(() => undefined);
+      pushSignupLeadToZoho(pendingData.name, undefined, pendingData.phone).catch(() => undefined);
 
-      const response = NextResponse.json(successResponse('Email verified successfully', session, 200), { status: 200 });
+      const response = NextResponse.json(successResponse('Phone verified successfully', session, 200), { status: 200 });
       response.cookies.set(COOKIE_NAMES.AUTH_TOKEN, session.token, getSecureCookieOptions());
       await attemptGuestClaim(request, response, session.user._id);
       return response;

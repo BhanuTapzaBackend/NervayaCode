@@ -13,7 +13,6 @@ export interface SignupFormProps {
   error: string | null;
   onSubmit: (e: React.FormEvent) => void;
   onInputChange: (field: 'name' | 'phone', value: string) => void;
-  onLoginClick: () => void;
 }
 
 export const SignupForm: React.FC<SignupFormProps> = ({
@@ -24,12 +23,9 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   error,
   onSubmit,
   onInputChange,
-  onLoginClick,
 }) => {
   return (
     <>
-      <h1 className={styles.title}>Create Account</h1>
-      <p className={styles.divider}>we&apos;ll send a code to your WhatsApp</p>
       {error && (
         <div role="alert" className={styles.errorBanner} aria-live="polite">
           {error}
@@ -39,7 +35,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         <div className={styles.inputGroup}>
           <input
             type="text"
-            placeholder="Name"
+            placeholder="Full name"
             className={[styles.input, fieldErrors.name ? styles.inputError : ''].filter(Boolean).join(' ')}
             value={name}
             onChange={(e) => onInputChange('name', e.target.value)}
@@ -58,7 +54,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           <input
             type="tel"
             inputMode="tel"
-            placeholder="WhatsApp number (e.g. +91 98765 43210)"
+            placeholder="WhatsApp number"
             className={[styles.input, fieldErrors.phone ? styles.inputError : ''].filter(Boolean).join(' ')}
             value={phone}
             onChange={(e) => onInputChange('phone', e.target.value)}
@@ -80,16 +76,10 @@ export const SignupForm: React.FC<SignupFormProps> = ({
               <span>Signing up</span>
             </div>
           ) : (
-            'Sign up'
+            'Create account'
           )}
         </button>
       </form>
-      <div className={styles.authToggle}>
-        Already have an account?{' '}
-        <button type="button" onClick={onLoginClick} className={styles.authToggleLink}>
-          Log In
-        </button>
-      </div>
     </>
   );
 };

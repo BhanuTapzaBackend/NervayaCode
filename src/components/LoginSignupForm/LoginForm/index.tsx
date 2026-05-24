@@ -12,7 +12,6 @@ export interface LoginFormProps {
   error: string | null;
   onSubmit: (e: React.FormEvent) => void;
   onInputChange: (field: 'name' | 'phone', value: string) => void;
-  onSignupClick: () => void;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({
@@ -22,12 +21,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   error,
   onSubmit,
   onInputChange,
-  onSignupClick,
 }) => {
   return (
     <>
-      <h1 className={styles.title}>Log In</h1>
-      <p className={styles.divider}>we&apos;ll send a code to your WhatsApp</p>
       {error && (
         <div role="alert" className={styles.errorBanner} aria-live="polite">
           {error}
@@ -38,7 +34,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           <input
             type="tel"
             inputMode="tel"
-            placeholder="WhatsApp number (e.g. +91 98765 43210)"
+            placeholder="WhatsApp number"
             className={[styles.input, fieldErrors.phone ? styles.inputError : ''].filter(Boolean).join(' ')}
             value={phone}
             onChange={(e) => onInputChange('phone', e.target.value)}
@@ -64,12 +60,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           )}
         </button>
       </form>
-      <div className={styles.authToggle}>
-        Don&apos;t have an account?{' '}
-        <button type="button" onClick={onSignupClick} className={styles.authToggleLink}>
-          Sign Up
-        </button>
-      </div>
     </>
   );
 };

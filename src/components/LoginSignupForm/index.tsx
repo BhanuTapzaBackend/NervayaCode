@@ -44,6 +44,8 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
     handleInputChange,
   } = useAuthForm({ initialMode, returnUrl });
 
+  const isSignup = isRightPanelActive;
+
   const onLoginSubmit = useCallback(
     async (e: React.FormEvent) => {
       try {
@@ -60,10 +62,8 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
           setOtpPurpose(OTP_PURPOSE.LOGIN);
           setAuthStep(AUTH_STEP.OTP);
         }
-        // If login succeeds without OTP, handleAuthSuccess in AuthContext handles navigation
       } catch {
-        // Error is already set in AuthContext by the login function
-        // The error will be displayed via the error prop passed to LoginForm
+        /* error surfaced via AuthContext + error prop */
       }
     },
     [handleLoginSubmit, clearAuthError],
@@ -85,21 +85,19 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
           setOtpPurpose(OTP_PURPOSE.SIGNUP);
           setAuthStep(AUTH_STEP.OTP);
 
-          // Push to Zoho CRM — captures the lead even if they abandon here
+          // Capture the lead even if they abandon at the OTP step.
           pushLead({
-            name: name,
-            phone: phone,
+            name,
+            phone,
             source: 'Nervaya Signup',
             message: 'User initiated signup and is at the OTP verification step.',
           });
         }
-        // If signup succeeds without OTP, handleAuthSuccess in AuthContext handles navigation
       } catch {
-        // Error is already set in AuthContext by the signup function
-        // The error will be displayed via the error prop passed to SignupForm
+        /* error surfaced via AuthContext + error prop */
       }
     },
-    [handleSignupSubmit, clearAuthError, phone, name, pushLead],
+    [handleSignupSubmit, clearAuthError, name, phone, pushLead],
   );
 
   const onOtpSuccess = useCallback(
@@ -117,108 +115,101 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
 
   const onOtpBack = useCallback(() => setAuthStep(AUTH_STEP.CREDENTIALS), []);
 
+  const switchMode = useCallback(
+    (toSignup: boolean) => {
+      setAuthStep(AUTH_STEP.CREDENTIALS);
+      if (toSignup) {
+        handleSignupClick();
+      } else {
+        handleLoginClick();
+      }
+    },
+    [handleSignupClick, handleLoginClick],
+  );
+
+  const illustration = isSignup ? IMAGES.AUTH_SIGNUP_ILLUSTRATION : IMAGES.AUTH_LOGIN_ILLUSTRATION;
+
   return (
-    <div className={styles.container}>
-      <div className={`${styles.authCard} ${isRightPanelActive ? styles.rightPanelActive : ''}`}>
-        <div
-          className={`${styles.formSection} ${styles.formSignup}`}
-          style={{
-            opacity: isRightPanelActive ? 1 : 0,
-            zIndex: isRightPanelActive ? 5 : 1,
-            transform: isRightPanelActive ? 'translateX(100%)' : 'translateX(0)',
-          }}
-        >
-          {authStep === AUTH_STEP.OTP && otpPurpose === OTP_PURPOSE.SIGNUP ? (
+    <div className={styles.page}>
+      <div className={styles.card}>
+        <aside className={styles.illustrationPanel}>
+          <Image
+            key={illustration}
+            src={illustration}
+            alt=""
+            fill
+            sizes="(max-width: 768px) 100vw, 480px"
+            className={styles.illustration}
+            priority
+          />
+        </aside>
+
+        <main className={styles.formPanel}>
+          {authStep === AUTH_STEP.OTP ? (
             <OTPVerificationStep
               phone={phone.trim()}
-              purpose={OTP_PURPOSE.SIGNUP}
+              purpose={otpPurpose}
               onSuccess={onOtpSuccess}
               onBack={onOtpBack}
-              autoSend={false}
+              autoSend={otpPurpose !== OTP_PURPOSE.SIGNUP}
             />
           ) : (
-            <SignupForm
-              name={name}
-              phone={phone}
-              fieldErrors={fieldErrors}
-              loading={loading}
-              error={error}
-              onSubmit={onSignupSubmit}
-              onInputChange={handleInputChange}
-              onLoginClick={handleLoginClick}
-            />
+            <>
+              <div className={styles.toggle} role="tablist" aria-label="Choose log in or sign up">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={!isSignup}
+                  className={`${styles.toggleBtn} ${!isSignup ? styles.toggleActive : ''}`}
+                  onClick={() => switchMode(false)}
+                >
+                  Log in
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={isSignup}
+                  className={`${styles.toggleBtn} ${isSignup ? styles.toggleActive : ''}`}
+                  onClick={() => switchMode(true)}
+                >
+                  Sign up
+                </button>
+              </div>
+
+              <div className={styles.intro}>
+                <h1 className={styles.heading}>{isSignup ? 'Create your account' : 'Welcome back'}</h1>
+                <p className={styles.subheading}>
+                  {isSignup
+                    ? 'Tell us your name and WhatsApp number to get started.'
+                    : 'Enter your WhatsApp number and we’ll send you a code.'}
+                </p>
+              </div>
+
+              <div className={styles.formWrap} key={isSignup ? 'signup' : 'login'}>
+                {isSignup ? (
+                  <SignupForm
+                    name={name}
+                    phone={phone}
+                    fieldErrors={fieldErrors}
+                    loading={loading}
+                    error={error}
+                    onSubmit={onSignupSubmit}
+                    onInputChange={handleInputChange}
+                  />
+                ) : (
+                  <LoginForm
+                    phone={phone}
+                    fieldErrors={fieldErrors}
+                    loading={loading}
+                    error={error}
+                    onSubmit={onLoginSubmit}
+                    onInputChange={handleInputChange}
+                  />
+                )}
+              </div>
+            </>
           )}
-        </div>
-
-        <div
-          className={`${styles.formSection} ${styles.formLogin}`}
-          style={{
-            opacity: isRightPanelActive ? 0 : 1,
-            zIndex: isRightPanelActive ? 1 : 5,
-            transform: isRightPanelActive ? 'translateX(100%)' : 'translateX(0)',
-          }}
-        >
-          {authStep === AUTH_STEP.OTP && otpPurpose === OTP_PURPOSE.LOGIN ? (
-            <OTPVerificationStep
-              phone={phone.trim()}
-              purpose={OTP_PURPOSE.LOGIN}
-              onSuccess={onOtpSuccess}
-              onBack={onOtpBack}
-            />
-          ) : (
-            <LoginForm
-              phone={phone}
-              fieldErrors={fieldErrors}
-              loading={loading}
-              error={error}
-              onSubmit={onLoginSubmit}
-              onInputChange={handleInputChange}
-              onSignupClick={handleSignupClick}
-            />
-          )}
-        </div>
-
-        <div className={styles.overlayContainer}>
-          <div className={styles.overlay}>
-            <div className={styles.overlayBg} style={{ left: 0 }}>
-              <Image
-                src={IMAGES.AUTH_LOGIN_ILLUSTRATION}
-                alt="Login Illustration"
-                fill
-                sizes="50vw"
-                className={styles.overlayImage}
-                priority
-              />
-              <div className={styles.overlayDim}></div>
-            </div>
-            <div className={styles.overlayBg} style={{ right: 0 }}>
-              <Image
-                src={IMAGES.AUTH_SIGNUP_ILLUSTRATION}
-                alt="Signup Illustration"
-                fill
-                sizes="50vw"
-                className={styles.overlayImage}
-                priority
-              />
-              <div className={styles.overlayDim}></div>
-            </div>
-
-            <div className={`${styles.overlayPanel} ${styles.overlayLeft}`}>
-              <h1 className={`${styles.overlayTitle} ${styles.welcomeBackText}`}>Welcome Back!</h1>
-              <p className={styles.overlayText}>To keep connected with us please login with your personal info</p>
-              <button type="button" className={styles.ghostButton} onClick={handleLoginClick}>
-                OK
-              </button>
-            </div>
-            <div className={`${styles.overlayPanel} ${styles.overlayRight}`}>
-              <h1 className={styles.overlayTitle}>Hello, Friend!</h1>
-              <p className={styles.overlayText}>Enter your personal details and start your journey with us</p>
-              <button type="button" className={styles.ghostButton} onClick={handleSignupClick}>
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
+        </main>
       </div>
     </div>
   );

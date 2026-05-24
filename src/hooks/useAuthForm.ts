@@ -43,7 +43,7 @@ export function useAuthForm(options: UseAuthFormOptions = {}) {
     if (!trimmedPhone) {
       errors.phone = 'WhatsApp number is required';
     } else if (!normalizePhone(trimmedPhone)) {
-      errors.phone = 'Enter a valid WhatsApp number';
+      errors.phone = 'Enter a valid 10-digit mobile number';
     }
 
     setFieldErrors(errors);
@@ -64,7 +64,7 @@ export function useAuthForm(options: UseAuthFormOptions = {}) {
     if (!trimmedPhone) {
       errors.phone = 'WhatsApp number is required';
     } else if (!normalizePhone(trimmedPhone)) {
-      errors.phone = 'Enter a valid WhatsApp number';
+      errors.phone = 'Enter a valid 10-digit mobile number';
     }
 
     setFieldErrors(errors);

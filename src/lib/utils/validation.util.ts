@@ -12,25 +12,26 @@ const E164_REGEX = /^\+[1-9]\d{7,14}$/;
 
 /**
  * Normalize a raw phone input to canonical E.164 (e.g. +919876543210).
- * - strips spaces, dashes, parentheses, and dots
- * - keeps an existing leading "+"
- * - converts a leading "00" international prefix to "+"
- * - prepends the default country code to a bare 10-digit number
- * Returns null when the input cannot be normalized to a valid E.164 number.
+ * Mobile numbers must be exactly 10 digits (Indian mobile). An optional
+ * country code (+91 / 91) or trunk prefix (leading 0) is stripped first.
+ * Returns null when the result is not exactly 10 digits.
  */
 export function normalizePhone(input: string, defaultCountry = '+91'): string | null {
   if (typeof input !== 'string') return null;
 
-  let cleaned = input.trim().replace(/[\s\-().]/g, '');
-  if (!cleaned) return null;
-
-  if (cleaned.startsWith('00')) {
-    cleaned = `+${cleaned.slice(2)}`;
-  } else if (!cleaned.startsWith('+') && /^\d{10}$/.test(cleaned)) {
-    cleaned = `${defaultCountry}${cleaned}`;
+  // Reduce to digits, dropping an optional +91/91 country code or leading 0.
+  let digits = input.replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) {
+    digits = digits.slice(2);
+  } else if (digits.length === 11 && digits.startsWith('0')) {
+    digits = digits.slice(1);
   }
 
-  return validatePhone(cleaned) ? cleaned : null;
+  if (!/^\d{10}$/.test(digits)) {
+    return null;
+  }
+
+  return `${defaultCountry}${digits}`;
 }
 
 export function validatePhone(phone: string): boolean {

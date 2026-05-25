@@ -126,6 +126,7 @@ export const ICON_SHIELD_CHECK = 'solar:shield-check-bold';
 export const ICON_SHIELD_WARNING = 'solar:shield-warning-bold-duotone';
 export const ICON_LIGHTBULB = 'solar:lightbulb-bold-duotone';
 export const ICON_RESTART = 'solar:restart-bold';
+export const ICON_HEART = 'solar:heart-bold';
 
 // Sidebar icon map for NavigationMenuGroup
 type SidebarIconMap = Record<string, string>;

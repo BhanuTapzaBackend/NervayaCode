@@ -12,6 +12,7 @@ import {
 } from '@/lib/constants/enums';
 import { useAuthForm } from '@/hooks/useAuthForm';
 import { useAuthContext, type AuthData } from '@/context/AuthContext';
+import { useTimeOfDay, type TimeOfDay } from '@/hooks/useTimeOfDay';
 import { OTPVerificationStep } from './OTPVerificationStep';
 import { LoginForm } from './LoginForm';
 import { SignupForm } from './SignupForm';
@@ -24,11 +25,29 @@ export interface LoginSignupFormProps {
   returnUrl?: string;
 }
 
+interface HeroImage {
+  image: string;
+  imageMobile: string;
+}
+
+const HERO_IMAGE: Record<TimeOfDay, HeroImage> = {
+  morning: {
+    image: IMAGES.AUTH_HERO_MORNING,
+    imageMobile: IMAGES.AUTH_HERO_MORNING_MOBILE,
+  },
+  night: {
+    image: IMAGES.AUTH_HERO_NIGHT,
+    imageMobile: IMAGES.AUTH_HERO_NIGHT_MOBILE,
+  },
+};
+
 const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FORM_MODE.LOGIN, returnUrl }) => {
   const { completeLoginWithOtp, clearError: clearAuthError } = useAuthContext();
   const [authStep, setAuthStep] = useState<AuthStep>(AUTH_STEP.CREDENTIALS);
   const [otpPurpose, setOtpPurpose] = useState<OtpPurpose>(OTP_PURPOSE.LOGIN);
   const { pushLead } = useZohoLead();
+  const timeOfDay = useTimeOfDay();
+  const hero = HERO_IMAGE[timeOfDay];
 
   const {
     isRightPanelActive,
@@ -127,88 +146,109 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
     [handleSignupClick, handleLoginClick],
   );
 
-  const illustration = isSignup ? IMAGES.AUTH_SIGNUP_ILLUSTRATION : IMAGES.AUTH_LOGIN_ILLUSTRATION;
-
   return (
     <div className={styles.page}>
-      <div className={styles.card}>
-        <aside className={styles.illustrationPanel}>
-          <Image
-            key={illustration}
-            src={illustration}
-            alt=""
-            fill
-            sizes="(max-width: 768px) 100vw, 480px"
-            className={styles.illustration}
-            priority
-          />
-        </aside>
+      <div className={styles.backgroundLayer}>
+        <Image
+          key={hero.image}
+          src={hero.image}
+          alt=""
+          fill
+          sizes="100vw"
+          className={styles.backgroundImage}
+          priority
+        />
+        <Image
+          key={hero.imageMobile}
+          src={hero.imageMobile}
+          alt=""
+          fill
+          sizes="100vw"
+          className={styles.backgroundImageMobile}
+        />
+      </div>
 
-        <main className={styles.formPanel}>
-          {authStep === AUTH_STEP.OTP ? (
-            <OTPVerificationStep
-              phone={phone.trim()}
-              purpose={otpPurpose}
-              onSuccess={onOtpSuccess}
-              onBack={onOtpBack}
-              autoSend={otpPurpose !== OTP_PURPOSE.SIGNUP}
-            />
-          ) : (
-            <>
-              <div className={styles.toggle} role="tablist" aria-label="Choose log in or sign up">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={!isSignup}
-                  className={`${styles.toggleBtn} ${!isSignup ? styles.toggleActive : ''}`}
-                  onClick={() => switchMode(false)}
-                >
-                  Log in
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={isSignup}
-                  className={`${styles.toggleBtn} ${isSignup ? styles.toggleActive : ''}`}
-                  onClick={() => switchMode(true)}
-                >
-                  Sign up
-                </button>
-              </div>
+      <div className={styles.contentLayer}>
+        <main className={styles.formPanelWrap}>
+          <div className={styles.formPanel}>
+            <span className={styles.formLogo}>
+              <span className={styles.brandWord}>
+                Ner<span className={styles.brandAccent}>vaya</span>
+              </span>
+              <span className={styles.brandTm}>™</span>
+            </span>
+            {authStep === AUTH_STEP.OTP ? (
+              <OTPVerificationStep
+                phone={phone.trim()}
+                purpose={otpPurpose}
+                onSuccess={onOtpSuccess}
+                onBack={onOtpBack}
+                autoSend={otpPurpose !== OTP_PURPOSE.SIGNUP}
+              />
+            ) : (
+              <>
+                <div className={styles.toggle} role="tablist" aria-label="Choose log in or sign up">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={!isSignup}
+                    className={`${styles.toggleBtn} ${!isSignup ? styles.toggleActive : ''}`}
+                    onClick={() => switchMode(false)}
+                  >
+                    Log in
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={isSignup}
+                    className={`${styles.toggleBtn} ${isSignup ? styles.toggleActive : ''}`}
+                    onClick={() => switchMode(true)}
+                  >
+                    Sign up
+                  </button>
+                </div>
 
-              <div className={styles.intro}>
-                <h1 className={styles.heading}>{isSignup ? 'Create your account' : 'Welcome back'}</h1>
-                <p className={styles.subheading}>
-                  {isSignup
-                    ? 'Tell us your name and WhatsApp number to get started.'
-                    : 'Enter your WhatsApp number and we’ll send you a code.'}
+                <div className={styles.intro}>
+                  <h1 className={styles.heading}>{isSignup ? 'Create your account' : 'Welcome back'}</h1>
+                  <p className={styles.subheading}>
+                    {isSignup
+                      ? 'Take the first step towards a happier you.'
+                      : 'Enter your WhatsApp number and we’ll send you a code.'}
+                  </p>
+                </div>
+
+                <div className={styles.formWrap} key={isSignup ? 'signup' : 'login'}>
+                  {isSignup ? (
+                    <SignupForm
+                      name={name}
+                      phone={phone}
+                      fieldErrors={fieldErrors}
+                      loading={loading}
+                      error={error}
+                      onSubmit={onSignupSubmit}
+                      onInputChange={handleInputChange}
+                    />
+                  ) : (
+                    <LoginForm
+                      phone={phone}
+                      fieldErrors={fieldErrors}
+                      loading={loading}
+                      error={error}
+                      onSubmit={onLoginSubmit}
+                      onInputChange={handleInputChange}
+                    />
+                  )}
+                </div>
+
+                <p className={styles.footerLink}>
+                  {isSignup ? 'Already have an account? ' : 'New here? '}
+                  <button type="button" className={styles.footerLinkBtn} onClick={() => switchMode(!isSignup)}>
+                    {isSignup ? 'Log in' : 'Sign up'}
+                  </button>
                 </p>
-              </div>
-
-              <div className={styles.formWrap} key={isSignup ? 'signup' : 'login'}>
-                {isSignup ? (
-                  <SignupForm
-                    name={name}
-                    phone={phone}
-                    fieldErrors={fieldErrors}
-                    loading={loading}
-                    error={error}
-                    onSubmit={onSignupSubmit}
-                    onInputChange={handleInputChange}
-                  />
-                ) : (
-                  <LoginForm
-                    phone={phone}
-                    fieldErrors={fieldErrors}
-                    loading={loading}
-                    error={error}
-                    onSubmit={onLoginSubmit}
-                    onInputChange={handleInputChange}
-                  />
-                )}
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </main>
       </div>
     </div>

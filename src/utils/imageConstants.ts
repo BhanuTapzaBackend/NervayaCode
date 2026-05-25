@@ -6,8 +6,11 @@ export const IMAGES = {
   CARD_SLEEP_SUPPLEMENTS:
     'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/sleep_supplements_apjqre.png',
 
-  AUTH_LOGIN_ILLUSTRATION: '/assets/auth/login-v1.png',
-  AUTH_SIGNUP_ILLUSTRATION: '/assets/auth/sign-up.png',
+  AUTH_HERO_MORNING: '/assets/auth/morning-v2.png',
+  AUTH_HERO_NIGHT: '/assets/auth/night-v1.png',
+
+  AUTH_HERO_MORNING_MOBILE: '/assets/auth/morning-mobile.png',
+  AUTH_HERO_NIGHT_MOBILE: '/assets/auth/night-mobile.png',
 
   ABOUT_US_MAIN: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/about_us_main_ykusxn.png',
 

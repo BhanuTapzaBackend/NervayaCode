@@ -99,14 +99,10 @@ const Navbar = () => {
   const accountHref = isAdmin ? ROUTES.ADMIN_DASHBOARD : '/account';
   const accountLabel = isAdmin ? 'Admin' : user?.name?.split(' ')[0] || 'Account';
 
+  // Auth pages (/login, /signup) render a full-bleed split-screen experience with
+  // their own branding — no global navbar.
   if (isAuthPage) {
-    return (
-      <nav className={`${styles.navbar} ${styles.navbarAuthPage}`} aria-label="Site navigation">
-        <div className={styles.navbarContainer}>
-          <NavbarLogo isAuthPage />
-        </div>
-      </nav>
-    );
+    return null;
   }
 
   return (

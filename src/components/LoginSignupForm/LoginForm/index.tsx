@@ -1,6 +1,7 @@
 import React from 'react';
 import { Icon } from '@iconify/react';
-import { ICON_LOADING } from '@/constants/icons';
+import { ICON_LOADING, ICON_WHATSAPP } from '@/constants/icons';
+import { AuthField } from '../AuthField';
 import styles from './styles.module.css';
 
 import { AuthFormErrors } from '@/hooks/useAuthForm';
@@ -30,25 +31,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         </div>
       )}
       <form className={styles.form} onSubmit={onSubmit}>
-        <div className={styles.inputGroup}>
-          <input
-            type="tel"
-            inputMode="tel"
-            placeholder="WhatsApp number"
-            className={[styles.input, fieldErrors.phone ? styles.inputError : ''].filter(Boolean).join(' ')}
-            value={phone}
-            onChange={(e) => onInputChange('phone', e.target.value)}
-            autoComplete="tel"
-            aria-label="WhatsApp number"
-            aria-invalid={!!fieldErrors.phone}
-            aria-describedby={fieldErrors.phone ? 'login-phone-error' : undefined}
-          />
-          {fieldErrors.phone && (
-            <span id="login-phone-error" className={styles.fieldError}>
-              {fieldErrors.phone}
-            </span>
-          )}
-        </div>
+        <AuthField
+          id="login-phone"
+          type="tel"
+          inputMode="tel"
+          icon={ICON_WHATSAPP}
+          placeholder="WhatsApp number"
+          label="WhatsApp number"
+          value={phone}
+          error={fieldErrors.phone}
+          suffix="+91"
+          autoComplete="tel"
+          onChange={(value) => onInputChange('phone', value)}
+        />
         <button type="submit" className={styles.button} disabled={loading}>
           {loading ? (
             <div className={styles.loaderWrapper}>

@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';
 import Script from 'next/script';
-import { Outfit, Inter } from 'next/font/google';
+import { Outfit, Inter, Bricolage_Grotesque } from 'next/font/google';
 import './globals.css';
 import Providers from '@/components/Providers';
 import { EngagementTracker } from '@/components/EngagementTracker';
@@ -17,6 +17,13 @@ const outfit = Outfit({
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+});
+
+// Distinctive display font used for the auth-screen hero + card titles.
+const displayFont = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-display',
   display: 'swap',
 });
 
@@ -68,8 +75,13 @@ export default function RootLayout({
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
   return (
-    <html lang="en" className={`${outfit.variable} ${inter.variable}`}>
+    <html lang="en" className={`${outfit.variable} ${inter.variable} ${displayFont.variable}`} suppressHydrationWarning>
       <head>
+        {/* Resolve the auth screen's day/night theme from the visitor's local
+            clock before first paint, so the dark/light background never flashes. */}
+        <Script id="auth-theme-init" strategy="beforeInteractive">
+          {`(function(){try{var h=new Date().getHours();document.documentElement.setAttribute('data-auth-theme',(h>=6&&h<18)?'morning':'night');}catch(e){}})();`}
+        </Script>
         <Script id="data-layer-init" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];

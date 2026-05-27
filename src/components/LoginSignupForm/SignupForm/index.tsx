@@ -49,11 +49,10 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           type="tel"
           inputMode="tel"
           icon={ICON_WHATSAPP}
-          placeholder="WhatsApp number"
+          placeholder="+91 WhatsApp number"
           label="WhatsApp number"
           value={phone}
           error={fieldErrors.phone}
-          suffix="+91"
           autoComplete="tel"
           onChange={(value) => onInputChange('phone', value)}
         />

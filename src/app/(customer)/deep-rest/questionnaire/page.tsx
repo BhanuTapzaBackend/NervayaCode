@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar/LazySidebar';
 import { GlobalLoader } from '@/components/common/GlobalLoader';
@@ -13,6 +13,14 @@ import type { IDriftOffAnswer, IDriftOffOrder } from '@/types/driftOff.types';
 import styles from './styles.module.css';
 
 export default function DriftOffQuestionnairePage() {
+  return (
+    <Suspense fallback={null}>
+      <DriftOffQuestionnaireContent />
+    </Suspense>
+  );
+}
+
+function DriftOffQuestionnaireContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = searchParams.get('orderId');

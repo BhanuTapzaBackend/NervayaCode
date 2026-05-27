@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   AUTH_FORM_MODE,
   AUTH_STEP,
@@ -171,12 +172,12 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
       <div className={styles.contentLayer}>
         <main className={styles.formPanelWrap}>
           <div className={styles.formPanel}>
-            <span className={styles.formLogo}>
+            <Link href="/" className={styles.formLogo} style={{ textDecoration: 'none' }}>
               <span className={styles.brandWord}>
                 Ner<span className={styles.brandAccent}>vaya</span>
               </span>
               <span className={styles.brandTm}>™</span>
-            </span>
+            </Link>
             {authStep === AUTH_STEP.OTP ? (
               <OTPVerificationStep
                 phone={phone.trim()}

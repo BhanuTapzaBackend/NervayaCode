@@ -70,7 +70,7 @@ export async function sendOtp(
   await saveOtp(normalizedPhone, purpose, code);
 
   try {
-    await delivery.sendOtp(normalizedPhone, code);
+    await delivery.sendOtp(normalizedPhone, code, purpose);
   } catch (error) {
     console.error('[OTP] WhatsApp delivery failed:', error);
     return {

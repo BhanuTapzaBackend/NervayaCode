@@ -12,8 +12,8 @@ export function createWhatsAppOtpDelivery(): OtpDelivery | null {
   }
 
   return {
-    async sendOtp(recipient: string, code: string): Promise<void> {
-      await sendOtpTemplate(recipient, code);
+    async sendOtp(recipient: string, code: string, purpose: string): Promise<void> {
+      await sendOtpTemplate(recipient, code, purpose);
     },
   };
 }

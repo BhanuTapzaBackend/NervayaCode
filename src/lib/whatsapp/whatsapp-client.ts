@@ -11,6 +11,7 @@ interface WhatsAppConfig {
   accessToken: string;
   apiVersion: string;
   templateName: string;
+  templateLanguage: string;
 }
 
 function readConfig(): WhatsAppConfig | null {
@@ -18,12 +19,15 @@ function readConfig(): WhatsAppConfig | null {
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN?.trim();
   const templateName = process.env.WHATSAPP_OTP_TEMPLATE_NAME?.trim();
   const apiVersion = process.env.WHATSAPP_API_VERSION?.trim() || 'v21.0';
+  // Must match the locale the template was APPROVED under (e.g. en_US, en_GB).
+  // A mismatched code triggers Graph API error #132001 ("does not exist in the translation").
+  const templateLanguage = process.env.WHATSAPP_OTP_TEMPLATE_LANG?.trim() || 'en_US';
 
   if (!phoneNumberId || !accessToken || !templateName) {
     return null;
   }
 
-  return { phoneNumberId, accessToken, apiVersion, templateName };
+  return { phoneNumberId, accessToken, apiVersion, templateName, templateLanguage };
 }
 
 export function isWhatsAppConfigured(): boolean {
@@ -48,11 +52,12 @@ export class WhatsAppSendError extends Error {
  * parameter and as the copy-code button URL parameter, otherwise the Graph API
  * rejects the request.
  *
- * @param toE164 recipient number in E.164 (with leading "+"); stripped here.
- * @param code   the OTP value.
+ * @param toE164  recipient number in E.164 (with leading "+"); stripped here.
+ * @param code    the OTP value.
+ * @param purpose fills the template's second body variable ("...OTP code for {{2}}").
  * @returns the WhatsApp message id (wamid) for correlation with webhook events.
  */
-export async function sendOtpTemplate(toE164: string, code: string): Promise<{ messageId: string }> {
+export async function sendOtpTemplate(toE164: string, code: string, purpose: string): Promise<{ messageId: string }> {
   const config = readConfig();
   if (!config) {
     throw new WhatsAppSendError('WhatsApp is not configured');
@@ -68,11 +73,15 @@ export async function sendOtpTemplate(toE164: string, code: string): Promise<{ m
     type: 'template',
     template: {
       name: config.templateName,
-      language: { code: 'en' },
+      language: { code: config.templateLanguage },
       components: [
         {
           type: 'body',
-          parameters: [{ type: 'text', text: code }],
+          // Order must match the template: {{1}} = code, {{2}} = purpose.
+          parameters: [
+            { type: 'text', text: code },
+            { type: 'text', text: purpose },
+          ],
         },
         {
           type: 'button',

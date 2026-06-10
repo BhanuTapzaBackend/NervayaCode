@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -49,6 +49,27 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
   const { pushLead } = useZohoLead();
   const timeOfDay = useTimeOfDay();
   const hero = HERO_IMAGE[timeOfDay];
+
+  // Restore state from sessionStorage on mount
+  useEffect(() => {
+    const savedStep = sessionStorage.getItem('nervaya_auth_step');
+    if (savedStep) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAuthStep(savedStep as AuthStep);
+    }
+
+    const savedPurpose = sessionStorage.getItem('nervaya_auth_purpose');
+    if (savedPurpose) {
+       
+      setOtpPurpose(savedPurpose as OtpPurpose);
+    }
+  }, []);
+
+  // Sync state to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('nervaya_auth_step', authStep);
+    sessionStorage.setItem('nervaya_auth_purpose', otpPurpose);
+  }, [authStep, otpPurpose]);
 
   const {
     isRightPanelActive,

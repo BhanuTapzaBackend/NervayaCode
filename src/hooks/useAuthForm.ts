@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAuthContext } from '@/context/AuthContext';
 import { AUTH_FORM_MODE, type AuthFormMode } from '@/lib/constants/enums';
 import { normalizePhone, validateName } from '@/lib/utils/validation.util';
@@ -23,6 +23,34 @@ export function useAuthForm(options: UseAuthFormOptions = {}) {
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [fieldErrors, setFieldErrors] = useState<AuthFormErrors>({});
+
+  // Restore state from sessionStorage on mount
+  useEffect(() => {
+    const savedIsRightPanel = sessionStorage.getItem('nervaya_auth_isRightPanelActive');
+    if (savedIsRightPanel !== null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsRightPanelActive(savedIsRightPanel === 'true');
+    }
+
+    const savedPhone = sessionStorage.getItem('nervaya_auth_phone');
+    if (savedPhone) {
+       
+      setPhone(savedPhone);
+    }
+
+    const savedName = sessionStorage.getItem('nervaya_auth_name');
+    if (savedName) {
+       
+      setName(savedName);
+    }
+  }, []);
+
+  // Sync state to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('nervaya_auth_isRightPanelActive', String(isRightPanelActive));
+    sessionStorage.setItem('nervaya_auth_phone', phone);
+    sessionStorage.setItem('nervaya_auth_name', name);
+  }, [isRightPanelActive, phone, name]);
 
   const handleSignupClick = useCallback(() => {
     clearError();

@@ -5,56 +5,54 @@ import connectDB from '@/lib/db/mongodb';
 const PENDING_SIGNUP_TTL_MS = 10 * 60 * 1000;
 
 export interface PendingSignupData {
-  email: string;
-  password: string;
+  phone: string;
   name: string;
   role?: Role;
   expiresAt: number;
 }
 
-export async function savePendingSignup(email: string, password: string, name: string, role?: Role): Promise<void> {
+export async function savePendingSignup(phone: string, name: string, role?: Role): Promise<void> {
   await connectDB();
-  const normalizedEmail = email.toLowerCase().trim();
+  const normalizedPhone = phone.trim();
   const expiresAt = new Date(Date.now() + PENDING_SIGNUP_TTL_MS);
 
   await PendingSignup.findOneAndUpdate(
-    { email: normalizedEmail },
-    { password, name: name.trim(), role, expiresAt },
+    { phone: normalizedPhone },
+    { name: name.trim(), role, expiresAt },
     { upsert: true },
   );
 }
 
-export async function consumePendingSignup(email: string): Promise<Omit<PendingSignupData, 'expiresAt'> | null> {
+export async function consumePendingSignup(phone: string): Promise<Omit<PendingSignupData, 'expiresAt'> | null> {
   await connectDB();
-  const normalizedEmail = email.toLowerCase().trim();
-  const doc = await PendingSignup.findOneAndDelete({ email: normalizedEmail });
+  const normalizedPhone = phone.trim();
+  const doc = await PendingSignup.findOneAndDelete({ phone: normalizedPhone });
 
   if (!doc) return null;
   if (new Date() > doc.expiresAt) return null;
 
   return {
-    email: doc.email,
-    password: doc.password,
+    phone: doc.phone,
     name: doc.name,
     role: doc.role as Role | undefined,
   };
 }
 
-export async function hasPendingSignup(email: string): Promise<boolean> {
+export async function hasPendingSignup(phone: string): Promise<boolean> {
   await connectDB();
-  const normalizedEmail = email.toLowerCase().trim();
-  const doc = await PendingSignup.findOne({ email: normalizedEmail });
+  const normalizedPhone = phone.trim();
+  const doc = await PendingSignup.findOne({ phone: normalizedPhone });
 
   if (!doc) return false;
   if (new Date() > doc.expiresAt) {
-    await PendingSignup.deleteOne({ email: normalizedEmail });
+    await PendingSignup.deleteOne({ phone: normalizedPhone });
     return false;
   }
   return true;
 }
 
-export async function clearPendingSignup(email: string): Promise<void> {
+export async function clearPendingSignup(phone: string): Promise<void> {
   await connectDB();
-  const normalizedEmail = email.toLowerCase().trim();
-  await PendingSignup.deleteOne({ email: normalizedEmail });
+  const normalizedPhone = phone.trim();
+  await PendingSignup.deleteOne({ phone: normalizedPhone });
 }

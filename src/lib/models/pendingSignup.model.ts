@@ -1,24 +1,18 @@
 import mongoose, { Schema, Model, Document } from 'mongoose';
 
 export interface IPendingSignup extends Document {
-  email: string;
-  password: string;
+  phone: string;
   name: string;
   role?: string;
   expiresAt: Date;
 }
 
 const pendingSignupSchema = new Schema<IPendingSignup>({
-  email: {
+  phone: {
     type: String,
     required: true,
     unique: true,
-    lowercase: true,
     trim: true,
-  },
-  password: {
-    type: String,
-    required: true,
   },
   name: {
     type: String,

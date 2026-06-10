@@ -1,245 +1,318 @@
-.container {
-  --primary: var(--color-accent);
-  --bg-gradient: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
-  --text-main: var(--color-text-primary);
-  --text-muted: var(--color-text-secondary);
-  --white: var(--color-background);
+/* ============================================================
+   Auth — split-screen card (illustrated hero + segmented form)
+   Day/night themable via --auth-* variables. The night theme is keyed off
+   [data-auth-theme='night'] on <html>, set before paint by an inline script
+   in the root layout so the background never flashes the wrong theme.
+   ============================================================ */
 
-  font-family: var(--font-sans);
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  padding: 0;
-  overflow: hidden;
+.page {
+  /* ── Card palette (LIGHT in both themes, like the reference) ──
+     Only the background image adapts to day/night; the floating form card
+     stays light so it always reads cleanly over the artwork. */
+  --auth-card-bg: #ffffff;
+  --auth-card-border: rgba(17, 12, 46, 0.07);
+  --auth-text: #1e1b4b;
+  --auth-text-muted: #6b7280;
+  --auth-accent: var(--color-accent);
+  --auth-accent-ring: rgba(83, 34, 213, 0.13);
+  --auth-input-bg: #f6f5fb;
+  --auth-input-bg-focus: #ffffff;
+  --auth-input-border: #e6e3f2;
+  --auth-icon: #9a93b8;
+  --auth-btn-bg: linear-gradient(135deg, #6d28d9 0%, #5322d5 100%);
+  --auth-btn-bg-hover: linear-gradient(135deg, #5b21b6 0%, #4521a8 100%);
+  --auth-btn-text: #ffffff;
+
+  /* ── Background (Light "morning" theme default) ──────────── */
+  --auth-page-bg: linear-gradient(180deg, var(--color-accent-surface) 0%, var(--color-cream-bg) 100%);
+
   position: fixed;
-}
-
-.authCard {
-  position: relative;
-  width: 100%;
-  max-width: 1000px;
-  min-height: 600px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--color-border-dark);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-  display: flex;
-  margin-bottom: 10rem;
-}
-
-@media (max-width: 768px) {
-  .authCard {
-    flex-direction: column;
-    min-height: auto;
-    max-width: 90%;
-    width: 400px;
-    height: auto;
-    margin-bottom: 2rem;
-  }
-}
-
-.formSection {
-  width: 50%;
-  padding: 3rem;
+  inset: 0;
+  z-index: 1000;
+  /* Full-bleed: the split-screen card fills the whole viewport (no navbar, no
+     card chrome). Stretch the card edge-to-edge and stay scrollable when the
+     stacked mobile layout is taller than the viewport. */
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  align-items: stretch;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  font-family: var(--font-sans);
+  background: var(--auth-page-bg);
+}
+
+/* ── Dark "night" theme — only the background gradient flips ── */
+:global([data-auth-theme='night']) .page {
+  --auth-page-bg: linear-gradient(180deg, #15122e 0%, #0e0b22 100%);
+}
+
+.backgroundLayer {
   position: absolute;
-  top: 0;
-  height: 100%;
-  transition: all 0.6s ease-in-out;
-  background: transparent;
-  z-index: 1;
-}
-
-@media (max-width: 768px) {
-  .formSection {
-    width: 100%;
-    position: relative;
-    padding: 2rem 1.5rem;
-    height: auto;
-    transform: none !important;
-    opacity: 1 !important;
-    z-index: 1 !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .formSignup {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .formLogin {
-    display: flex;
-  }
-}
-
-.overlayContainer {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 50%;
-  height: 100%;
+  inset: 0;
+  z-index: 0;
   overflow: hidden;
-  transition:
-    transform 0.6s ease-in-out,
-    border-radius 0.6s ease-in-out;
-  z-index: 100;
-  border-radius: 100px 0 0 100px;
+  background: var(--auth-page-bg);
 }
 
-@media (max-width: 768px) {
-  .overlayContainer {
-    display: none;
-  }
-}
-
-.overlay {
-  background: transparent;
-  color: var(--white);
-  position: relative;
-  left: -100%;
-  height: 100%;
-  width: 200%;
-  transform: translateX(0);
-  transition: transform 0.6s ease-in-out;
-  display: flex;
-}
-
-.overlayBg {
-  position: absolute;
-  top: 0;
-  width: 50%;
-  height: 100%;
-  overflow: hidden;
-  z-index: -1;
-}
-
-.overlayImage {
-  width: 100%;
-  height: 100%;
+.backgroundImage {
   object-fit: cover;
-  display: block;
+  object-position: center;
+  animation: imgFade 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.overlayDim {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 1;
+/* Portrait art for phones — hidden on desktop, swapped in below. */
+.backgroundImageMobile {
+  display: none;
+  object-fit: cover;
+  object-position: center;
+  animation: imgFade 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.overlayPanel {
-  position: absolute;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 0 3rem;
-  height: 100%;
-  width: 50%;
-  text-align: center;
-  transform: translateX(0);
-  transition: transform 0.6s ease-in-out;
-  z-index: 2;
-}
-
-.overlayLeft {
-  transform: translateX(-20%);
-}
-
-.overlayRight {
-  right: 0;
-  transform: translateX(0);
-}
-
-.overlayTitle {
-  font-size: var(--font-size-4xl);
-  font-weight: 800;
-  margin-bottom: var(--space-6);
-  color: var(--white);
-}
-
-.welcomeBackText {
-  color: var(--white);
-}
-
-.overlayText {
-  font-size: var(--font-size-lg);
-  margin-bottom: 2rem;
-  line-height: 1.6;
-  opacity: 0.9;
-}
-
-.ghostButton {
-  background: transparent;
-  border: 2px solid var(--white);
-  color: var(--white);
-  padding: 0.875rem 3rem;
-  border-radius: var(--radius-lg);
-  font-weight: var(--weight-semibold);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all var(--transition-slow);
-}
-
-.ghostButton:hover {
-  background: var(--white);
-  color: var(--primary);
-}
-
-.rightPanelActive .formLogin {
-  transform: translateX(100%);
-  opacity: 0;
-  z-index: 1;
-}
-
-@media (max-width: 768px) {
-  .rightPanelActive .formLogin {
+@media (max-width: 1024px) {
+  /* Full-bleed portrait background with the card centered over it. */
+  .backgroundImage {
     display: none;
   }
-}
-
-.rightPanelActive .formSignup {
-  transform: translateX(100%);
-  opacity: 1;
-  z-index: 5;
-}
-
-@media (max-width: 768px) {
-  .rightPanelActive .formSignup {
-    display: flex;
-    transform: none !important;
-    opacity: 1 !important;
+  .backgroundImageMobile {
+    display: block;
   }
 }
 
-.rightPanelActive .overlayContainer {
-  transform: translateX(-100%);
-  border-radius: 0 100px 100px 0;
+@keyframes imgFade {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.rightPanelActive .overlay {
-  transform: translateX(50%);
+.contentLayer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1 0 auto;
+  width: 100%;
+  min-height: 100%;
 }
 
-.rightPanelActive .overlayLeft {
-  transform: translateX(0);
+@media (max-width: 1024px) {
+  .contentLayer {
+    flex-direction: column;
+    justify-content: center;
+  }
 }
 
-.rightPanelActive .overlayRight {
-  transform: translateX(20%);
+@media (prefers-reduced-motion: reduce) {
+  .backgroundImage,
+  .backgroundImageMobile {
+    animation: none;
+  }
+}
+
+/* ── Form panel — floats to the right of the artwork on desktop ── */
+.formPanelWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 3rem clamp(2rem, 6vw, 6rem);
+}
+
+.formPanel {
+  width: 100%;
+  max-width: 540px;
+  background: var(--auth-card-bg);
+  border-radius: var(--radius-2xl);
+  box-shadow:
+    0 24px 60px rgba(20, 11, 48, 0.18),
+    0 6px 16px rgba(20, 11, 48, 0.07);
+  border: 1px solid var(--auth-card-border);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 3rem 3.25rem;
+}
+
+@media (max-width: 1024px) {
+  .formPanelWrap {
+    padding: 1.5rem;
+    align-items: center;
+    justify-content: center;
+  }
+  .formPanel {
+    padding: 2rem 1.5rem;
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .formPanelWrap {
+    padding: 1rem;
+  }
+  .formPanel {
+    padding: 1.75rem 1.25rem;
+    gap: 1rem;
+  }
+}
+
+/* ── Brand wordmark inside the card (centered, ™ raised) ──── */
+.formLogo {
+  align-self: center;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.04em;
+  margin-bottom: 0.25rem;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--color-text-primary);
+}
+
+.brandWord {
+  display: inline-block;
+}
+
+.brandAccent {
+  color: var(--auth-accent);
+}
+
+/* Small trademark mark sitting as a superscript at the top-right of the
+   wordmark, tinted with the brand purple so it reads cleanly. */
+.brandTm {
+  font-size: 0.5em;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: 0.12em;
+  color: var(--auth-accent);
+}
+
+/* ── Minimal underline tabs ──────────────────────────────── */
+.toggle {
+  display: flex;
+  gap: 1.75rem;
+  align-self: flex-start;
+}
+
+.toggleBtn {
+  position: relative;
+  padding: 0.4rem 0;
+  background: none;
+  border: none;
+  color: var(--auth-text-muted);
+  font-family: inherit;
+  font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: color var(--transition-base);
+}
+
+.toggleBtn::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--auth-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--transition-slow);
+}
+
+.toggleBtn:hover {
+  color: var(--auth-text);
+}
+
+.toggleActive,
+.toggleActive:hover {
+  color: var(--auth-text);
+}
+
+.toggleActive::after {
+  transform: scaleX(1);
+}
+
+.toggleBtn:focus-visible,
+.footerLinkBtn:focus-visible {
+  outline: none;
+  border-radius: 6px;
+  box-shadow: 0 0 0 3px var(--auth-accent-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggleBtn::after {
+    transition: none;
+  }
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.15rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.18;
+  color: var(--auth-text);
+}
+
+.subheading {
+  margin: 0;
+  font-size: clamp(0.9rem, 0.85rem + 0.3vw, 1rem);
+  line-height: 1.5;
+  color: var(--auth-text-muted);
+}
+
+.formWrap {
+  animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .formWrap {
+    animation: none;
+  }
+}
+
+/* ── Footer mode-switch link ─────────────────────────────── */
+.footerLink {
+  margin: 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--auth-text-muted);
+}
+
+.footerLinkBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: var(--weight-bold);
+  color: var(--auth-accent);
+  cursor: pointer;
+}
+
+.footerLinkBtn:hover {
+  text-decoration: underline;
 }

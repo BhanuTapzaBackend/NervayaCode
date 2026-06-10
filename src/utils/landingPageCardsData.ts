@@ -18,6 +18,21 @@ export interface LandingPageCard {
 export const landingPageCardsData: LandingPageCard[] = [
   {
     id: 1,
+    image: IMAGES.CARD_SLEEP_SUPPLEMENTS,
+    title: 'Sleep Essentials',
+    description:
+      'Our non-habit forming, fully herbal and no-melatonin formula helps you unwind naturally and drift into deep, restorative sleep. Wake up refreshed, never dependent.',
+    primaryCta: {
+      text: 'Buy Now',
+      href: '/sleep-supplements',
+    },
+    secondaryCta: {
+      text: 'Add to Cart',
+      href: '/sleep-supplements',
+    },
+  },
+  {
+    id: 2,
     image: IMAGES.CARD_THERAPY_SESSION,
     title: 'Therapy',
     description:
@@ -32,7 +47,7 @@ export const landingPageCardsData: LandingPageCard[] = [
     },
   },
   {
-    id: 2,
+    id: 3,
     image: IMAGES.CARD_DRIFT_OFF,
     title: 'Deep Rest',
     description:
@@ -44,21 +59,6 @@ export const landingPageCardsData: LandingPageCard[] = [
     secondaryCta: {
       text: 'Add to Cart',
       href: '/deep-rest',
-    },
-  },
-  {
-    id: 3,
-    image: IMAGES.CARD_SLEEP_SUPPLEMENTS,
-    title: 'Sleep Essentials',
-    description:
-      'Our non-habit forming, fully herbal and no-melatonin formula helps you unwind naturally and drift into deep, restorative sleep. Wake up refreshed, never dependent.',
-    primaryCta: {
-      text: 'Buy Now',
-      href: '/sleep-supplements',
-    },
-    secondaryCta: {
-      text: 'Add to Cart',
-      href: '/sleep-supplements',
     },
   },
 ];

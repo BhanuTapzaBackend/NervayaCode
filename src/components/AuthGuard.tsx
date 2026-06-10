@@ -73,6 +73,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [initializing, isAuthenticated, user?.role, pathname, router]);
 
+  // Auth routes (login/signup) don't depend on auth state, so render them
+  // immediately — never show the full-screen loader, which caused a white
+  // flash before the login background painted.
+  if (isAuthRoute(pathname)) {
+    return <>{children}</>;
+  }
+
   if (initializing) {
     return <LoadingScreen />;
   }

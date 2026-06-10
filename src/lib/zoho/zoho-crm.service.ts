@@ -2,9 +2,9 @@
 // Zoho CRM – Service Helpers
 //
 // Uses the UPSERT endpoint (/crm/v3/Leads/upsert) with duplicate_check_fields
-// ["Email"] so that:
-//   • New email  → Zoho CREATES a new Lead record
-//   • Known email → Zoho UPDATES the existing Lead record (no duplicate)
+// ["Phone"] (falling back to ["Email"] when no phone is present) so that:
+//   • New contact   → Zoho CREATES a new Lead record
+//   • Known contact → Zoho UPDATES the existing Lead record (no duplicate)
 //
 // All functions are designed to be called fire-and-forget:
 //   pushLeadToZoho(...).catch(() => undefined)
@@ -33,10 +33,9 @@ export async function pushLeadToZoho(payload: ZohoLeadPayload): Promise<void> {
 
   const accessToken = await getZohoAccessToken();
 
-  // Deduplicate on Email always; also on Phone when present so a future
-  // mobile-number lookup works without any code changes.
-  const duplicateCheckFields = ['Email'];
-  if (payload.Phone) duplicateCheckFields.push('Phone');
+  // Phone is the primary identifier (WhatsApp auth), so deduplicate on Phone
+  // when present and fall back to Email otherwise.
+  const duplicateCheckFields = payload.Phone ? ['Phone'] : ['Email'];
 
   const body: ZohoUpsertBody = {
     data: [payload],
@@ -70,12 +69,12 @@ export async function pushLeadToZoho(payload: ZohoLeadPayload): Promise<void> {
  * Push a newly verified Nervaya signup to Zoho CRM.
  * Lead_Source = "Nervaya Signup"
  */
-export function pushSignupLeadToZoho(name: string, email: string, phone?: string): Promise<void> {
+export function pushSignupLeadToZoho(name: string, email?: string, phone?: string): Promise<void> {
   const { lastName, firstName } = splitName(name);
   return pushLeadToZoho({
     Last_Name: lastName,
     ...(firstName && { First_Name: firstName }),
-    Email: email,
+    ...(email && { Email: email }),
     ...(phone && { Phone: phone }),
     Lead_Source: 'Nervaya Signup',
     Company: 'Nervaya User',

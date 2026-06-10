@@ -14,9 +14,10 @@ import { trackLoggedIn, updateGaUserContext } from '@/utils/analytics';
 
 interface User {
   _id: string;
-  email: string;
+  phone: string;
   name: string;
   role: Role;
+  email?: string;
   /** Present when role is THERAPIST: the linked Therapist profile id. */
   therapistId?: string;
 }
@@ -32,13 +33,8 @@ interface AuthContextType {
   initializing: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string, returnUrl?: string) => Promise<ApiResponse<AuthData | LoginWithOtpData>>;
-  signup: (
-    email: string,
-    password: string,
-    name: string,
-    returnUrl?: string,
-  ) => Promise<ApiResponse<AuthData | LoginWithOtpData>>;
+  login: (phone: string, returnUrl?: string) => Promise<ApiResponse<AuthData | LoginWithOtpData>>;
+  signup: (phone: string, name: string, returnUrl?: string) => Promise<ApiResponse<AuthData | LoginWithOtpData>>;
   logout: () => Promise<void>;
   clearError: () => void;
   updateUser: (updates: Partial<User>) => void;
@@ -47,7 +43,7 @@ interface AuthContextType {
 
 export interface LoginWithOtpData {
   requireOtp: true;
-  email: string;
+  phone: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -164,7 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     trackLoggedIn({
-      signup_method: 'Email',
+      signup_method: 'WhatsApp',
       page_type: window.location.pathname,
       firsttime: isFirstTime ? 1 : 0,
     });
@@ -201,14 +197,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signup = async (email: string, password: string, name: string, returnUrl?: string) => {
+  const signup = async (phone: string, name: string, returnUrl?: string) => {
     setLoading(true);
     setError(null);
 
     try {
       const response = (await api.post(AUTH_API.SIGNUP, {
-        email,
-        password,
+        phone,
         name,
       })) as ApiResponse<AuthData | LoginWithOtpData>;
 
@@ -225,14 +220,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string, returnUrl?: string) => {
+  const login = async (phone: string, returnUrl?: string) => {
     setLoading(true);
     setError(null);
 
     try {
       const response = (await api.post(AUTH_API.LOGIN, {
-        email,
-        password,
+        phone,
       })) as ApiResponse<AuthData | LoginWithOtpData>;
 
       if (response.success && response.data) {

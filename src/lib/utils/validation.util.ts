@@ -4,58 +4,38 @@ export function validateEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
-export function validatePassword(password: string): {
-  valid: boolean;
-  message?: string;
-} {
-  if (password.length < 8) {
-    return {
-      valid: false,
-      message: 'Password must be at least 8 characters long',
-    };
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    return {
-      valid: false,
-      message: 'Password must contain at least one uppercase letter',
-    };
-  }
-
-  if (!/[a-z]/.test(password)) {
-    return {
-      valid: false,
-      message: 'Password must contain at least one lowercase letter',
-    };
-  }
-
-  if (!/[0-9]/.test(password)) {
-    return {
-      valid: false,
-      message: 'Password must contain at least one number',
-    };
-  }
-
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    return {
-      valid: false,
-      message: 'Password must contain at least one special character',
-    };
-  }
-
-  const commonPasswords = ['password', '12345678', 'qwerty', 'abc123', 'password123'];
-  if (commonPasswords.some((common) => password.toLowerCase().includes(common))) {
-    return {
-      valid: false,
-      message: 'Password is too common. Please choose a stronger password',
-    };
-  }
-
-  return { valid: true };
-}
-
 export function validateName(name: string): boolean {
   return name.trim().length >= 2;
+}
+
+const E164_REGEX = /^\+[1-9]\d{7,14}$/;
+
+/**
+ * Normalize a raw phone input to canonical E.164 (e.g. +919876543210).
+ * Mobile numbers must be exactly 10 digits (Indian mobile). An optional
+ * country code (+91 / 91) or trunk prefix (leading 0) is stripped first.
+ * Returns null when the result is not exactly 10 digits.
+ */
+export function normalizePhone(input: string, defaultCountry = '+91'): string | null {
+  if (typeof input !== 'string') return null;
+
+  // Reduce to digits, dropping an optional +91/91 country code or leading 0.
+  let digits = input.replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) {
+    digits = digits.slice(2);
+  } else if (digits.length === 11 && digits.startsWith('0')) {
+    digits = digits.slice(1);
+  }
+
+  if (!/^\d{10}$/.test(digits)) {
+    return null;
+  }
+
+  return `${defaultCountry}${digits}`;
+}
+
+export function validatePhone(phone: string): boolean {
+  return typeof phone === 'string' && E164_REGEX.test(phone.trim());
 }
 
 const OTP_CODE_REGEX = /^\d{6}$/;

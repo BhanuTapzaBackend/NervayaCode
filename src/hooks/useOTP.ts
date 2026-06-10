@@ -6,8 +6,8 @@ import { getApiErrorMessage } from '@/lib/utils/apiError.util';
 import type { OtpPurpose } from '@/types/auth.types';
 
 interface UseOTPReturn {
-  sendOtp: (email: string, purpose: OtpPurpose) => Promise<boolean>;
-  verifyOtp: (email: string, code: string, purpose: OtpPurpose) => Promise<{ user: unknown; token: string } | null>;
+  sendOtp: (phone: string, purpose: OtpPurpose) => Promise<boolean>;
+  verifyOtp: (phone: string, code: string, purpose: OtpPurpose) => Promise<{ user: unknown; token: string } | null>;
   loading: boolean;
   error: string | null;
   sendCount: number | null;
@@ -21,12 +21,12 @@ export function useOTP(): UseOTPReturn {
 
   const clearError = useCallback(() => setError(null), []);
 
-  const sendOtp = useCallback(async (email: string, purpose: OtpPurpose): Promise<boolean> => {
+  const sendOtp = useCallback(async (phone: string, purpose: OtpPurpose): Promise<boolean> => {
     setLoading(true);
     setError(null);
     setSendCount(null);
     try {
-      const res = await sendOtpApi(email, purpose);
+      const res = await sendOtpApi(phone, purpose);
       if (res.success) return true;
       setError(res.message ?? 'Failed to send OTP');
       if (res.data?.otpSendCount !== undefined) {
@@ -47,11 +47,11 @@ export function useOTP(): UseOTPReturn {
   }, []);
 
   const verifyOtp = useCallback(
-    async (email: string, code: string, purpose: OtpPurpose): Promise<{ user: unknown; token: string } | null> => {
+    async (phone: string, code: string, purpose: OtpPurpose): Promise<{ user: unknown; token: string } | null> => {
       setLoading(true);
       setError(null);
       try {
-        const res = await verifyOtpApi(email, code, purpose);
+        const res = await verifyOtpApi(phone, code, purpose);
         if (res.success && res.data?.user && res.data?.token) {
           return {
             user: res.data.user,

@@ -6,18 +6,18 @@ import type { OtpPurpose } from '@/types/auth.types';
 import type { AuthData } from '@/context/AuthContext';
 import styles from './styles.module.css';
 
-const RESEND_COOLDOWN_SEC = 60;
+const RESEND_COOLDOWN_SEC = 600;
 const OTP_LENGTH = 6;
 
 export interface OTPVerificationStepProps {
-  email: string;
+  phone: string;
   purpose: OtpPurpose;
   onSuccess: (session?: AuthData) => void;
   onBack?: () => void;
   autoSend?: boolean;
 }
 
-export function OTPVerificationStep({ email, purpose, onSuccess, onBack, autoSend = true }: OTPVerificationStepProps) {
+export function OTPVerificationStep({ phone, purpose, onSuccess, onBack, autoSend = true }: OTPVerificationStepProps) {
   const { sendOtp, verifyOtp, loading, error, sendCount, clearError } = useOTP();
   const [code, setCode] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [cooldown, setCooldown] = useState(0);
@@ -25,14 +25,31 @@ export function OTPVerificationStep({ email, purpose, onSuccess, onBack, autoSen
 
   const sendOtpOnce = useCallback(() => {
     clearError();
-    sendOtp(email, purpose);
+    sendOtp(phone, purpose);
     setCooldown(RESEND_COOLDOWN_SEC);
-  }, [email, purpose, sendOtp, clearError]);
+    sessionStorage.setItem('nervaya_auth_otpExpiresAt', String(Date.now() + RESEND_COOLDOWN_SEC * 1000));
+  }, [phone, purpose, sendOtp, clearError]);
 
   useEffect(() => {
     if (autoSend) {
+      const expiresAt = sessionStorage.getItem('nervaya_auth_otpExpiresAt');
+      const remaining = expiresAt ? Math.floor((parseInt(expiresAt, 10) - Date.now()) / 1000) : 0;
+
+      if (remaining > 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCooldown(remaining);
+        return;
+      }
+
       const id = setTimeout(() => sendOtpOnce(), 0);
       return () => clearTimeout(id);
+    } else {
+      const expiresAt = sessionStorage.getItem('nervaya_auth_otpExpiresAt');
+      const remaining = expiresAt ? Math.floor((parseInt(expiresAt, 10) - Date.now()) / 1000) : 0;
+      if (remaining > 0) {
+         
+        setCooldown(remaining);
+      }
     }
   }, [sendOtpOnce, autoSend]);
 
@@ -82,7 +99,7 @@ export function OTPVerificationStep({ email, purpose, onSuccess, onBack, autoSen
     const fullCode = code.join('');
     if (fullCode.length !== OTP_LENGTH) return;
     clearError();
-    const session = await verifyOtp(email, fullCode, purpose);
+    const session = await verifyOtp(phone, fullCode, purpose);
     if (session) {
       onSuccess({
         user: session.user as AuthData['user'],
@@ -100,7 +117,7 @@ export function OTPVerificationStep({ email, purpose, onSuccess, onBack, autoSen
         Enter verification code
       </h1>
       <p className={styles.description} id="otp-description">
-        We sent a 6-digit code to {email}. Enter it below.
+        We sent a 6-digit code to your WhatsApp ({phone}). Enter it below.
       </p>
 
       <div className={styles.otpInputGroup} role="group" aria-labelledby="otp-title" aria-describedby="otp-description">
@@ -160,9 +177,15 @@ export function OTPVerificationStep({ email, purpose, onSuccess, onBack, autoSen
           className={styles.resendButton}
           onClick={sendOtpOnce}
           disabled={loading || cooldown > 0}
-          aria-label={cooldown > 0 ? `Resend available in ${cooldown}s` : 'Resend code'}
+          aria-label={
+            cooldown > 0
+              ? `Resend available in ${Math.floor(cooldown / 60)}:${String(cooldown % 60).padStart(2, '0')}`
+              : 'Resend code'
+          }
         >
-          {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
+          {cooldown > 0
+            ? `Resend in ${Math.floor(cooldown / 60)}:${String(cooldown % 60).padStart(2, '0')}`
+            : 'Resend code'}
         </button>
         {sendCount !== null && <span className={styles.sendCount}>OTPs sent this hour: {sendCount}</span>}
       </div>

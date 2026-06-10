@@ -6,10 +6,11 @@ export const IMAGES = {
   CARD_SLEEP_SUPPLEMENTS:
     'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/sleep_supplements_apjqre.png',
 
-  AUTH_LOGIN_ILLUSTRATION:
-    'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/LoginIllustration_hk3kuy.png',
-  AUTH_SIGNUP_ILLUSTRATION:
-    'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/Mental_Health_Illustrations_by_Muhammed_Sajid_i7fn0x.jpg',
+  AUTH_HERO_MORNING: '/assets/auth/morning-v2.png',
+  AUTH_HERO_NIGHT: '/assets/auth/night-v1.png',
+
+  AUTH_HERO_MORNING_MOBILE: '/assets/auth/morning-mobile.png',
+  AUTH_HERO_NIGHT_MOBILE: '/assets/auth/night-mobile.png',
 
   ABOUT_US_MAIN: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/about_us_main_ykusxn.png',
 

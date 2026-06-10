@@ -4,7 +4,7 @@ export const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 export const MAX_SIGNUP_ATTEMPTS = 3;
 export const SIGNUP_WINDOW_MS = 60 * 60 * 1000;
 
-export const MAX_OTP_SEND_PER_EMAIL = 5;
+export const MAX_OTP_SEND_PER_PHONE = 5;
 export const OTP_SEND_WINDOW_MS = 60 * 60 * 1000;
 
 export const MAX_OTP_VERIFY_ATTEMPTS = 5;

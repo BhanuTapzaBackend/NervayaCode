@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   AUTH_FORM_MODE,
   AUTH_STEP,
@@ -12,6 +13,7 @@ import {
 } from '@/lib/constants/enums';
 import { useAuthForm } from '@/hooks/useAuthForm';
 import { useAuthContext, type AuthData } from '@/context/AuthContext';
+import { useTimeOfDay, type TimeOfDay } from '@/hooks/useTimeOfDay';
 import { OTPVerificationStep } from './OTPVerificationStep';
 import { LoginForm } from './LoginForm';
 import { SignupForm } from './SignupForm';
@@ -24,18 +26,54 @@ export interface LoginSignupFormProps {
   returnUrl?: string;
 }
 
+interface HeroImage {
+  image: string;
+  imageMobile: string;
+}
+
+const HERO_IMAGE: Record<TimeOfDay, HeroImage> = {
+  morning: {
+    image: IMAGES.AUTH_HERO_MORNING,
+    imageMobile: IMAGES.AUTH_HERO_MORNING_MOBILE,
+  },
+  night: {
+    image: IMAGES.AUTH_HERO_NIGHT,
+    imageMobile: IMAGES.AUTH_HERO_NIGHT_MOBILE,
+  },
+};
+
 const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FORM_MODE.LOGIN, returnUrl }) => {
   const { completeLoginWithOtp, clearError: clearAuthError } = useAuthContext();
   const [authStep, setAuthStep] = useState<AuthStep>(AUTH_STEP.CREDENTIALS);
   const [otpPurpose, setOtpPurpose] = useState<OtpPurpose>(OTP_PURPOSE.LOGIN);
-  const [showSignupPassword, setShowSignupPassword] = useState(false);
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const { pushLead } = useZohoLead();
+  const timeOfDay = useTimeOfDay();
+  const hero = HERO_IMAGE[timeOfDay];
+
+  // Restore state from sessionStorage on mount
+  useEffect(() => {
+    const savedStep = sessionStorage.getItem('nervaya_auth_step');
+    if (savedStep) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAuthStep(savedStep as AuthStep);
+    }
+
+    const savedPurpose = sessionStorage.getItem('nervaya_auth_purpose');
+    if (savedPurpose) {
+       
+      setOtpPurpose(savedPurpose as OtpPurpose);
+    }
+  }, []);
+
+  // Sync state to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('nervaya_auth_step', authStep);
+    sessionStorage.setItem('nervaya_auth_purpose', otpPurpose);
+  }, [authStep, otpPurpose]);
 
   const {
     isRightPanelActive,
-    email,
-    password,
+    phone,
     name,
     fieldErrors,
     loading,
@@ -47,6 +85,8 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
     handleInputChange,
   } = useAuthForm({ initialMode, returnUrl });
 
+  const isSignup = isRightPanelActive;
+
   const onLoginSubmit = useCallback(
     async (e: React.FormEvent) => {
       try {
@@ -57,16 +97,14 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
           typeof response.data === 'object' &&
           'requireOtp' in response.data &&
           response.data.requireOtp &&
-          'email' in response.data
+          'phone' in response.data
         ) {
           clearAuthError();
           setOtpPurpose(OTP_PURPOSE.LOGIN);
           setAuthStep(AUTH_STEP.OTP);
         }
-        // If login succeeds without OTP, handleAuthSuccess in AuthContext handles navigation
       } catch {
-        // Error is already set in AuthContext by the login function
-        // The error will be displayed via the error prop passed to LoginForm
+        /* error surfaced via AuthContext + error prop */
       }
     },
     [handleLoginSubmit, clearAuthError],
@@ -82,27 +120,25 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
           typeof response.data === 'object' &&
           'requireOtp' in response.data &&
           response.data.requireOtp &&
-          'email' in response.data
+          'phone' in response.data
         ) {
           clearAuthError();
           setOtpPurpose(OTP_PURPOSE.SIGNUP);
           setAuthStep(AUTH_STEP.OTP);
 
-          // Push to Zoho CRM — captures the lead even if they abandon here
+          // Capture the lead even if they abandon at the OTP step.
           pushLead({
-            name: name,
-            email: email,
+            name,
+            phone,
             source: 'Nervaya Signup',
             message: 'User initiated signup and is at the OTP verification step.',
           });
         }
-        // If signup succeeds without OTP, handleAuthSuccess in AuthContext handles navigation
       } catch {
-        // Error is already set in AuthContext by the signup function
-        // The error will be displayed via the error prop passed to SignupForm
+        /* error surfaced via AuthContext + error prop */
       }
     },
-    [handleSignupSubmit, clearAuthError, email, name, pushLead],
+    [handleSignupSubmit, clearAuthError, name, phone, pushLead],
   );
 
   const onOtpSuccess = useCallback(
@@ -120,114 +156,122 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
 
   const onOtpBack = useCallback(() => setAuthStep(AUTH_STEP.CREDENTIALS), []);
 
+  const switchMode = useCallback(
+    (toSignup: boolean) => {
+      setAuthStep(AUTH_STEP.CREDENTIALS);
+      if (toSignup) {
+        handleSignupClick();
+      } else {
+        handleLoginClick();
+      }
+    },
+    [handleSignupClick, handleLoginClick],
+  );
+
   return (
-    <div className={styles.container}>
-      <div className={`${styles.authCard} ${isRightPanelActive ? styles.rightPanelActive : ''}`}>
-        <div
-          className={`${styles.formSection} ${styles.formSignup}`}
-          style={{
-            opacity: isRightPanelActive ? 1 : 0,
-            zIndex: isRightPanelActive ? 5 : 1,
-            transform: isRightPanelActive ? 'translateX(100%)' : 'translateX(0)',
-          }}
-        >
-          {authStep === AUTH_STEP.OTP && otpPurpose === OTP_PURPOSE.SIGNUP ? (
-            <OTPVerificationStep
-              email={email.trim().toLowerCase()}
-              purpose={OTP_PURPOSE.SIGNUP}
-              onSuccess={onOtpSuccess}
-              onBack={onOtpBack}
-              autoSend={false}
-            />
-          ) : (
-            <SignupForm
-              name={name}
-              email={email}
-              password={password}
-              showPassword={showSignupPassword}
-              onTogglePassword={() => setShowSignupPassword((prev) => !prev)}
-              fieldErrors={fieldErrors}
-              loading={loading}
-              error={error}
-              onSubmit={onSignupSubmit}
-              onInputChange={handleInputChange}
-              onLoginClick={handleLoginClick}
-            />
-          )}
-        </div>
+    <div className={styles.page}>
+      <div className={styles.backgroundLayer}>
+        <Image
+          key={hero.image}
+          src={hero.image}
+          alt=""
+          fill
+          sizes="100vw"
+          className={styles.backgroundImage}
+          priority
+        />
+        <Image
+          key={hero.imageMobile}
+          src={hero.imageMobile}
+          alt=""
+          fill
+          sizes="100vw"
+          className={styles.backgroundImageMobile}
+        />
+      </div>
 
-        <div
-          className={`${styles.formSection} ${styles.formLogin}`}
-          style={{
-            opacity: isRightPanelActive ? 0 : 1,
-            zIndex: isRightPanelActive ? 1 : 5,
-            transform: isRightPanelActive ? 'translateX(100%)' : 'translateX(0)',
-          }}
-        >
-          {authStep === AUTH_STEP.OTP && otpPurpose === OTP_PURPOSE.LOGIN ? (
-            <OTPVerificationStep
-              email={email.trim().toLowerCase()}
-              purpose={OTP_PURPOSE.LOGIN}
-              onSuccess={onOtpSuccess}
-              onBack={onOtpBack}
-            />
-          ) : (
-            <LoginForm
-              email={email}
-              password={password}
-              showPassword={showLoginPassword}
-              onTogglePassword={() => setShowLoginPassword((prev) => !prev)}
-              fieldErrors={fieldErrors}
-              loading={loading}
-              error={error}
-              onSubmit={onLoginSubmit}
-              onInputChange={handleInputChange}
-              onSignupClick={handleSignupClick}
-            />
-          )}
-        </div>
-
-        <div className={styles.overlayContainer}>
-          <div className={styles.overlay}>
-            <div className={styles.overlayBg} style={{ left: 0 }}>
-              <Image
-                src={IMAGES.AUTH_LOGIN_ILLUSTRATION}
-                alt="Login Illustration"
-                fill
-                sizes="50vw"
-                className={styles.overlayImage}
-                priority
+      <div className={styles.contentLayer}>
+        <main className={styles.formPanelWrap}>
+          <div className={styles.formPanel}>
+            <Link href="/" className={styles.formLogo} style={{ textDecoration: 'none' }}>
+              <span className={styles.brandWord}>
+                Ner<span className={styles.brandAccent}>vaya</span>
+              </span>
+              <span className={styles.brandTm}>™</span>
+            </Link>
+            {authStep === AUTH_STEP.OTP ? (
+              <OTPVerificationStep
+                phone={phone.trim()}
+                purpose={otpPurpose}
+                onSuccess={onOtpSuccess}
+                onBack={onOtpBack}
+                autoSend={otpPurpose !== OTP_PURPOSE.SIGNUP}
               />
-              <div className={styles.overlayDim}></div>
-            </div>
-            <div className={styles.overlayBg} style={{ right: 0 }}>
-              <Image
-                src={IMAGES.AUTH_SIGNUP_ILLUSTRATION}
-                alt="Signup Illustration"
-                fill
-                sizes="50vw"
-                className={styles.overlayImage}
-                priority
-              />
-              <div className={styles.overlayDim}></div>
-            </div>
+            ) : (
+              <>
+                <div className={styles.toggle} role="tablist" aria-label="Choose log in or sign up">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={!isSignup}
+                    className={`${styles.toggleBtn} ${!isSignup ? styles.toggleActive : ''}`}
+                    onClick={() => switchMode(false)}
+                  >
+                    Log in
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={isSignup}
+                    className={`${styles.toggleBtn} ${isSignup ? styles.toggleActive : ''}`}
+                    onClick={() => switchMode(true)}
+                  >
+                    Sign up
+                  </button>
+                </div>
 
-            <div className={`${styles.overlayPanel} ${styles.overlayLeft}`}>
-              <h1 className={`${styles.overlayTitle} ${styles.welcomeBackText}`}>Welcome Back!</h1>
-              <p className={styles.overlayText}>To keep connected with us please login with your personal info</p>
-              <button type="button" className={styles.ghostButton} onClick={handleLoginClick}>
-                OK
-              </button>
-            </div>
-            <div className={`${styles.overlayPanel} ${styles.overlayRight}`}>
-              <h1 className={styles.overlayTitle}>Hello, Friend!</h1>
-              <p className={styles.overlayText}>Enter your personal details and start your journey with us</p>
-              <button type="button" className={styles.ghostButton} onClick={handleSignupClick}>
-                OK
-              </button>
-            </div>
+                <div className={styles.intro}>
+                  <h1 className={styles.heading}>{isSignup ? 'Create your account' : 'Welcome back'}</h1>
+                  <p className={styles.subheading}>
+                    {isSignup
+                      ? 'Take the first step towards a happier you.'
+                      : 'Enter your WhatsApp number and we’ll send you a code.'}
+                  </p>
+                </div>
+
+                <div className={styles.formWrap} key={isSignup ? 'signup' : 'login'}>
+                  {isSignup ? (
+                    <SignupForm
+                      name={name}
+                      phone={phone}
+                      fieldErrors={fieldErrors}
+                      loading={loading}
+                      error={error}
+                      onSubmit={onSignupSubmit}
+                      onInputChange={handleInputChange}
+                    />
+                  ) : (
+                    <LoginForm
+                      phone={phone}
+                      fieldErrors={fieldErrors}
+                      loading={loading}
+                      error={error}
+                      onSubmit={onLoginSubmit}
+                      onInputChange={handleInputChange}
+                    />
+                  )}
+                </div>
+
+                <p className={styles.footerLink}>
+                  {isSignup ? 'Already have an account? ' : 'New here? '}
+                  <button type="button" className={styles.footerLinkBtn} onClick={() => switchMode(!isSignup)}>
+                    {isSignup ? 'Log in' : 'Sign up'}
+                  </button>
+                </p>
+              </>
+            )}
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );

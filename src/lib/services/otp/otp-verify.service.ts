@@ -1,4 +1,4 @@
-import { validateEmail, validateOtpCode } from '@/lib/utils/validation.util';
+import { normalizePhone, validateOtpCode } from '@/lib/utils/validation.util';
 import { checkOTPVerifyRateLimit } from '@/lib/utils/rate-limit.util';
 import { verifyAndConsumeOtp, type OtpPurpose } from './otp-store';
 
@@ -9,19 +9,16 @@ export interface VerifyOtpResult {
 }
 
 export async function verifyOtp(
-  email: string,
+  phone: string,
   code: string,
   purpose: OtpPurpose,
   _ip: string,
 ): Promise<VerifyOtpResult> {
-  const sanitizedEmail = email.trim().toLowerCase();
+  const normalizedPhone = normalizePhone(phone);
   const sanitizedCode = code.trim();
 
-  if (!sanitizedEmail) {
-    return { success: false, message: 'Email is required', statusCode: 400 };
-  }
-  if (!validateEmail(sanitizedEmail)) {
-    return { success: false, message: 'Invalid email format', statusCode: 400 };
+  if (!normalizedPhone) {
+    return { success: false, message: 'Invalid phone number', statusCode: 400 };
   }
   if (!validateOtpCode(sanitizedCode)) {
     return { success: false, message: 'Code must be 6 digits', statusCode: 400 };
@@ -30,7 +27,7 @@ export async function verifyOtp(
     return { success: false, message: 'Invalid purpose', statusCode: 400 };
   }
 
-  if (!(await checkOTPVerifyRateLimit(sanitizedEmail))) {
+  if (!(await checkOTPVerifyRateLimit(normalizedPhone))) {
     return {
       success: false,
       message: 'Too many verification attempts. Please try again later.',
@@ -38,7 +35,7 @@ export async function verifyOtp(
     };
   }
 
-  const valid = await verifyAndConsumeOtp(sanitizedEmail, purpose, sanitizedCode);
+  const valid = await verifyAndConsumeOtp(normalizedPhone, purpose, sanitizedCode);
   if (!valid) {
     return { success: false, message: 'Invalid or expired code', statusCode: 400 };
   }

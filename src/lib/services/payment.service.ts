@@ -189,7 +189,7 @@ async function processPaymentSuccess(orderId: string, paymentId: string) {
         const order = await Order.findById(orderId);
         if (order) {
           const user = await User.findById(order.userId).select('email name');
-          if (user) {
+          if (user?.email) {
             await sendRefundNotificationEmail({
               email: user.email,
               name: user.name,

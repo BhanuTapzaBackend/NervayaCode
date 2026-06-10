@@ -85,6 +85,24 @@ export const AUTH_STEP = {
 
 export type AuthStep = (typeof AUTH_STEP)[keyof typeof AUTH_STEP];
 
+export const WHATSAPP_EVENT_TYPE = {
+  STATUS: 'status',
+  INBOUND_MESSAGE: 'inbound_message',
+} as const;
+
+export type WhatsAppEventType = (typeof WHATSAPP_EVENT_TYPE)[keyof typeof WHATSAPP_EVENT_TYPE];
+
+export const WHATSAPP_EVENT_TYPE_VALUES = Object.values(WHATSAPP_EVENT_TYPE);
+
+export const WHATSAPP_MESSAGE_STATUS = {
+  SENT: 'sent',
+  DELIVERED: 'delivered',
+  READ: 'read',
+  FAILED: 'failed',
+} as const;
+
+export type WhatsAppMessageStatus = (typeof WHATSAPP_MESSAGE_STATUS)[keyof typeof WHATSAPP_MESSAGE_STATUS];
+
 export const GENDER = {
   MALE: 'male',
   FEMALE: 'female',

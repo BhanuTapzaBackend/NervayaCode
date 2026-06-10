@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAuthContext } from '@/context/AuthContext';
 import { AUTH_FORM_MODE, type AuthFormMode } from '@/lib/constants/enums';
-import { validateEmail, validatePassword, validateName } from '@/lib/utils/validation.util';
+import { normalizePhone, validateName } from '@/lib/utils/validation.util';
 
 export interface AuthFormErrors {
-  email?: string;
-  password?: string;
+  phone?: string;
   name?: string;
 }
 
@@ -21,10 +20,37 @@ export function useAuthForm(options: UseAuthFormOptions = {}) {
   const { login, signup, loading, error, clearError } = useAuthContext();
 
   const [isRightPanelActive, setIsRightPanelActive] = useState(initialMode === AUTH_FORM_MODE.SIGNUP);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [fieldErrors, setFieldErrors] = useState<AuthFormErrors>({});
+
+  // Restore state from sessionStorage on mount
+  useEffect(() => {
+    const savedIsRightPanel = sessionStorage.getItem('nervaya_auth_isRightPanelActive');
+    if (savedIsRightPanel !== null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsRightPanelActive(savedIsRightPanel === 'true');
+    }
+
+    const savedPhone = sessionStorage.getItem('nervaya_auth_phone');
+    if (savedPhone) {
+       
+      setPhone(savedPhone);
+    }
+
+    const savedName = sessionStorage.getItem('nervaya_auth_name');
+    if (savedName) {
+       
+      setName(savedName);
+    }
+  }, []);
+
+  // Sync state to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('nervaya_auth_isRightPanelActive', String(isRightPanelActive));
+    sessionStorage.setItem('nervaya_auth_phone', phone);
+    sessionStorage.setItem('nervaya_auth_name', name);
+  }, [isRightPanelActive, phone, name]);
 
   const handleSignupClick = useCallback(() => {
     clearError();
@@ -40,27 +66,21 @@ export function useAuthForm(options: UseAuthFormOptions = {}) {
 
   const validateLoginForm = useCallback((): boolean => {
     const errors: AuthFormErrors = {};
-    const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
+    const trimmedPhone = phone.trim();
 
-    if (!trimmedEmail) {
-      errors.email = 'Email is required';
-    } else if (!validateEmail(trimmedEmail)) {
-      errors.email = 'Invalid email format';
-    }
-
-    if (!trimmedPassword) {
-      errors.password = 'Password is required';
+    if (!trimmedPhone) {
+      errors.phone = 'WhatsApp number is required';
+    } else if (!normalizePhone(trimmedPhone)) {
+      errors.phone = 'Enter a valid 10-digit mobile number';
     }
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [email, password]);
+  }, [phone]);
 
   const validateSignupForm = useCallback((): boolean => {
     const errors: AuthFormErrors = {};
-    const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
+    const trimmedPhone = phone.trim();
     const trimmedName = name.trim();
 
     if (!trimmedName) {
@@ -69,34 +89,26 @@ export function useAuthForm(options: UseAuthFormOptions = {}) {
       errors.name = 'Name must be at least 2 characters long';
     }
 
-    if (!trimmedEmail) {
-      errors.email = 'Email is required';
-    } else if (!validateEmail(trimmedEmail)) {
-      errors.email = 'Invalid email format';
-    }
-
-    if (!trimmedPassword) {
-      errors.password = 'Password is required';
-    } else {
-      const pwValidation = validatePassword(trimmedPassword);
-      if (!pwValidation.valid) {
-        errors.password = pwValidation.message;
-      }
+    if (!trimmedPhone) {
+      errors.phone = 'WhatsApp number is required';
+    } else if (!normalizePhone(trimmedPhone)) {
+      errors.phone = 'Enter a valid 10-digit mobile number';
     }
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [email, password, name]);
+  }, [phone, name]);
 
   const handleLoginSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       if (!validateLoginForm()) return;
       clearError();
-      const response = await login(email.trim().toLowerCase(), password.trim(), returnUrl);
+      const normalizedPhone = normalizePhone(phone) ?? phone.trim();
+      const response = await login(normalizedPhone, returnUrl);
       return response;
     },
-    [email, password, returnUrl, validateLoginForm, login, clearError],
+    [phone, returnUrl, validateLoginForm, login, clearError],
   );
 
   const handleSignupSubmit = useCallback(
@@ -104,9 +116,10 @@ export function useAuthForm(options: UseAuthFormOptions = {}) {
       e.preventDefault();
       if (!validateSignupForm()) return;
       clearError();
-      return signup(email.trim().toLowerCase(), password.trim(), name.trim(), returnUrl);
+      const normalizedPhone = normalizePhone(phone) ?? phone.trim();
+      return signup(normalizedPhone, name.trim(), returnUrl);
     },
-    [email, password, name, returnUrl, validateSignupForm, signup, clearError],
+    [phone, name, returnUrl, validateSignupForm, signup, clearError],
   );
 
   const clearFieldError = useCallback((field: keyof AuthFormErrors) => {
@@ -118,11 +131,10 @@ export function useAuthForm(options: UseAuthFormOptions = {}) {
   }, []);
 
   const handleInputChange = useCallback(
-    (field: 'email' | 'password' | 'name', value: string) => {
+    (field: 'phone' | 'name', value: string) => {
       if (error) clearError();
       clearFieldError(field);
-      if (field === 'email') setEmail(value);
-      else if (field === 'password') setPassword(value);
+      if (field === 'phone') setPhone(value);
       else setName(value);
     },
     [error, clearError, clearFieldError],
@@ -130,8 +142,7 @@ export function useAuthForm(options: UseAuthFormOptions = {}) {
 
   return {
     isRightPanelActive,
-    email,
-    password,
+    phone,
     name,
     fieldErrors,
     loading,

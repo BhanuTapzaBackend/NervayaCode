@@ -39,6 +39,8 @@ All API responses use `src/lib/utils/response.util.ts`: `{ success, message, dat
 
 Three roles: `ADMIN`, `CUSTOMER`, `THERAPIST` (defined in `src/lib/constants/enums.ts`).
 
+Auth is **passwordless**: the WhatsApp phone number (stored E.164, e.g. `+919876543210`) is the unique primary identifier on the `User` model. Email is optional (used for receipts/CRM only). There are no passwords.
+
 - **Edge middleware** (`src/middleware.ts`): reads `auth_token` httpOnly cookie, verifies JWT, enforces role-based redirects. Next.js requires this exact filename — renaming it will silently disable all edge-level route protection.
 - **API auth** (`src/lib/middleware/auth.middleware.ts`): `requireAuth(request, [ROLES.X])` on protected routes
 - **Client auth** (`src/context/AuthContext.tsx`): hydrates from localStorage with 7-day expiry; custom `auth-state-changed` DOM event syncs state across contexts
@@ -73,11 +75,17 @@ The sleep therapy program was renamed from "Drift Off" to "Deep Rest". Code stil
 
 ### Zoho CRM Integration
 
-Fire-and-forget lead tracking at signup, sleep assessment, Deep Rest completion, and contact forms. All calls wrapped in `.catch(() => undefined)` — Zoho outages never block users. Uses UPSERT with `duplicate_check_fields: ["Email"]`.
+Fire-and-forget lead tracking at signup, sleep assessment, Deep Rest completion, and contact forms. All calls wrapped in `.catch(() => undefined)` — Zoho outages never block users. Uses UPSERT with `duplicate_check_fields: ["Phone"]` (falls back to `["Email"]` when no phone is present).
 
-### OTP
+### OTP & WhatsApp
 
-Signup always requires email OTP. Login OTP is optional (`REQUIRE_OTP_FOR_LOGIN=true`). OTP store is in-memory (not persistent across restarts). Falls back to console logging if SMTP creds are missing.
+Both signup and login require a WhatsApp OTP (passwordless). OTP delivery goes through the **Meta WhatsApp Cloud API** (`src/lib/whatsapp/whatsapp-client.ts` + `src/lib/services/otp/whatsapp-otp-delivery.ts`) using an approved authentication message template. The OTP store is MongoDB-backed (`otpToken` collection, TTL-expiring), keyed on `phone:purpose`. When WhatsApp creds are missing it falls back to `ConsoleOtpDelivery`, which logs the code — keeps local/dev flows testable without credentials.
+
+Signup is two-stage: `pendingSignup` (phone-keyed, TTL 10 min) holds the name until the OTP is verified, then the `User` is created with `phoneVerified: true`.
+
+### WhatsApp Webhook
+
+`src/app/api/whatsapp/webhook/route.ts` handles Meta callbacks: **GET** answers the verification handshake (`hub.challenge` against `WHATSAPP_VERIFY_TOKEN`); **POST** verifies the `X-Hub-Signature-256` HMAC with `WHATSAPP_APP_SECRET`, then idempotently persists delivery-status and inbound-message events to the `whatsappWebhookEvent` collection (unique on `messageId`). Always returns 200 so Meta does not retry-storm.
 
 ## Code Conventions
 
@@ -90,9 +98,9 @@ Signup always requires email OTP. Login OTP is optional (`REQUIRE_OTP_FOR_LOGIN=
 
 ## Environment Variables
 
-**Required:** `MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `CLOUDINARY_CLOUD_NAME`/`API_KEY`/`API_SECRET`, `RAZORPAY_KEY_ID`/`KEY_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `OTP_EMAIL_USER`/`OTP_EMAIL_APP_PASSWORD`/`OTP_EMAIL_FROM_NAME`
+**Required:** `MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `CLOUDINARY_CLOUD_NAME`/`API_KEY`/`API_SECRET`, `RAZORPAY_KEY_ID`/`KEY_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_OTP_TEMPLATE_NAME`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET`
 
-**Optional:** `REQUIRE_OTP_FOR_LOGIN`, `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_GTM_ID`, `ZOHO_CLIENT_ID`/`ZOHO_CLIENT_SECRET`/`ZOHO_REFRESH_TOKEN`
+**Optional:** `WHATSAPP_BUSINESS_ACCOUNT_ID`, `WHATSAPP_API_VERSION` (default `v21.0`), `OTP_EMAIL_USER`/`OTP_EMAIL_APP_PASSWORD`/`OTP_EMAIL_FROM_NAME` (email receipts only), `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_GTM_ID`, `ZOHO_CLIENT_ID`/`ZOHO_CLIENT_SECRET`/`ZOHO_REFRESH_TOKEN`
 
 ## Code Review Tools
 

@@ -17,8 +17,8 @@ interface VerifyOtpResponse {
   statusCode: number;
 }
 
-export async function sendOtp(email: string, purpose: OtpPurpose): Promise<ApiResponse<{ otpSendCount?: number }>> {
-  const res = (await api.post(AUTH_API.OTP_SEND, { email, purpose })) as SendOtpResponse;
+export async function sendOtp(phone: string, purpose: OtpPurpose): Promise<ApiResponse<{ otpSendCount?: number }>> {
+  const res = (await api.post(AUTH_API.OTP_SEND, { phone, purpose })) as SendOtpResponse;
   return {
     success: res.success,
     message: res.message,
@@ -28,11 +28,11 @@ export async function sendOtp(email: string, purpose: OtpPurpose): Promise<ApiRe
 }
 
 export async function verifyOtp(
-  email: string,
+  phone: string,
   code: string,
   purpose: OtpPurpose,
 ): Promise<ApiResponse<{ user: unknown; token: string } | undefined>> {
-  const res = (await api.post(AUTH_API.OTP_VERIFY, { email, code, purpose })) as VerifyOtpResponse;
+  const res = (await api.post(AUTH_API.OTP_VERIFY, { phone, code, purpose })) as VerifyOtpResponse;
   return {
     success: res.success,
     message: res.message,

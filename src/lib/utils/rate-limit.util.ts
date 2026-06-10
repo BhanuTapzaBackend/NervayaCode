@@ -3,7 +3,7 @@ import {
   LOGIN_WINDOW_MS,
   MAX_SIGNUP_ATTEMPTS,
   SIGNUP_WINDOW_MS,
-  MAX_OTP_SEND_PER_EMAIL,
+  MAX_OTP_SEND_PER_PHONE,
   OTP_SEND_WINDOW_MS,
   MAX_OTP_VERIFY_ATTEMPTS,
   OTP_VERIFY_WINDOW_MS,
@@ -98,7 +98,7 @@ export async function checkOTPSendLimit(identifier: string): Promise<OTPSendLimi
     return { allowed: true, sendCount: 1, resetTime: now.getTime() + OTP_SEND_WINDOW_MS };
   }
 
-  if (entry.sendCount > MAX_OTP_SEND_PER_EMAIL) {
+  if (entry.sendCount > MAX_OTP_SEND_PER_PHONE) {
     return { allowed: false, sendCount: entry.sendCount, resetTime: entry.expiresAt.getTime() };
   }
 

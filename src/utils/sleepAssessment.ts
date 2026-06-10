@@ -210,10 +210,10 @@ const SEGMENT_SERVICES: Record<SleepSegment, ServiceRecommendation[]> = {
 
 /**
  * Extract bundle composition for the Personalized Plan card.
- * Therapy is shown as a separate card, never in the bundle — so we filter it out.
+ * Any service with priority 'High' is part of the bundle (Supplement, Deep Rest, and/or Therapy).
  */
 export function getBundleItems(services: ServiceRecommendation[]): ServiceKey[] {
-  return services.filter((s) => s.key !== 'THERAPY' && s.priority === 'High').map((s) => s.key);
+  return services.filter((s) => s.priority === 'High').map((s) => s.key);
 }
 
 /**

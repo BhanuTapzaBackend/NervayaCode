@@ -6,6 +6,7 @@ import { ValidationError, NotFoundError } from '@/lib/utils/error.util';
 import { Types } from 'mongoose';
 import { buildSleepAssessmentResult } from '@/lib/utils/sleepAssessmentResult.util';
 import { validateAndScoreAssessment } from '@/lib/utils/sleepAssessmentValidation.util';
+import { normalizePhone } from '@/lib/utils/validation.util';
 import type {
   SubmitAssessmentInput,
   SaveAnswerInput,
@@ -444,23 +445,23 @@ export async function deleteAssessment(assessmentId: string): Promise<void> {
 
 /**
  * Admin utility — deletes every SleepAssessmentResponse document for the user
- * with the given email. After this, the user can retake the assessment from
+ * with the given phone number. After this, the user can retake the assessment from
  * scratch. Returns how many docs were removed so the caller can show feedback.
  */
-export async function resetUserAssessmentsByEmail(
-  email: string,
-): Promise<{ deletedCount: number; userId: string; userEmail: string }> {
+export async function resetUserAssessmentsByPhone(
+  phone: string,
+): Promise<{ deletedCount: number; userId: string; userPhone: string }> {
   await connectDB();
 
-  if (!email || typeof email !== 'string' || !email.trim()) {
-    throw new ValidationError('Email is required');
+  if (!phone || typeof phone !== 'string' || !phone.trim()) {
+    throw new ValidationError('Phone number is required');
   }
 
-  const normalizedEmail = email.toLowerCase().trim();
-  const user = await User.findOne({ email: normalizedEmail }).lean<{ _id: Types.ObjectId; email: string }>();
+  const normalizedPhone = normalizePhone(phone) || phone.trim();
+  const user = await User.findOne({ phone: normalizedPhone }).lean<{ _id: Types.ObjectId; phone: string }>();
 
   if (!user) {
-    throw new NotFoundError(`No user found with email "${normalizedEmail}"`);
+    throw new NotFoundError(`No user found with phone "${normalizedPhone}"`);
   }
 
   const result = await SleepAssessmentResponse.deleteMany({ userId: user._id });
@@ -468,6 +469,6 @@ export async function resetUserAssessmentsByEmail(
   return {
     deletedCount: result.deletedCount ?? 0,
     userId: user._id.toString(),
-    userEmail: user.email,
+    userPhone: user.phone,
   };
 }

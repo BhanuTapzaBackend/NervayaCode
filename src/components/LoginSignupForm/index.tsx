@@ -60,7 +60,6 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
 
     const savedPurpose = sessionStorage.getItem('nervaya_auth_purpose');
     if (savedPurpose) {
-       
       setOtpPurpose(savedPurpose as OtpPurpose);
     }
   }, []);
@@ -125,6 +124,10 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
           clearAuthError();
           setOtpPurpose(OTP_PURPOSE.SIGNUP);
           setAuthStep(AUTH_STEP.OTP);
+
+          // The backend automatically sends the initial OTP for signup.
+          // Start the 10-minute cooldown timer now so the resend button isn't immediately clickable.
+          sessionStorage.setItem('nervaya_auth_otpExpiresAt', String(Date.now() + 600 * 1000));
 
           // Capture the lead even if they abandon at the OTP step.
           pushLead({

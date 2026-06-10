@@ -101,6 +101,10 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
           clearAuthError();
           setOtpPurpose(OTP_PURPOSE.LOGIN);
           setAuthStep(AUTH_STEP.OTP);
+
+          // The backend already sent the initial login OTP. Start the resend
+          // cooldown so OTPVerificationStep doesn't auto-send a duplicate.
+          sessionStorage.setItem('nervaya_auth_otpExpiresAt', String(Date.now() + 600 * 1000));
         }
       } catch {
         /* error surfaced via AuthContext + error prop */
@@ -208,7 +212,9 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
                 purpose={otpPurpose}
                 onSuccess={onOtpSuccess}
                 onBack={onOtpBack}
-                autoSend={otpPurpose !== OTP_PURPOSE.SIGNUP}
+                // Both login and signup backends send the initial OTP on submit,
+                // so the verification step must never auto-send (avoids a duplicate OTP).
+                autoSend={false}
               />
             ) : (
               <>

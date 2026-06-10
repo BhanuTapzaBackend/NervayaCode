@@ -9,11 +9,6 @@ interface PlanPricingPanelProps {
   savingsAmount: number;
   discountPct: number;
   itemCount: number;
-  onStartPlan: () => void;
-  onAddPlanToCart: () => void;
-  isStarting: boolean;
-  isAdding: boolean;
-  disabled: boolean;
 }
 
 const BENEFITS = ['Personalized from your assessment', 'One-time payment, full access', 'Guided support throughout'];
@@ -24,23 +19,19 @@ export function PlanPricingPanel({
   savingsAmount,
   discountPct,
   itemCount,
-  onStartPlan,
-  onAddPlanToCart,
-  isStarting,
-  isAdding,
-  disabled,
 }: Readonly<PlanPricingPanelProps>) {
   const hasDiscount = savingsAmount > 0 && discountPct > 0;
   return (
     <div className={styles.panel}>
-      <p className={styles.includes}>
-        Includes {itemCount} core support{itemCount === 1 ? '' : 's'}
-      </p>
-
-      <div className={styles.priceRow}>
-        {hasDiscount && <span className={styles.original}>{formatCurrency(originalPrice)}</span>}
-        <span className={styles.discounted}>{formatCurrency(discountedPrice)}</span>
-        {hasDiscount && <span className={styles.saveBadge}>Save {discountPct}%</span>}
+      <div className={styles.priceBlock}>
+        <p className={styles.includes}>
+          Includes {itemCount} core support{itemCount === 1 ? '' : 's'}
+        </p>
+        <div className={styles.priceRow}>
+          {hasDiscount && <span className={styles.original}>{formatCurrency(originalPrice)}</span>}
+          <span className={styles.discounted}>{formatCurrency(discountedPrice)}</span>
+          {hasDiscount && <span className={styles.saveBadge}>Save {discountPct}%</span>}
+        </div>
       </div>
 
       <ul className={styles.benefits}>
@@ -51,15 +42,33 @@ export function PlanPricingPanel({
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
 
-      <div className={styles.actions}>
-        <button type="button" className={styles.primary} onClick={onStartPlan} disabled={disabled || isStarting}>
-          {isStarting ? 'Starting...' : 'Start My Sleep Plan'}
-        </button>
-        <button type="button" className={styles.secondary} onClick={onAddPlanToCart} disabled={disabled || isAdding}>
-          {isAdding ? 'Adding...' : 'Add Plan to Cart'}
-        </button>
-      </div>
+interface PlanPricingActionsProps {
+  onStartPlan: () => void;
+  onAddPlanToCart: () => void;
+  isStarting: boolean;
+  isAdding: boolean;
+  disabled: boolean;
+}
+
+export function PlanPricingActions({
+  onStartPlan,
+  onAddPlanToCart,
+  isStarting,
+  isAdding,
+  disabled,
+}: Readonly<PlanPricingActionsProps>) {
+  return (
+    <div className={styles.actions}>
+      <button type="button" className={styles.primary} onClick={onStartPlan} disabled={disabled || isStarting}>
+        {isStarting ? 'Starting...' : 'Start My Sleep Plan'}
+      </button>
+      <button type="button" className={styles.secondary} onClick={onAddPlanToCart} disabled={disabled || isAdding}>
+        {isAdding ? 'Adding...' : 'Add Plan to Cart'}
+      </button>
     </div>
   );
 }

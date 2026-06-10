@@ -6,23 +6,19 @@ export interface PlanProductMiniProps {
   icon: string;
   iconAccent: 'accent' | 'amber' | 'emerald';
   title: string;
-  chip: string;
-  chipTone: 'accent' | 'amber' | 'emerald';
   subtitle: string;
   description: string;
   metaIcon: string;
   metaText: string;
   meta2Icon: string;
   meta2Text: string;
-  imageSrc?: string;
+  imageSrc: string;
 }
 
 export function PlanProductMini({
   icon,
   iconAccent,
   title,
-  chip,
-  chipTone,
   subtitle,
   description,
   metaIcon,
@@ -32,35 +28,24 @@ export function PlanProductMini({
   imageSrc,
 }: Readonly<PlanProductMiniProps>) {
   const iconAccentClass = styles[`icon_${iconAccent}`];
-  const chipToneClass = styles[`chip_${chipTone}`];
   return (
     <div className={styles.card}>
       <div className={styles.header}>
         <span className={`${styles.icon} ${iconAccentClass}`}>
           <Icon icon={icon} aria-hidden />
         </span>
-        <div className={styles.titleBlock}>
-          <h3 className={styles.title}>{title}</h3>
-          <span className={`${styles.chip} ${chipToneClass}`}>{chip}</span>
-        </div>
+        <h3 className={styles.title}>{title}</h3>
       </div>
 
-      {imageSrc ? (
-        <div className={styles.contentWrap}>
-          <div className={styles.imageContainer}>
-            <Image src={imageSrc} alt={title} fill sizes="140px" className={styles.productImage} />
-          </div>
-          <div className={styles.textWrap}>
-            <p className={styles.subtitle}>{subtitle}</p>
-            <p className={styles.desc}>{description}</p>
-          </div>
+      <div className={styles.contentWrap}>
+        <div className={styles.imageContainer}>
+          <Image src={imageSrc} alt={title} fill sizes="140px" className={styles.productImage} />
         </div>
-      ) : (
-        <>
+        <div className={styles.textWrap}>
           <p className={styles.subtitle}>{subtitle}</p>
           <p className={styles.desc}>{description}</p>
-        </>
-      )}
+        </div>
+      </div>
 
       <div className={styles.metaRow}>
         <span className={styles.meta}>

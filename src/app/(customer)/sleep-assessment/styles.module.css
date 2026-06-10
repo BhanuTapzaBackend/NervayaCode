@@ -39,12 +39,12 @@
   max-width: 100%;
   box-sizing: border-box;
   margin: 0 auto;
-  padding: 0 var(--space-5) var(--space-9);
+  padding: var(--space-5) var(--space-5) var(--space-9);
 }
 
 @media (max-width: 770px) {
   .authContainer {
-    padding: 0 var(--space-3) 0;
+    padding: var(--space-3) var(--space-3) 0;
   }
 }
 

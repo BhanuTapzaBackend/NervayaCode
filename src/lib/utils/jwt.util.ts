@@ -1,4 +1,8 @@
-import { SignJWT, jwtVerify } from 'jose';
+// Import from jose subpaths (not the barrel) so the JWE/deflate code path —
+// which pulls CompressionStream and breaks the Edge Runtime — is never bundled.
+// This module only does HS256 sign/verify (JWS), so it needs nothing else.
+import { SignJWT } from 'jose/jwt/sign';
+import { jwtVerify } from 'jose/jwt/verify';
 import { Role } from '../constants/roles';
 
 if (!process.env.JWT_SECRET) {

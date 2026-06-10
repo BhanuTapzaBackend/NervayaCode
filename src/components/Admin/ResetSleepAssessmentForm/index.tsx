@@ -5,16 +5,17 @@ import { Icon } from '@iconify/react';
 import { toast } from 'sonner';
 import { Button } from '@/components/common';
 import { ICON_INFO, ICON_TRASH } from '@/constants/icons';
+import { normalizePhone, validatePhone } from '@/lib/utils/validation.util';
 import styles from './styles.module.css';
 
 interface ResetResponse {
   success: boolean;
   message?: string;
-  data?: { deletedCount: number; userEmail: string };
+  data?: { deletedCount: number; userPhone: string };
 }
 
 const ResetSleepAssessmentForm = () => {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
@@ -24,7 +25,7 @@ const ResetSleepAssessmentForm = () => {
       const res = await fetch('/api/admin/sleep-assessment/reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ phone: phone.trim() }),
       });
       const json = (await res.json()) as ResetResponse;
       if (!res.ok || !json.success) {
@@ -32,7 +33,7 @@ const ResetSleepAssessmentForm = () => {
         return;
       }
       toast.success(json.message || 'Assessment reset successfully');
-      setEmail('');
+      setPhone('');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Network error while resetting');
     } finally {
@@ -43,10 +44,17 @@ const ResetSleepAssessmentForm = () => {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!email.trim()) {
-      toast.error('Enter the user email to reset');
+    const rawPhone = phone.trim();
+    if (!rawPhone) {
+      toast.error('Enter the user phone number to reset');
       return;
     }
+    const normalized = normalizePhone(rawPhone);
+    if (!normalized || !validatePhone(normalized)) {
+      toast.error('Invalid phone number format. Please enter a valid 10-digit number.');
+      return;
+    }
+    setPhone(normalized); // Set to normalized E.164 string
     setConfirming(true);
   };
 
@@ -61,23 +69,23 @@ const ResetSleepAssessmentForm = () => {
       </header>
 
       <form className={styles.card} onSubmit={handleSubmit}>
-        <label className={styles.label} htmlFor="reset-email">
-          User Email
+        <label className={styles.label} htmlFor="reset-phone">
+          User Phone Number
         </label>
         <input
-          id="reset-email"
-          type="email"
+          id="reset-phone"
+          type="tel"
           className={styles.input}
-          placeholder="user@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
+          placeholder="+919876543210"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          autoComplete="tel"
           required
         />
         <p className={styles.help}>
           <Icon icon={ICON_INFO} aria-hidden className={styles.helpIcon} />
-          The user&apos;s email is matched case-insensitively. All sleep-assessment response documents tied to that
-          account will be deleted.
+          The user&apos;s phone number is matched exactly. All sleep-assessment response documents tied to that account
+          will be deleted.
         </p>
 
         <div className={styles.actions}>
@@ -97,7 +105,7 @@ const ResetSleepAssessmentForm = () => {
       {confirming && (
         <div className={styles.confirmOverlay} role="dialog" aria-modal="true" aria-label="Confirm reset">
           <div className={styles.confirmCard}>
-            <h2 className={styles.confirmTitle}>Reset assessment for {email.trim()}?</h2>
+            <h2 className={styles.confirmTitle}>Reset assessment for {phone.trim()}?</h2>
             <p className={styles.confirmBody}>
               All stored sleep-assessment responses for this user will be permanently deleted. The user will see the
               questionnaire from the beginning the next time they visit the page.

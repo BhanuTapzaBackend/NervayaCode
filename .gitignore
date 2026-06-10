@@ -55,3 +55,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# db backups and seed data containing PII (never commit)
+db-backup-*/
+scripts/admins.seed.json

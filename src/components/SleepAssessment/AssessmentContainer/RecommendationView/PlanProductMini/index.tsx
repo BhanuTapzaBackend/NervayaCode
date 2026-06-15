@@ -48,7 +48,7 @@ export function PlanProductMini({
             type="button"
             role="checkbox"
             aria-checked={selected}
-            aria-label={`Include ${title} in your plan`}
+            aria-label={title}
             disabled={disableToggle}
             onClick={onToggle}
             className={`${styles.checkbox} ${selected ? styles.checkboxOn : ''}`}

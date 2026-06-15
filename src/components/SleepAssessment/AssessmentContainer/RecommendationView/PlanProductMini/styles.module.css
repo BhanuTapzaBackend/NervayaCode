@@ -154,7 +154,7 @@
   border-radius: var(--radius-full);
   border: 2px solid var(--color-border-subtle);
   background: var(--color-background);
-  color: #fff;
+  color: var(--color-white-bright);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -177,10 +177,4 @@
 
 .excluded {
   opacity: 0.5;
-}
-
-.excluded .imageContainer,
-.excluded .desc,
-.excluded .subtitle {
-  filter: grayscale(0.4);
 }

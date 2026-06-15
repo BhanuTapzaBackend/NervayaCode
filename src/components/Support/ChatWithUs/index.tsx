@@ -17,7 +17,7 @@ const ChatWithUs = () => {
   const pathname = usePathname();
 
   const handleWhatsAppClick = () => {
-    const phoneNumber = '1234567890';
+    const phoneNumber = '+918409179911';
     const message = encodeURIComponent('Hello! I need support with your product.');
     const destination = `https://wa.me/${phoneNumber}?text=${message}`;
     trackWhatsappSupportClicked({

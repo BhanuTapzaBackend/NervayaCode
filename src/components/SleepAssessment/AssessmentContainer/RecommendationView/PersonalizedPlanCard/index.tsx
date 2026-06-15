@@ -8,6 +8,9 @@ import styles from './styles.module.css';
 
 interface PersonalizedPlanCardProps {
   bundleItems: ServiceKey[];
+  selectedItems: ServiceKey[];
+  selectedCount: number;
+  onToggleItem: (key: ServiceKey) => void;
   supplementName: string;
   loading: boolean;
   error: string | null;
@@ -69,6 +72,9 @@ function getMiniProps(key: ServiceKey, supplementName: string): PlanProductMiniP
 
 export function PersonalizedPlanCard({
   bundleItems,
+  selectedItems,
+  selectedCount,
+  onToggleItem,
   supplementName,
   loading,
   error,
@@ -80,7 +86,7 @@ export function PersonalizedPlanCard({
   onAddPlanToCart,
   adding,
 }: Readonly<PersonalizedPlanCardProps>) {
-  const itemCount = bundleItems.length;
+  const itemCount = selectedCount;
   const disabled = loading || !!error;
   const introCopy =
     itemCount === 1
@@ -104,6 +110,8 @@ export function PersonalizedPlanCard({
         {bundleItems.map((key, i) => {
           const props = getMiniProps(key, supplementName);
           if (!props) return null;
+          const selected = selectedItems.includes(key);
+          const disableToggle = selected && selectedCount <= 1;
           return (
             <Fragment key={key}>
               {i > 0 && (
@@ -111,7 +119,12 @@ export function PersonalizedPlanCard({
                   +
                 </span>
               )}
-              <PlanProductMini {...props} />
+              <PlanProductMini
+                {...props}
+                selected={selected}
+                disableToggle={disableToggle}
+                onToggle={() => onToggleItem(key)}
+              />
             </Fragment>
           );
         })}

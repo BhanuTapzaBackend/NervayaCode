@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';
+import { Analytics } from '@vercel/analytics/react';
 import Script from 'next/script';
 import { Outfit, Inter, Bricolage_Grotesque } from 'next/font/google';
 import './globals.css';
@@ -103,6 +104,7 @@ export default function RootLayout({
           <EngagementTracker />
           {children}
         </Providers>
+        <Analytics />
         {gtmId ? <GoogleTagManager gtmId={gtmId} /> : null}
         {gaId && !gtmId ? <GoogleAnalytics gaId={gaId} /> : null}
       </body>

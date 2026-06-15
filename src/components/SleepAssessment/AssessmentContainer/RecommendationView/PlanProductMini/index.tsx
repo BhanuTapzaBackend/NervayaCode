@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
+import { ICON_CHECK } from '@/constants/icons';
 import styles from './styles.module.css';
 
 export interface PlanProductMiniProps {
@@ -13,6 +14,9 @@ export interface PlanProductMiniProps {
   meta2Icon: string;
   meta2Text: string;
   imageSrc: string;
+  selected?: boolean;
+  disableToggle?: boolean;
+  onToggle?: () => void;
 }
 
 export function PlanProductMini({
@@ -26,15 +30,32 @@ export function PlanProductMini({
   meta2Icon,
   meta2Text,
   imageSrc,
+  selected = true,
+  disableToggle = false,
+  onToggle,
 }: Readonly<PlanProductMiniProps>) {
   const iconAccentClass = styles[`icon_${iconAccent}`];
+  const isExcluded = !!onToggle && !selected;
   return (
-    <div className={styles.card}>
+    <div className={`${styles.card} ${isExcluded ? styles.excluded : ''}`}>
       <div className={styles.header}>
         <span className={`${styles.icon} ${iconAccentClass}`}>
           <Icon icon={icon} aria-hidden />
         </span>
         <h3 className={styles.title}>{title}</h3>
+        {onToggle && (
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={selected}
+            aria-label={title}
+            disabled={disableToggle}
+            onClick={onToggle}
+            className={`${styles.checkbox} ${selected ? styles.checkboxOn : ''}`}
+          >
+            {selected && <Icon icon={ICON_CHECK} aria-hidden />}
+          </button>
+        )}
       </div>
 
       <div className={styles.contentWrap}>

@@ -87,11 +87,12 @@ export function PersonalizedPlanCard({
   adding,
 }: Readonly<PersonalizedPlanCardProps>) {
   const itemCount = selectedCount;
+  const recommendedCount = bundleItems.length;
   const disabled = loading || !!error;
   const introCopy =
-    itemCount === 1
+    recommendedCount === 1
       ? 'Based on your responses, we recommend focusing on the support below. It addresses the key area impacting your sleep right now.'
-      : `Based on your responses, we recommend focusing on the following ${itemCount} supports. They address the key areas impacting your sleep right now.`;
+      : `Based on your responses, we recommend focusing on the following ${recommendedCount} supports. They address the key areas impacting your sleep right now.`;
 
   return (
     <section className={styles.card} aria-label="Your personalized sleep plan">
@@ -104,7 +105,7 @@ export function PersonalizedPlanCard({
 
       <div
         className={`${styles.minisRow} ${
-          itemCount === 1 ? styles.minisRowSingle : itemCount >= 3 ? styles.minisRowThree : ''
+          recommendedCount === 1 ? styles.minisRowSingle : recommendedCount >= 3 ? styles.minisRowThree : ''
         }`}
       >
         {bundleItems.map((key, i) => {

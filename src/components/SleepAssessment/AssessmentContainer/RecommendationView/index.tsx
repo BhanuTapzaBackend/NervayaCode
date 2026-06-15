@@ -128,6 +128,9 @@ export function RecommendationView({ result }: Readonly<RecommendationViewProps>
                 onStartPlan={bundle.handleStartPlan}
                 onAddPlanToCart={bundle.handleAddPlanToCart}
                 adding={adding}
+                selectedItems={bundle.selectedItems}
+                selectedCount={bundle.selectedCount}
+                onToggleItem={bundle.toggleItem}
               />
             )}
 

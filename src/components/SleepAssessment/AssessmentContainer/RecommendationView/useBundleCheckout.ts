@@ -25,6 +25,9 @@ interface UseBundleCheckoutArgs {
 
 export interface UseBundleCheckoutReturn {
   bundleItems: ServiceKey[];
+  selectedItems: ServiceKey[];
+  selectedCount: number;
+  toggleItem: (key: ServiceKey) => void;
   showBundle: boolean;
   showTherapy: boolean;
   pricing: { originalPrice: number; discountedPrice: number; savingsAmount: number };
@@ -46,11 +49,37 @@ export function useBundleCheckout({
   const [therapyFlow, setTherapyFlow] = useState<TherapyFlow>('standalone');
 
   const bundleItems = useMemo(() => getBundleItems(result.services), [result.services]);
+  const [excludedItems, setExcludedItems] = useState<Set<ServiceKey>>(() => new Set());
+
+  const selectedItems = useMemo<ServiceKey[]>(
+    () => bundleItems.filter((key) => !excludedItems.has(key)),
+    [bundleItems, excludedItems],
+  );
+  const selectedCount = selectedItems.length;
+  const selectedHasTherapy = selectedItems.includes('THERAPY');
+
+  const toggleItem = useCallback(
+    (key: ServiceKey) => {
+      setExcludedItems((prev) => {
+        const next = new Set(prev);
+        if (next.has(key)) {
+          next.delete(key); // re-include
+          return next;
+        }
+        // Excluding: block if this is the last remaining selected item.
+        const remaining = bundleItems.filter((k) => !next.has(k)).length;
+        if (remaining <= 1) return prev;
+        next.add(key);
+        return next;
+      });
+    },
+    [bundleItems],
+  );
+
   const therapyPriority = useMemo(() => getTherapyPriority(result.services), [result.services]);
-  const bundleHasTherapy = bundleItems.includes('THERAPY');
   const bundleHasSupplement = bundleItems.includes('SUPPLEMENT');
   const showBundle = bundleItems.length > 0 && (!bundleHasSupplement || !!plan.supplement);
-  const showTherapy = therapyPriority !== 'None' && !bundleHasTherapy;
+  const showTherapy = therapyPriority !== 'None' && !bundleItems.includes('THERAPY');
 
   const supplementPrice = plan.supplement?.price ?? 0;
 
@@ -65,18 +94,18 @@ export function useBundleCheckout({
   );
 
   const pricing = useMemo(() => {
-    const original = bundleItems.reduce((sum, key) => sum + itemUnitPrice(key), 0);
+    const original = selectedItems.reduce((sum, key) => sum + itemUnitPrice(key), 0);
     const discounted = Math.round(original * (1 - plan.discountPct / 100));
     return {
       originalPrice: original,
       discountedPrice: discounted,
       savingsAmount: original - discounted,
     };
-  }, [bundleItems, itemUnitPrice, plan.discountPct]);
+  }, [selectedItems, itemUnitPrice, plan.discountPct]);
 
   // Therapy is excluded — it can't be added to cart without therapist/date/slot from the modal.
   const addBundleNonTherapyItems = useCallback(async () => {
-    for (const key of bundleItems) {
+    for (const key of selectedItems) {
       if (key === 'SUPPLEMENT' && plan.supplement) {
         await cartApi.add(
           plan.supplement._id,
@@ -99,11 +128,11 @@ export function useBundleCheckout({
         );
       }
     }
-  }, [bundleItems, plan.supplement, plan.deepRestPrice]);
+  }, [selectedItems, plan.supplement, plan.deepRestPrice]);
 
   const handleStartPlan = useCallback(async () => {
     if (!showBundle) return;
-    if (bundleHasTherapy) {
+    if (selectedHasTherapy) {
       setTherapyFlow('plan-start');
       setAdding('plan');
       openTherapistModal();
@@ -118,11 +147,11 @@ export function useBundleCheckout({
       toast.error(err instanceof Error ? err.message : 'Could not start your plan');
       setAdding(null);
     }
-  }, [showBundle, bundleHasTherapy, addBundleNonTherapyItems, refreshCart, router, setAdding, openTherapistModal]);
+  }, [showBundle, selectedHasTherapy, addBundleNonTherapyItems, refreshCart, router, setAdding, openTherapistModal]);
 
   const handleAddPlanToCart = useCallback(async () => {
     if (!showBundle) return;
-    if (bundleHasTherapy) {
+    if (selectedHasTherapy) {
       setTherapyFlow('plan-cart');
       setAdding('cart');
       openTherapistModal();
@@ -138,7 +167,7 @@ export function useBundleCheckout({
     } finally {
       setAdding(null);
     }
-  }, [showBundle, bundleHasTherapy, addBundleNonTherapyItems, refreshCart, setAdding, openTherapistModal]);
+  }, [showBundle, selectedHasTherapy, addBundleNonTherapyItems, refreshCart, setAdding, openTherapistModal]);
 
   const handleTherapyConfirm = useCallback(
     async (selection: TherapistSelection, action: TherapyAction) => {
@@ -180,6 +209,9 @@ export function useBundleCheckout({
 
   return {
     bundleItems,
+    selectedItems,
+    selectedCount,
+    toggleItem,
     showBundle,
     showTherapy,
     pricing,

@@ -63,7 +63,7 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    connectionType: 'Google Meet',
+    connectionType: 'Video Call',
     email: '',
     mobile: '',
     date: new Date(),
@@ -141,7 +141,7 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
   }, []);
 
   const connectionOptions = [
-    { value: 'Google Meet', label: 'Google Meet' },
+    { value: 'Video Call', label: 'Video Call' },
     { value: 'Phone Call', label: 'Phone Call' },
   ];
 
@@ -155,9 +155,9 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
     }
 
     const emailRegex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{1,63}$/;
-    if (formData.connectionType === 'Google Meet') {
+    if (formData.connectionType === 'Video Call') {
       if (!formData.email.trim()) {
-        setMessage({ type: 'error', text: 'Please enter your email address for Google Meet.' });
+        setMessage({ type: 'error', text: 'Please enter your email address for a Video Call.' });
         return;
       }
       if (!emailRegex.test(formData.email.trim())) {
@@ -214,7 +214,7 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
       setFormData({
         firstName: '',
         lastName: '',
-        connectionType: 'Google Meet',
+        connectionType: 'Video Call',
         email: '',
         mobile: '',
         date: new Date(),
@@ -288,7 +288,7 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
                 </label>
                 <div className={styles.selectWrapper}>
                   <Icon
-                    icon={formData.connectionType === 'Google Meet' ? ICON_VIDEO : ICON_PHONE}
+                    icon={formData.connectionType === 'Video Call' ? ICON_VIDEO : ICON_PHONE}
                     className={styles.selectIcon}
                     aria-hidden
                   />
@@ -305,7 +305,7 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
             </div>
 
             <div className={styles.formRight}>
-              {formData.connectionType === 'Google Meet' ? (
+              {formData.connectionType === 'Video Call' ? (
                 <div className={styles.inputGroup}>
                   <Input
                     label="Email Address"

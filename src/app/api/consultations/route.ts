@@ -21,8 +21,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (connectionType === 'Google Meet' && !email) {
-      return NextResponse.json(errorResponse('Email is required for Google Meet consultation', null, 400), {
+    if (connectionType === 'Video Call' && !email) {
+      return NextResponse.json(errorResponse('Email is required for a Video Call consultation', null, 400), {
         status: 400,
       });
     }
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       firstName,
       lastName,
       connectionType,
-      email: connectionType === 'Google Meet' ? email : undefined,
+      email: connectionType === 'Video Call' ? email : undefined,
       mobile: connectionType === 'Phone Call' ? mobile : undefined,
       date,
       time,
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         const { pushSupportLeadToZoho } = await import('@/lib/zoho/zoho-crm.service');
         await pushSupportLeadToZoho(
           `${firstName} ${lastName}`,
-          connectionType === 'Google Meet' ? email : 'no-email@nervaya.com',
+          connectionType === 'Video Call' ? email : 'no-email@nervaya.com',
           `Automated consultation request via ${connectionType} at ${date} ${time}`,
           mobile,
         );

@@ -6,7 +6,8 @@ import mongoose, { Types } from 'mongoose';
 import { SESSION_STATUS, SessionStatus } from '@/lib/constants/enums';
 import User from '@/lib/models/user.model';
 import Therapist from '@/lib/models/therapist.model';
-import { generateMeetLink, deleteMeeting } from './googleCalendar.service';
+import { getMeetingProvider } from './meeting-provider.service';
+import { sendMeetLinkViaWhatsApp } from './meet-link-whatsapp.service';
 import { sendSessionConfirmationEmail } from './email/session-confirmation.service';
 import { toObjectId } from '@/lib/utils/objectId.util';
 
@@ -91,37 +92,38 @@ export async function createSession(
     throw new ValidationError('Failed to create session');
   }
 
-  // --- Google Meet & Email Integration (awaited inline) ---
+  // --- Meeting link (provider: Jitsi by default, Google Meet optional) & notifications ---
   try {
     const [user, therapist] = await Promise.all([
-      User.findById(userId).select('email name'),
+      User.findById(userId).select('email name phone'),
       Therapist.findById(therapistId).select('name email'),
     ]);
 
-    if (user) {
-      const { meetLink, eventId } = await generateMeetLink(
+    const { meetLink, externalEventId } = await getMeetingProvider().createSessionMeeting({
+      sessionId: createdSession._id.toString(),
+      date,
+      startTime,
+      customerName: user?.name,
+      therapistName: therapist?.name,
+    });
+    await Session.findByIdAndUpdate(createdSession._id, { meetLink, googleEventId: externalEventId ?? '' });
+    createdSession.meetLink = meetLink;
+    createdSession.googleEventId = externalEventId;
+
+    if (user?.email && meetLink) {
+      await sendSessionConfirmationEmail({
+        email: user.email,
+        name: user.name,
+        therapistName: therapist?.name || 'your Therapist',
         date,
         startTime,
-        `Therapy Session: ${user.name} & ${therapist?.name || 'Therapist'}`,
-        `Your scheduled therapy session on Nervaya.\nCustomer: ${user.name}\nTherapist: ${therapist?.name || 'N/A'}`,
-      );
+        meetLink,
+      });
+    }
 
-      if (meetLink) {
-        await Session.findByIdAndUpdate(createdSession._id, { meetLink, googleEventId: eventId });
-        createdSession.meetLink = meetLink;
-        createdSession.googleEventId = eventId ?? undefined;
-      }
-
-      if (user.email) {
-        await sendSessionConfirmationEmail({
-          email: user.email,
-          name: user.name,
-          therapistName: therapist?.name || 'your Therapist',
-          date,
-          startTime,
-          meetLink: meetLink || '',
-        });
-      }
+    // WhatsApp is the user's primary (verified) identifier — deliver the link there too.
+    if (user?.phone && meetLink) {
+      await sendMeetLinkViaWhatsApp({ toE164: user.phone, name: user.name, date, time: startTime, meetLink });
     }
   } catch (integrationError) {
     console.error('Error in post-booking integration:', integrationError);
@@ -142,15 +144,13 @@ export async function cancelSession(sessionId: string, userId: string) {
     throw new ValidationError('Only pending or confirmed sessions can be cancelled');
   }
 
-  const oldEventId = session.googleEventId;
   session.status = SESSION_STATUS.CANCELLED;
   await session.save();
 
   await releaseSlot(session.therapistId.toString(), session.date, session.startTime);
 
-  if (oldEventId) {
-    await deleteMeeting(oldEventId);
-  }
+  // Clean up any external meeting event (no-op for Jitsi).
+  if (session.googleEventId) await getMeetingProvider().deleteMeeting(session.googleEventId);
 
   return session;
 }
@@ -168,7 +168,6 @@ export async function rescheduleSession(sessionId: string, userId: string, newDa
 
   const oldDate = session.date;
   const oldStartTime = session.startTime;
-  const oldEventId = session.googleEventId;
 
   // 1. Compute new end time
   const startHour = parseInt(newStartTime.split(':')[0]);
@@ -199,40 +198,50 @@ export async function rescheduleSession(sessionId: string, userId: string, newDa
     await txnSession.endSession();
   }
 
-  // 4. Update Google Calendar (awaited inline)
+  // 4. Refresh the meeting link & notify the customer (awaited inline). Jitsi rooms are
+  // derived from the session id (stable across reschedule); Google generates a new event.
   try {
-    if (oldEventId) await deleteMeeting(oldEventId);
-
     const [user, therapist] = await Promise.all([
-      User.findById(userId).select('email name'),
+      User.findById(userId).select('email name phone'),
       Therapist.findById(session.therapistId).select('name'),
     ]);
 
-    if (user) {
-      const { meetLink, eventId } = await generateMeetLink(
-        newDate,
-        newStartTime,
-        `Rescheduled: ${user.name} & ${therapist?.name || 'Therapist'}`,
-        `Your rescheduled therapy session on Nervaya.\nCustomer: ${user.name}\nTherapist: ${therapist?.name || 'N/A'}`,
-      );
+    const provider = getMeetingProvider();
+    if (session.googleEventId) await provider.deleteMeeting(session.googleEventId);
 
-      await Session.findByIdAndUpdate(session._id, { meetLink, googleEventId: eventId });
-      session.meetLink = meetLink ?? undefined;
-      session.googleEventId = eventId ?? undefined;
+    const { meetLink, externalEventId } = await provider.createSessionMeeting({
+      sessionId: session._id.toString(),
+      date: newDate,
+      startTime: newStartTime,
+      customerName: user?.name,
+      therapistName: therapist?.name,
+    });
+    await Session.findByIdAndUpdate(session._id, { meetLink, googleEventId: externalEventId ?? '' });
+    session.meetLink = meetLink;
+    session.googleEventId = externalEventId;
 
-      if (user.email) {
-        await sendSessionConfirmationEmail({
-          email: user.email,
-          name: user.name,
-          therapistName: therapist?.name || 'your Therapist',
-          date: newDate,
-          startTime: newStartTime,
-          meetLink: meetLink || '',
-        });
-      }
+    if (user?.email && meetLink) {
+      await sendSessionConfirmationEmail({
+        email: user.email,
+        name: user.name,
+        therapistName: therapist?.name || 'your Therapist',
+        date: newDate,
+        startTime: newStartTime,
+        meetLink,
+      });
+    }
+
+    if (user?.phone && meetLink) {
+      await sendMeetLinkViaWhatsApp({
+        toE164: user.phone,
+        name: user.name,
+        date: newDate,
+        time: newStartTime,
+        meetLink,
+      });
     }
   } catch (err) {
-    console.error('Error updating Google Meet during reschedule:', err);
+    console.error('Error sending reschedule notification:', err);
   }
 
   return session;
@@ -255,13 +264,12 @@ export async function updateSessionStatus(sessionId: string, status: SessionStat
     throw new ValidationError(`Cannot move from ${session.status} to ${status}`);
   }
 
-  const oldEventId = session.googleEventId;
   session.status = status;
   await session.save();
 
   if (status === SESSION_STATUS.CANCELLED) {
     await releaseSlot(session.therapistId.toString(), session.date, session.startTime);
-    if (oldEventId) await deleteMeeting(oldEventId);
+    if (session.googleEventId) await getMeetingProvider().deleteMeeting(session.googleEventId);
   }
 
   return session;

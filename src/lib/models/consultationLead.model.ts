@@ -3,12 +3,14 @@ import mongoose, { Schema, Model, Document } from 'mongoose';
 export interface IConsultationLead extends Document {
   firstName: string;
   lastName: string;
-  connectionType: 'Google Meet' | 'Phone Call';
+  connectionType: 'Video Call' | 'Phone Call';
   email?: string;
   mobile?: string;
   date: string;
   time: string;
   status: 'pending' | 'confirmed' | 'cancelled';
+  /** Public Jitsi room URL — set for 'Video Call' consultations. */
+  meetLink?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,7 +27,7 @@ const consultationLeadSchema = new Schema<IConsultationLead>(
     },
     connectionType: {
       type: String,
-      enum: ['Google Meet', 'Phone Call'],
+      enum: ['Video Call', 'Phone Call'],
       required: [true, 'Connection type is required'],
     },
     email: {
@@ -52,6 +54,10 @@ const consultationLeadSchema = new Schema<IConsultationLead>(
       type: String,
       enum: ['pending', 'confirmed', 'cancelled'],
       default: 'pending',
+    },
+    meetLink: {
+      type: String,
+      default: '',
     },
   },
   {

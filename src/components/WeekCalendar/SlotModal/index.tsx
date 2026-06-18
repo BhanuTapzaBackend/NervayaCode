@@ -217,14 +217,14 @@ export const SlotModal: React.FC<SlotModalProps> = ({
               <div className={styles.meetLinkSection}>
                 <label className={styles.label} htmlFor="meet-link-input">
                   <Icon icon="solar:link-circle-bold" width={14} height={14} />
-                  Google Meet Link
+                  Meeting Link
                 </label>
                 <div className={styles.meetLinkRow}>
                   <input
                     id="meet-link-input"
                     type="url"
                     className={styles.meetLinkInput}
-                    placeholder="https://meet.google.com/..."
+                    placeholder="Paste a custom meeting link (optional)"
                     value={meetLinkInput}
                     onChange={(e) => setMeetLinkInput(e.target.value)}
                   />

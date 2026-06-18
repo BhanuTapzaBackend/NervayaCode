@@ -1,6 +1,8 @@
 import connectDB from '@/lib/db/mongodb';
 import ConsultationLead from '@/lib/models/consultationLead.model';
 import { ValidationError } from '@/lib/utils/error.util';
+import { getConsultationRoomUrl } from '@/lib/services/jitsi.service';
+import { sendMeetLinkViaWhatsApp } from '@/lib/services/meet-link-whatsapp.service';
 import nodemailer from 'nodemailer';
 
 /**
@@ -30,6 +32,7 @@ function generateICal(event: {
   startTime: Date;
   endTime: Date;
   organizer: string;
+  location?: string;
 }) {
   const formatDate = (date: Date) => `${date.toISOString().replace(/[-:]/g, '').split('.')[0]}Z`;
   return [
@@ -42,6 +45,7 @@ function generateICal(event: {
     `DTEND:${formatDate(event.endTime)}`,
     `SUMMARY:${event.title}`,
     `DESCRIPTION:${event.description}`,
+    ...(event.location ? [`LOCATION:${event.location}`, `URL:${event.location}`] : []),
     `ORGANIZER;CN=Nervaya Support:mailto:${event.organizer}`,
     'STATUS:CONFIRMED',
     'SEQUENCE:0',
@@ -62,6 +66,7 @@ async function sendCalendarInvite(lead: {
   connectionType: string;
   email?: string;
   mobile?: string;
+  meetLink?: string;
 }) {
   const user = process.env.OTP_EMAIL_USER;
   const appPassword = process.env.OTP_EMAIL_APP_PASSWORD;
@@ -85,12 +90,15 @@ async function sendCalendarInvite(lead: {
 
   const organizerEmail = 'tonystalk@example.com'; // Placeholder as per user request
 
+  const joinLine = lead.meetLink ? `\nJoin link: ${lead.meetLink}` : '';
+
   const icalContent = generateICal({
     title: `Nervaya 1-on-1: ${lead.firstName} ${lead.lastName}`,
-    description: `Connection Method: ${lead.connectionType}\nContact: ${lead.email || lead.mobile}\nScheduled via Nervaya Support.`,
+    description: `Connection Method: ${lead.connectionType}\nContact: ${lead.email || lead.mobile}${joinLine}\nScheduled via Nervaya Support.`,
     startTime,
     endTime,
     organizer: organizerEmail,
+    location: lead.meetLink,
   });
 
   const fromName = process.env.OTP_EMAIL_FROM_NAME?.trim() || 'Nervaya';
@@ -102,7 +110,9 @@ async function sendCalendarInvite(lead: {
       to: recipientEmail,
       cc: organizerEmail, // Keep user looped in
       subject: `Consultation Booked: ${lead.firstName} ${lead.lastName}`,
-      text: `Hello ${lead.firstName},\n\nYour consultation has been scheduled for ${lead.date} at ${lead.time} via ${lead.connectionType}.\n\nA calendar invitation is attached to this email.`,
+      text: `Hello ${lead.firstName},\n\nYour consultation has been scheduled for ${lead.date} at ${lead.time} via ${lead.connectionType}.${
+        lead.meetLink ? `\n\nJoin your video call at the scheduled time:\n${lead.meetLink}` : ''
+      }\n\nA calendar invitation is attached to this email.`,
       alternatives: [
         {
           contentType: 'text/calendar; charset=UTF-8; method=REQUEST',
@@ -137,6 +147,23 @@ export async function createConsultationLead(data: {
     }
 
     const lead = await ConsultationLead.create(data);
+
+    // For video consultations, generate the public Jitsi room link and persist it.
+    if (lead.connectionType === 'Video Call') {
+      lead.meetLink = getConsultationRoomUrl(lead._id.toString());
+      await lead.save();
+
+      // If the lead also gave a mobile, send the link over WhatsApp (10-digit India numbers → +91).
+      if (lead.mobile) {
+        sendMeetLinkViaWhatsApp({
+          toE164: `+91${lead.mobile}`,
+          name: lead.firstName,
+          date: lead.date,
+          time: lead.time,
+          meetLink: lead.meetLink,
+        }).catch(() => undefined);
+      }
+    }
 
     // Fire and forget email invite
     sendCalendarInvite(lead).catch(() => undefined);

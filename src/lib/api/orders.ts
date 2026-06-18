@@ -25,6 +25,10 @@ export const ordersApi = {
     return api.get('/orders') as Promise<ApiResponse<Order[]>>;
   },
 
+  getById: (orderId: string): Promise<ApiResponse<Order>> => {
+    return api.get(`/orders/${orderId}`) as Promise<ApiResponse<Order>>;
+  },
+
   getAllForAdmin: (
     page: number = 1,
     limit: number = 10,

@@ -10,6 +10,8 @@ export interface ISession extends Document {
   status: SessionStatus;
   meetLink?: string;
   googleEventId?: string;
+  /** Set once the ~1h-before WhatsApp reminder has been sent (dedupe guard). */
+  reminderSentAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,6 +56,10 @@ const sessionSchema = new Schema<ISession>(
     googleEventId: {
       type: String,
       default: '',
+    },
+    reminderSentAt: {
+      type: Date,
+      default: null,
     },
   },
   {

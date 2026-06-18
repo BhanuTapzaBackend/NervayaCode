@@ -4,6 +4,8 @@ import { successResponse, errorResponse } from '@/lib/utils/response.util';
 import { handleError } from '@/lib/utils/error.util';
 import { requireAuth } from '@/lib/middleware/auth.middleware';
 import { ROLES } from '@/lib/constants/roles';
+import { ITEM_TYPE } from '@/lib/constants/enums';
+import { isSlotInPast } from '@/lib/utils/sessionDateTime.util';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +22,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse('Missing REQUIRED fields: itemType, itemId, quantity', null, 400), {
         status: 400,
       });
+    }
+
+    // Therapy slots can't be booked once their start time has passed (don't take payment for them).
+    if (
+      itemType === ITEM_TYPE.THERAPY &&
+      metadata?.date &&
+      metadata?.slot &&
+      isSlotInPast(metadata.date, metadata.slot)
+    ) {
+      return NextResponse.json(
+        errorResponse('This time slot has already passed. Please choose a later slot.', null, 400),
+        { status: 400 },
+      );
     }
 
     const order = await createDirectOrder(authResult.user.userId, {

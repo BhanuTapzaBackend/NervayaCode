@@ -21,17 +21,12 @@ export function useOrderDetail(orderId: string): OrderDetailState {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await ordersApi.getForUser();
+      const response = await ordersApi.getById(orderId);
       if (response.success && response.data) {
-        const found = response.data.find((o) => o._id === orderId) ?? null;
-        if (!found) {
-          setError('Order not found');
-          setOrder(null);
-        } else {
-          setOrder(found);
-        }
+        setOrder(response.data);
       } else {
-        setError(response.message ?? 'Failed to load order');
+        setError(response.message ?? 'Order not found');
+        setOrder(null);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load order');

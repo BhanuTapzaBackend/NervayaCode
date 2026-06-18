@@ -100,7 +100,7 @@ export function getSessionConfirmationEmailContent({
               How to Join
             </h2>
             <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; line-height: 22px; color: ${EMAIL_COLORS.textMuted}; margin: 0 0 24px 0; text-align: center;">
-              Click the button below at the scheduled time to join the Google Meet session.
+              Click the button below at the scheduled time to join your secure video session.
             </p>
             
             <!-- CTA BUTTON -->
@@ -111,7 +111,7 @@ export function getSessionConfirmationEmailContent({
                     <tr>
                       <td align="center" bgcolor="${EMAIL_COLORS.accent}" style="border-radius: 8px;">
                         <a href="${meetLink}" target="_blank" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 600; color: var(--color-background); text-decoration: none; border-radius: 8px; padding: 16px 32px; display: inline-block;">
-                          Join Google Meet
+                          Join Session
                         </a>
                       </td>
                     </tr>

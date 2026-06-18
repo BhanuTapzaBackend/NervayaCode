@@ -7,9 +7,24 @@ export const PUBLIC_ROUTES = [
   '/support',
   '/therapy-corner',
   '/sleep-assessment',
+  // Shared meeting room — reachable by both customers and therapists. Listing it here lets the
+  // THERAPIST role past the middleware role gate; access is enforced by the jitsi-token API, not the route.
+  '/session',
+  // Free 1-on-1 consultation room — public/anonymous (leads are not logged in). Access is gated by
+  // the unguessable lead id, enforced in the consultations jitsi-token API.
+  '/consultation',
 ] as const;
 
-export const PROTECTED_ROUTES = ['/dashboard', '/profile', '/account', '/cart', '/checkout', '/order-success'] as const;
+export const PROTECTED_ROUTES = [
+  '/dashboard',
+  '/profile',
+  '/account',
+  '/cart',
+  '/checkout',
+  '/order-success',
+  // Requires auth (logged-out users are redirected to login) but is not role-restricted.
+  '/session',
+] as const;
 
 export const ADMIN_ROUTES = ['/admin'] as const;
 

@@ -18,10 +18,20 @@ export interface SessionFiltersParams {
   search?: string;
 }
 
+export interface JitsiTokenResponse {
+  token: string;
+  roomName: string;
+  appId: string;
+}
+
 export const sessionsApi = {
   getForUser: (statusFilter?: string): Promise<ApiResponse<Session[]>> => {
     const params = statusFilter ? `?status=${encodeURIComponent(statusFilter)}` : '';
     return api.get(`/sessions${params}`) as Promise<ApiResponse<Session[]>>;
+  },
+
+  getJitsiToken: (sessionId: string): Promise<ApiResponse<JitsiTokenResponse>> => {
+    return api.get(`/sessions/${sessionId}/jitsi-token`) as Promise<ApiResponse<JitsiTokenResponse>>;
   },
 
   create: (therapistId: string, date: string, startTime: string): Promise<ApiResponse<Session>> => {

@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { Icon } from '@iconify/react';
 import { ICON_CHEVRON_LEFT, ICON_CHEVRON_RIGHT, ICON_SUNRISE, ICON_SUN, ICON_MOON } from '@/constants/icons';
 import { TherapistSlot } from '@/types/session.types';
+import { isSlotInPast } from '@/lib/utils/sessionDateTime.util';
 import styles from './styles.module.css';
 
 interface TimeSlotGridProps {
@@ -107,7 +108,7 @@ export default function TimeSlotGrid({ slots, selectedSlot, onSlotSelect }: Time
 
   const canGoPrev = currentPeriodIndex > 0;
   const canGoNext = currentPeriodIndex < groupedSlots.length - 1;
-  const availableCount = currentGroup.slots.filter((s) => s.isAvailable).length;
+  const availableCount = currentGroup.slots.filter((s) => s.isAvailable && !isSlotInPast(s.date, s.startTime)).length;
 
   return (
     <div className={styles.container}>
@@ -144,10 +145,19 @@ export default function TimeSlotGrid({ slots, selectedSlot, onSlotSelect }: Time
           {currentGroup.slots.map((slot) => {
             const isSelected = selectedSlot === slot._id;
             const isBooked = !slot.isAvailable;
+            const isPast = isSlotInPast(slot.date, slot.startTime);
             const isCustomized = slot.isCustomized;
+            const isDisabled = isBooked || isPast;
+
+            // Past takes priority in the message; both render with the disabled "booked" style.
+            const unavailableReason = isPast
+              ? 'This time has already passed — please pick a later slot.'
+              : isBooked
+                ? 'This slot is already booked.'
+                : undefined;
 
             let slotClassName = styles.slot;
-            if (isBooked) {
+            if (isDisabled) {
               slotClassName += ` ${styles.booked}`;
             } else if (isSelected) {
               slotClassName += ` ${styles.selected}`;
@@ -156,13 +166,18 @@ export default function TimeSlotGrid({ slots, selectedSlot, onSlotSelect }: Time
             }
 
             return (
-              <li key={slot._id}>
+              // title on the <li> (not the disabled button) so the hover tooltip still shows.
+              <li key={slot._id} title={unavailableReason}>
                 <button
                   type="button"
                   className={slotClassName}
                   onClick={() => onSlotSelect(slot._id)}
-                  disabled={isBooked}
-                  aria-label={`Select ${slot.startTime} to ${slot.endTime}`}
+                  disabled={isDisabled}
+                  aria-label={
+                    unavailableReason
+                      ? `${slot.startTime} to ${slot.endTime} — ${unavailableReason}`
+                      : `Select ${slot.startTime} to ${slot.endTime}`
+                  }
                   aria-pressed={isSelected}
                 >
                   <span className={styles.time}>{formatTimeDisplay(slot.startTime)}</span>

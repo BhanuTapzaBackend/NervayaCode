@@ -9,6 +9,7 @@ import {
   ICON_GLOBE,
   ICON_TRUCK,
   ICON_ENVELOPE,
+  ICON_WHATSAPP,
   ICON_BOX,
   ICON_CALENDAR_DAY,
   ICON_HOUSE,
@@ -148,7 +149,7 @@ export default function OrderSuccessPage() {
   const promoDiscount = order.promoDiscount ?? 0;
   const orderDate = formatOrderDate(order.createdAt);
   const orderNumber = formatOrderNumber(order._id);
-  const userEmail = user?.email ?? 'your email';
+  const hasEmail = Boolean(user?.email);
 
   return (
     <Sidebar>
@@ -249,9 +250,13 @@ export default function OrderSuccessPage() {
             <div className={styles.nextSteps}>
               <div className={styles.nextStepCard}>
                 <div className={styles.stepIcon} aria-hidden>
-                  <Icon icon={ICON_ENVELOPE} />
+                  <Icon icon={hasEmail ? ICON_ENVELOPE : ICON_WHATSAPP} />
                 </div>
-                <p>We&apos;ve sent a confirmation email to {userEmail}.</p>
+                <p>
+                  {hasEmail
+                    ? `We've sent a confirmation to your WhatsApp and email (${user?.email}).`
+                    : "We've sent a confirmation to your WhatsApp."}
+                </p>
               </div>
 
               {hasDriftOff && (

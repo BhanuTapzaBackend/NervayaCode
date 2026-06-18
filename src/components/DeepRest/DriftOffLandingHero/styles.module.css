@@ -18,6 +18,10 @@
     padding: 3rem 2rem;
     border-radius: var(--radius-2xl);
   }
+
+  .description {
+    margin-top: 0;
+  }
 }
 
 @media (max-width: 768px) {
@@ -74,7 +78,6 @@
 @media (max-width: 480px) {
   .description {
     font-size: var(--text-body);
-    margin-top: 1rem;
     margin-bottom: 1.25rem;
   }
 }

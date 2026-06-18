@@ -10,8 +10,9 @@
 export const WHATSAPP_TEMPLATE_LANGUAGE = 'en_US';
 
 export const WHATSAPP_TEMPLATES = {
-  /** At-booking / reschedule confirmation carrying the meeting link. */
-  SESSION_LINK: { name: 'nervaya_session_link', language: WHATSAPP_TEMPLATE_LANGUAGE },
+  /** At-booking / reschedule confirmation carrying the meeting link.
+   *  Approved in Meta under plain "English" (en), so override the default here. */
+  SESSION_LINK: { name: 'nervaya_session_link', language: 'en' },
   /** ~1 hour-before reminder carrying the meeting link.  CURRENTLY NOT USED*/
   SESSION_REMINDER: { name: 'nervaya_session_reminder', language: WHATSAPP_TEMPLATE_LANGUAGE },
 } as const;

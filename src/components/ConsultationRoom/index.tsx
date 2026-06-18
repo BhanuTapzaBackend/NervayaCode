@@ -10,5 +10,6 @@ interface ConsultationRoomProps {
 
 export const ConsultationRoom = ({ leadId }: ConsultationRoomProps) => {
   const loadToken = useCallback(() => consultationsApi.getJitsiToken(leadId), [leadId]);
-  return <JitsiRoom loadToken={loadToken} />;
+  // Consultation leads are anonymous (no dashboard) — send them home on exit.
+  return <JitsiRoom loadToken={loadToken} exitRedirectPath="/" />;
 };

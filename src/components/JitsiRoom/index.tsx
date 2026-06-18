@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { JaaSMeeting } from '@jitsi/react-sdk';
 import type { ApiResponse } from '@/lib/api/types';
 import type { JitsiTokenResponse } from '@/lib/api/sessions';
@@ -9,11 +10,14 @@ import styles from './styles.module.css';
 interface JitsiRoomProps {
   /** Loads the JaaS token for this room. Provided by a caller-specific API module. */
   loadToken: () => Promise<ApiResponse<JitsiTokenResponse>>;
+  /** Where to send the user after they leave the call (avoids the blank "left meeting" screen). */
+  exitRedirectPath?: string;
   /** Show the device-check prejoin screen before entering (default true). */
   prejoin?: boolean;
 }
 
-export const JitsiRoom = ({ loadToken, prejoin = true }: JitsiRoomProps) => {
+export const JitsiRoom = ({ loadToken, exitRedirectPath = '/', prejoin = true }: JitsiRoomProps) => {
+  const router = useRouter();
   const [meeting, setMeeting] = useState<JitsiTokenResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,6 +62,7 @@ export const JitsiRoom = ({ loadToken, prejoin = true }: JitsiRoomProps) => {
         roomName={meeting.roomName}
         jwt={meeting.token}
         configOverwrite={{ prejoinPageEnabled: prejoin }}
+        onReadyToClose={() => router.replace(exitRedirectPath)}
         getIFrameRef={(node: HTMLDivElement) => {
           node.style.height = '100%';
           node.style.width = '100%';

@@ -7,6 +7,7 @@ import { SESSION_STATUS, SessionStatus } from '@/lib/constants/enums';
 import User from '@/lib/models/user.model';
 import Therapist from '@/lib/models/therapist.model';
 import { getMeetingProvider } from './meeting-provider.service';
+import { isSlotInPast } from '@/lib/utils/sessionDateTime.util';
 import { sendMeetLinkViaWhatsApp } from './meet-link-whatsapp.service';
 import { sendSessionConfirmationEmail } from './email/session-confirmation.service';
 import { toObjectId } from '@/lib/utils/objectId.util';
@@ -22,6 +23,12 @@ export async function createSession(
 
   if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(therapistId)) {
     throw new ValidationError('Invalid User ID or Therapist ID');
+  }
+
+  // Reject past slots for direct bookings. The paid flow validates the slot at order creation;
+  // createSession there runs inside the payment transaction (post-payment) and must not reject.
+  if (!mongooseSession && isSlotInPast(date, startTime)) {
+    throw new ValidationError('This time slot has already passed. Please choose a later slot.');
   }
 
   const startHour = parseInt(startTime.split(':')[0]);
@@ -177,6 +184,10 @@ export async function rescheduleSession(sessionId: string, userId: string, newDa
 
   if (session.status !== SESSION_STATUS.PENDING && session.status !== SESSION_STATUS.CONFIRMED) {
     throw new ValidationError('Only pending or confirmed sessions can be rescheduled');
+  }
+
+  if (isSlotInPast(newDate, newStartTime)) {
+    throw new ValidationError('This time slot has already passed. Please choose a later slot.');
   }
 
   const oldDate = session.date;

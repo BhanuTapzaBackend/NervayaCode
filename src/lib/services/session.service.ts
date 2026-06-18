@@ -92,23 +92,38 @@ export async function createSession(
     throw new ValidationError('Failed to create session');
   }
 
-  // --- Meeting link (provider: Jitsi by default, Google Meet optional) & notifications ---
+  // Meeting link + notifications run OUTSIDE any transaction. Called standalone (no caller
+  // transaction) → finalize inline. Called inside a caller's transaction (payment.service) →
+  // the caller finalizes after commit, so the DB write and external I/O never block/conflict.
+  if (!mongooseSession) {
+    await finalizeSessionBooking(createdSession, date, startTime);
+  }
+
+  return createdSession;
+}
+
+/**
+ * Generates the meeting link, persists it, and notifies the customer (email + WhatsApp).
+ * MUST run outside any MongoDB transaction — it does external I/O and writes the session
+ * document, which would conflict with an in-flight transaction. Never throws.
+ */
+export async function finalizeSessionBooking(session: ISession, date: string, startTime: string): Promise<void> {
   try {
     const [user, therapist] = await Promise.all([
-      User.findById(userId).select('email name phone'),
-      Therapist.findById(therapistId).select('name email'),
+      User.findById(session.userId).select('email name phone'),
+      Therapist.findById(session.therapistId).select('name'),
     ]);
 
     const { meetLink, externalEventId } = await getMeetingProvider().createSessionMeeting({
-      sessionId: createdSession._id.toString(),
+      sessionId: session._id.toString(),
       date,
       startTime,
       customerName: user?.name,
       therapistName: therapist?.name,
     });
-    await Session.findByIdAndUpdate(createdSession._id, { meetLink, googleEventId: externalEventId ?? '' });
-    createdSession.meetLink = meetLink;
-    createdSession.googleEventId = externalEventId;
+    await Session.findByIdAndUpdate(session._id, { meetLink, googleEventId: externalEventId ?? '' });
+    session.meetLink = meetLink;
+    session.googleEventId = externalEventId;
 
     if (user?.email && meetLink) {
       await sendSessionConfirmationEmail({
@@ -125,11 +140,9 @@ export async function createSession(
     if (user?.phone && meetLink) {
       await sendMeetLinkViaWhatsApp({ toE164: user.phone, name: user.name, date, time: startTime, meetLink });
     }
-  } catch (integrationError) {
-    console.error('Error in post-booking integration:', integrationError);
+  } catch (error) {
+    console.error('Error finalizing session booking:', error);
   }
-
-  return createdSession;
 }
 
 export async function cancelSession(sessionId: string, userId: string) {

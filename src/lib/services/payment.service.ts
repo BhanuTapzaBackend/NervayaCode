@@ -3,11 +3,11 @@ import Order from '@/lib/models/order.model';
 import Cart from '@/lib/models/cart.model';
 import Supplement from '@/lib/models/supplement.model';
 import DriftOffOrder from '@/lib/models/driftOffOrder.model';
-import Session from '@/lib/models/session.model';
+import Session, { ISession } from '@/lib/models/session.model';
 import User from '@/lib/models/user.model';
 import { createDriftOffResponse } from '@/lib/services/driftOffResponse.service';
 import connectDB from '@/lib/db/mongodb';
-import { createSession } from '@/lib/services/session.service';
+import { createSession, finalizeSessionBooking } from '@/lib/services/session.service';
 import { ValidationError } from '@/lib/utils/error.util';
 import mongoose, { Types } from 'mongoose';
 import { PAYMENT_STATUS, ORDER_STATUS, CURRENCY, ITEM_TYPE } from '@/lib/constants/enums';
@@ -106,8 +106,12 @@ class StockError extends Error {
 
 async function processPaymentSuccess(orderId: string, paymentId: string) {
   const session = await mongoose.startSession();
+  // Therapy sessions created inside the transaction; finalized (meet link + notifications)
+  // AFTER commit so external I/O and the link write never block/conflict with the transaction.
+  const therapyToFinalize: { session: ISession; date: string; startTime: string }[] = [];
   try {
     await session.withTransaction(async () => {
+      therapyToFinalize.length = 0; // reset on transaction retry
       // Optimistic lock: only one caller can claim the order from PENDING → PAID
       const lockedOrder = await Order.findOneAndUpdate(
         { _id: orderId, paymentStatus: PAYMENT_STATUS.PENDING },
@@ -170,11 +174,23 @@ async function processPaymentSuccess(orderId: string, paymentId: string) {
           const date = item.metadata?.date as string;
           const slot = item.metadata?.slot as string;
           if (date && slot) {
-            await createSession(lockedOrder.userId.toString(), item.itemId.toString(), date, slot, session);
+            const createdSession = await createSession(
+              lockedOrder.userId.toString(),
+              item.itemId.toString(),
+              date,
+              slot,
+              session,
+            );
+            therapyToFinalize.push({ session: createdSession, date, startTime: slot });
           }
         }
       }
     });
+
+    // Finalize therapy sessions outside the committed transaction (meet link + notifications).
+    for (const t of therapyToFinalize) {
+      await finalizeSessionBooking(t.session, t.date, t.startTime);
+    }
 
     return { success: true };
   } catch (error) {

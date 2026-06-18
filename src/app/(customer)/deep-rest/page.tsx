@@ -2,7 +2,7 @@ import Sidebar from '@/components/Sidebar/LazySidebar';
 import { DeepRestPageTracker } from './DeepRestPageTracker';
 import DriftOffLandingHero from '@/components/DeepRest/DriftOffLandingHero';
 import HowItWorks from '@/components/DeepRest/HowItWorks';
-import PlaylistSection from '@/components/DeepRest/PlaylistSection';
+import { PlaylistSection } from '@/components/DeepRest/PlaylistSection';
 import SupportCards from '@/components/DeepRest/SupportCards';
 import TestimonialsWithData from '@/components/DeepRest/Testimonials/TestimonialsWithData';
 import PageHeader from '@/components/PageHeader/PageHeader';

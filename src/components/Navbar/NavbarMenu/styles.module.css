@@ -304,7 +304,7 @@
   }
 }
 
-.navbarCta {
+.navbarMenu .navbarCta {
   background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
   color: var(--color-text-on-dark);
   border: none;
@@ -322,7 +322,7 @@
 }
 
 @media (max-width: 768px) {
-  .navbarCta {
+  .navbarMenu .navbarCta {
     width: 100%;
     margin: var(--space-4) 0 0;
     text-align: left;
@@ -330,7 +330,7 @@
   }
 }
 
-.navbarCta:hover {
+.navbarMenu .navbarCta:hover {
   background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%);
   transform: translateY(-3px);
   box-shadow: 0 12px 35px rgba(var(--color-accent-rgb), 0.45);

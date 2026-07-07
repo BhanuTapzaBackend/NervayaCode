@@ -71,9 +71,21 @@ function AuthTailItems({
         </Link>
       </li>
       <li>
-        <button type="button" className={styles.navbarCta} onClick={onCloseMobileMenu}>
+        <Link
+          href="/about-us#assistance"
+          className={styles.navbarCta}
+          onClick={(e) => {
+            // Already on About Us: the page won't remount, so scroll directly
+            // instead of relying on hash navigation.
+            if (pathname === '/about-us') {
+              e.preventDefault();
+              document.getElementById('assistance')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            onCloseMobileMenu();
+          }}
+        >
           Contact Us
-        </button>
+        </Link>
       </li>
     </>
   );

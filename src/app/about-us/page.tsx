@@ -3,6 +3,7 @@ import AboutUsCards from '@/components/AboutUS/AboutUsCards';
 import AboutUsTeam from '@/components/AboutUS/AboutUsTeam';
 import AboutUsConsultation from '@/components/AboutUS/AboutUsConsultation';
 import AboutUsStats from '@/components/AboutUS/AboutUsStats';
+import { HashScroll } from '@/components/common/HashScroll';
 
 import Image from 'next/image';
 import { IMAGES } from '@/utils/imageConstants';
@@ -10,6 +11,7 @@ import { IMAGES } from '@/utils/imageConstants';
 const AboutUs = () => {
   return (
     <div className={styles.container}>
+      <HashScroll />
       <div className={styles.aboutUsSection}>
         <div className={styles.card}>
           <div className={styles.cardContent}>

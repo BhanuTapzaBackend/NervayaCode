@@ -232,7 +232,10 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
   };
 
   return (
-    <section className={`${styles.consultationSection} ${centerCard ? styles.consultationSectionCentered : ''}`}>
+    <section
+      id="assistance"
+      className={`${styles.consultationSection} ${centerCard ? styles.consultationSectionCentered : ''}`}
+    >
       <div className={`${styles.formCard} ${centerCard ? styles.formCardAligned : ''}`}>
         <div className={styles.cardHeader}>
           <div className={styles.headerLeft}>

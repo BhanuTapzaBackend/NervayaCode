@@ -37,7 +37,7 @@ const Cards = () => {
 
       if (title === 'Deep Rest') {
         router.push(`/cart?addItemId=drift-off-session&itemType=${ITEM_TYPE.DRIFT_OFF}`);
-      } else if (title === 'Sleep Essentials') {
+      } else if (title === 'Sleep Supplements') {
         if (supplements.length === 0) {
           toast.error('There are no supplements');
           return;
@@ -60,6 +60,7 @@ const Cards = () => {
       <ul className={styles.cardsContainer}>
         {landingPageCardsData.map((card) => (
           <li key={card.id} className={styles.card}>
+            <Link href={card.href} className={styles.cardLink} aria-label={card.title} />
             <div className={styles.cardImageWrapper}>
               <Image
                 src={card.image}

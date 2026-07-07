@@ -17,6 +17,7 @@
   box-sizing: border-box;
   overflow: hidden;
   animation: fadeInUp 0.8s ease-out;
+  scroll-margin-top: 100px;
 }
 
 @media (max-width: 1200px) {

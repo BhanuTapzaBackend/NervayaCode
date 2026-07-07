@@ -9,6 +9,8 @@ import { deepRestApi } from '@/lib/api/deepRest';
 import type { IDriftOffResponse } from '@/types/driftOff.types';
 import { SessionCard } from '@/components/DeepRest/MySessionsSection/SessionCard';
 import { EmptySessions } from '@/components/DeepRest/MySessionsSection/EmptySessions';
+import { SignedOutSessions } from '@/components/DeepRest/MySessionsSection/SignedOutSessions';
+import { useAuth } from '@/hooks/useAuth';
 import styles from './styles.module.css';
 
 const emptySubscribe = () => () => {};
@@ -19,6 +21,7 @@ const PLAYLIST_LIMIT = 3;
 
 export const PlaylistSection = (): ReactElement => {
   const hasMounted = useSyncExternalStore(emptySubscribe, getClientSnapshot, getServerSnapshot);
+  const { isAuthenticated, initializing } = useAuth();
   const [responses, setResponses] = useState<IDriftOffResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,12 +52,17 @@ export const PlaylistSection = (): ReactElement => {
   }, []);
 
   useEffect(() => {
+    if (initializing) return;
+    if (!isAuthenticated) {
+      setIsLoading(false);
+      return;
+    }
     loadResponses();
-  }, [loadResponses]);
+  }, [initializing, isAuthenticated, loadResponses]);
 
   useEffect(() => {
     const handleEvents = () => {
-      if ((document.visibilityState === 'visible' || window.name === 'focus') && !isLoading) {
+      if ((document.visibilityState === 'visible' || window.name === 'focus') && !isLoading && isAuthenticated) {
         loadResponses();
       }
     };
@@ -66,7 +74,7 @@ export const PlaylistSection = (): ReactElement => {
       document.removeEventListener('visibilitychange', handleEvents);
       window.removeEventListener('focus', handleEvents);
     };
-  }, [loadResponses, isLoading]);
+  }, [loadResponses, isLoading, isAuthenticated]);
 
   return (
     <div className={styles.card}>
@@ -76,8 +84,10 @@ export const PlaylistSection = (): ReactElement => {
         </div>
       </div>
 
-      {isLoading ? (
+      {initializing || (isAuthenticated && isLoading) ? (
         <GlobalLoader label="Loading your sessions..." />
+      ) : !isAuthenticated ? (
+        <SignedOutSessions />
       ) : error ? (
         <div className={styles.errorWrapper}>
           <p className={styles.errorText}>{error}</p>

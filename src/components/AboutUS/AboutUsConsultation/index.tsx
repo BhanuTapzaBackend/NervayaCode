@@ -7,6 +7,7 @@ import { Icon } from '@iconify/react';
 import { ICON_CHAT, ICON_USER, ICON_MAIL, ICON_CALENDAR, ICON_VIDEO, ICON_PHONE, ICON_CLOCK } from '@/constants/icons';
 import { Button, Input, Dropdown } from '@/components/common';
 import DatePicker from '@/components/Booking/DatePicker';
+import { toDateString } from '@/components/Booking/DatePicker/datePickerUtils';
 import TimeSlotGrid from '@/components/Booking/TimeSlotGrid';
 import { trackLeadSubmitted } from '@/utils/analytics';
 import axios from 'axios';
@@ -44,9 +45,12 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
   }, []);
 
   // Free-slot count per date, for the calendar badges.
+  // Dates are keyed by LOCAL calendar day, matching DatePicker's own toDateString
+  // lookup. Using toISOString here would shift the day for every user east of UTC
+  // (IST included) and silently ask for the wrong date.
   const fetchAvailability = useCallback(async (monthDate: Date) => {
     try {
-      const monthStr = monthDate.toISOString().slice(0, 7); // YYYY-MM
+      const monthStr = toDateString(monthDate).slice(0, 7); // YYYY-MM
       const response = await axios.get(`/api/consultations/availability?date=${monthStr}`);
       const counts: Record<string, number> = response.data.data ?? {};
       setSlotAvailability(new Map(Object.entries(counts)));
@@ -59,8 +63,7 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
   const fetchDaySlots = useCallback(async (date: Date) => {
     setIsLoadingSlots(true);
     try {
-      const dateStr = date.toISOString().split('T')[0];
-      const response = await axios.get(`/api/consultations/availability?date=${dateStr}`);
+      const response = await axios.get(`/api/consultations/availability?date=${toDateString(date)}`);
       setDaySlots(response.data.data ?? []);
     } catch {
       setDaySlots([]);
@@ -148,7 +151,7 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
     try {
       await axios.post('/api/consultations', {
         ...formData,
-        date: formData.date.toISOString().split('T')[0],
+        date: toDateString(formData.date),
       });
 
       setMessage({
@@ -169,7 +172,7 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
         email: formData.email || undefined,
         phone: formData.mobile || undefined,
         source: 'Free Consultation',
-        message: `Consultation scheduled for ${formData.date.toISOString().split('T')[0]} at ${formData.time} via ${formData.connectionType}`,
+        message: `Consultation scheduled for ${toDateString(formData.date)} at ${formData.time} via ${formData.connectionType}`,
       });
 
       // Reset form
@@ -351,7 +354,7 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
                           endTime: slot.endTime,
                           isAvailable: slot.isAvailable,
                           therapistId: 'consultation',
-                          date: formData.date.toISOString().split('T')[0],
+                          date: toDateString(formData.date),
                           isCustomized: false,
                           createdAt: new Date().toISOString(),
                           updatedAt: new Date().toISOString(),

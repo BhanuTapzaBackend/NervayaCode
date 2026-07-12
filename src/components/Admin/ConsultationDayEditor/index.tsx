@@ -105,7 +105,12 @@ export default function ConsultationDayEditor({ day, onSaved, onClose }: Consult
                 {isBooked ? (
                   <span className={styles.lockedLabel}>Booked — cancel it on the Consultations page to free it</span>
                 ) : (
-                  <button type="button" className={styles.remove} onClick={() => removeSlot(slot.startTime)}>
+                  <button
+                    type="button"
+                    className={styles.remove}
+                    aria-label={`Remove ${slot.startTime} slot`}
+                    onClick={() => removeSlot(slot.startTime)}
+                  >
                     Remove
                   </button>
                 )}

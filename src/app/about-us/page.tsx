@@ -2,6 +2,8 @@ import styles from './styles.module.css';
 import AboutUsCards from '@/components/AboutUS/AboutUsCards';
 import AboutUsTeam from '@/components/AboutUS/AboutUsTeam';
 import AboutUsConsultation from '@/components/AboutUS/AboutUsConsultation';
+// Stats section is temporarily hidden — kept imported so it can be re-enabled without touching imports.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import AboutUsStats from '@/components/AboutUS/AboutUsStats';
 import { HashScroll } from '@/components/common/HashScroll';
 
@@ -61,7 +63,8 @@ const AboutUs = () => {
       </div>
       <AboutUsCards />
       <AboutUsTeam />
-      <AboutUsStats />
+      {/* Statistics section — hidden for now, re-enable when the numbers are finalised. */}
+      {/* <AboutUsStats /> */}
       <AboutUsConsultation centerCard />
     </div>
   );

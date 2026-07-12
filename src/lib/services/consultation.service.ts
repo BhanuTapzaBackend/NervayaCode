@@ -164,7 +164,7 @@ export async function createConsultationLead(data: {
     lead = await ConsultationLead.create({ _id: leadId, ...data });
   } catch (error) {
     // Never leave a slot claimed by a lead that does not exist.
-    await releaseSlot(date, time);
+    await releaseSlot(date, time, leadId);
     const mongoError = error as { code?: number };
     if (mongoError?.code === 11000) {
       throw new ValidationError('A booking for this contact at the selected time already exists.');
@@ -242,11 +242,18 @@ export async function updateConsultationStatus(id: string, status: 'confirmed' |
     return lead;
   }
 
+  // Cancelling gave the slot back, and somebody else may already hold it. Re-confirming
+  // would leave this lead "confirmed" while owning no slot — and a later cancel would
+  // then try to release a slot that is now someone else's. Cancellation is terminal.
+  if (lead.status === 'cancelled') {
+    throw new ValidationError('This consultation was cancelled and its slot released. Ask the customer to rebook.');
+  }
+
   lead.status = status;
   await lead.save();
 
   if (status === 'cancelled') {
-    await releaseSlot(lead.date, lead.time);
+    await releaseSlot(lead.date, lead.time, lead._id);
   }
 
   return lead;

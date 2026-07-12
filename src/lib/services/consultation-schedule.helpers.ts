@@ -152,7 +152,11 @@ export function mergeSlots(
   incoming.forEach((slot, index) => {
     if (preservedKeys.has(slotKey(slot))) return;
 
-    const clashIndex = preservedRanges.findIndex((range) => range !== null && overlaps(incomingRanges[index], range));
+    // Fail CLOSED on a preserved slot whose time will not parse: treat it as
+    // clashing with everything rather than with nothing. Skipping it would let a
+    // second slot be added alongside a booked-but-malformed one, and claimSlot's
+    // positional `$` would hand the duplicate to a second customer.
+    const clashIndex = preservedRanges.findIndex((range) => range === null || overlaps(incomingRanges[index], range));
     if (clashIndex !== -1) {
       if (onOverlap === 'reject') {
         const clash = preserved[clashIndex];

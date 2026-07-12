@@ -203,11 +203,20 @@ export async function claimSlot(date: string, startTime: string, leadId: mongoos
   return result.modifiedCount === 1;
 }
 
-/** Returns a slot to the pool. Used when a booking is cancelled, or to roll back a failed booking. */
-export async function releaseSlot(date: string, startTime: string): Promise<void> {
+/**
+ * Returns a slot to the pool. Used when a booking is cancelled, or to roll back a
+ * failed booking.
+ *
+ * The `leadId` guard is load-bearing: without it, releasing frees whoever currently
+ * holds the slot, not the lead we mean to release. A stale release (cancel a lead
+ * twice, once after somebody else has taken the freed slot) would evict the new
+ * holder while their booking and meeting link stayed live. Releasing a slot that
+ * someone else now holds is a no-op, by design.
+ */
+export async function releaseSlot(date: string, startTime: string, leadId: mongoose.Types.ObjectId): Promise<void> {
   await connectDB();
   await ConsultationSchedule.updateOne(
-    { date, slots: { $elemMatch: { startTime } } },
+    { date, slots: { $elemMatch: { startTime, leadId } } },
     { $set: { 'slots.$.leadId': null }, $inc: { __v: 1 } },
   );
 }

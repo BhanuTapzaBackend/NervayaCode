@@ -83,6 +83,9 @@ test.describe('Admin back-office', () => {
   test('TC-119 Therapist management available', async ({ page }, testInfo) => {
     await page.goto('/admin/therapists');
     await page.waitForLoadState('domcontentloaded');
+    // The therapist list hydrates client-side; wait for it like TC-115/TC-117 do,
+    // otherwise this reads an empty body and fails on nothing but timing.
+    await expect(page.getByRole('heading', { name: 'Therapists' })).toBeVisible();
     const body = (await page.locator('body').innerText()).toLowerCase();
     const addCtrl = await page
       .getByRole('button', { name: /add|new|create/i })

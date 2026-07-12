@@ -1,12 +1,22 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import * as Popover from '@radix-ui/react-popover';
-import { DayPicker } from 'react-day-picker';
 import { Icon } from '@iconify/react';
 import { ICON_CALENDAR } from '@/constants/icons';
-import 'react-day-picker/style.css';
 import styles from './DateField.module.css';
+
+/**
+ * The calendar (and react-day-picker's stylesheet) loads only when a popover is
+ * first opened. DateField is re-exported from the common barrel, so a static
+ * import would drag the whole calendar into every page that touches any common
+ * component — pages that never render a date field at all.
+ */
+const Calendar = dynamic(() => import('./Calendar'), {
+  ssr: false,
+  loading: () => <div className={styles.calendarLoading}>Loading calendar...</div>,
+});
 
 export interface DateFieldProps {
   /** ISO date, `YYYY-MM-DD`. Empty string means no date chosen. */
@@ -87,7 +97,7 @@ export function DateField({
 
       <Popover.Portal>
         <Popover.Content className={styles.content} sideOffset={6} align="start">
-          <DayPicker
+          <Calendar
             mode="single"
             selected={selected}
             onSelect={handleSelect}

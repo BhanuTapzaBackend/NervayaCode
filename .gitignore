@@ -59,3 +59,10 @@ next-env.d.ts
 # db backups and seed data containing PII (never commit)
 db-backup-*/
 scripts/admins.seed.json
+
+# e2e (Playwright) artifacts: logs, screenshots, traces, reports, throwaway DB
+e2e/.artifacts/
+test-results/
+playwright-report/
+# workbook backup created by scripts/update-test-results.py
+Nervaya_Test_Cases_final_version.bak.xlsx

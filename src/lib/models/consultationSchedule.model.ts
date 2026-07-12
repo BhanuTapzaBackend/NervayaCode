@@ -10,6 +10,8 @@ export interface IConsultationSlotDoc {
 export interface IConsultationSchedule extends Document {
   date: string;
   slots: IConsultationSlotDoc[];
+  /** Optimistic-locking version. Every write to `slots` must bump it — see consultation-schedule.service. */
+  __v: number;
   createdAt: Date;
   updatedAt: Date;
 }

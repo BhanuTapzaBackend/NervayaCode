@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import type { IConsultationSchedule, IConsultationSlotDoc } from '@/lib/models/consultationSchedule.model';
+import type { IConsultationSlotDoc } from '@/lib/models/consultationSchedule.model';
 import { ValidationError } from '@/lib/utils/error.util';
 import { displayToMinutes, MAX_RANGE_DAYS } from '@/lib/utils/consultation-time.util';
 import type { SlotTime } from '@/types/consultation.types';
@@ -11,14 +11,12 @@ import type { SlotTime } from '@/types/consultation.types';
  */
 
 export const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-export const MONTH_PATTERN = /^\d{4}-\d{2}$/;
+/** Month must be a real month: '2099-13' is not one, so the shape alone is not enough. */
+export const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 const DAY_MS = 86_400_000;
 
-/**
- * The ONLY slots a rewrite may remove: free (nobody booked it) AND open (admin left it on).
- * A booked slot or an admin-closed slot cannot match this filter, so it can never be pulled.
- */
-export const REMOVABLE_SLOT = { leadId: null, isAvailable: true } as const;
+/** How many times a version-guarded write re-reads and retries before giving up with a ConflictError. */
+export const MAX_WRITE_ATTEMPTS = 5;
 
 export interface MinuteRange {
   start: number;
@@ -26,7 +24,17 @@ export interface MinuteRange {
 }
 
 export type FreshSlot = SlotTime & { isAvailable: true; leadId: null };
-export type BulkOps = mongoose.AnyBulkWriteOperation<IConsultationSchedule>[];
+
+/** What a merge does when an incoming slot collides with a slot that must be preserved. */
+export type OverlapPolicy = 'skip' | 'reject';
+
+export interface MergeOutcome {
+  /** The complete slot array the day should now hold. */
+  slots: IConsultationSlotDoc[];
+  /** Slots genuinely new to this day — never counts a slot that was already there. */
+  added: number;
+  bookingsPreserved: number;
+}
 
 /** A slot is bookable only if the admin left it open AND nobody has taken it. */
 export function isFree(slot: { isAvailable: boolean; leadId: mongoose.Types.ObjectId | null }): boolean {
@@ -83,22 +91,18 @@ export function toRanges(slots: SlotTime[]): MinuteRange[] {
   return ranges;
 }
 
-/** Minute ranges of the slots that survived a pull. An unparseable legacy slot cannot block anything. */
-export function rangesOf(slots: IConsultationSlotDoc[]): MinuteRange[] {
-  const ranges: MinuteRange[] = [];
-  for (const slot of slots) {
-    try {
-      ranges.push({ start: displayToMinutes(slot.startTime), end: displayToMinutes(slot.endTime) });
-    } catch {
-      // Malformed legacy time: not comparable, so it is skipped rather than crashing the write.
-    }
+/** A stored slot's minute range, or null when a malformed legacy time makes it incomparable. */
+function rangeOrNull(slot: SlotTime): MinuteRange | null {
+  try {
+    return { start: displayToMinutes(slot.startTime), end: displayToMinutes(slot.endTime) };
+  } catch {
+    return null;
   }
-  return ranges;
 }
 
 /** Two ranges overlap when each starts before the other ends — not merely when they share a start. */
-export function overlapsAny(candidate: MinuteRange, ranges: MinuteRange[]): boolean {
-  return ranges.some((range) => candidate.start < range.end && range.start < candidate.end);
+function overlaps(a: MinuteRange, b: MinuteRange): boolean {
+  return a.start < b.end && b.start < a.end;
 }
 
 /** Identity of a slot in the day, used to tell a genuinely new slot from one that already existed. */
@@ -110,16 +114,117 @@ export function freshSlot(slot: SlotTime): FreshSlot {
   return { startTime: slot.startTime, endTime: slot.endTime, isAvailable: true, leadId: null };
 }
 
+/** The slots a rewrite may never drop: booked by someone, or deliberately closed by an admin. */
+function isPreserved(slot: IConsultationSlotDoc): boolean {
+  return slot.leadId !== null || !slot.isAvailable;
+}
+
+/** Strips Mongoose internals so the merged array can be written back as a plain value. */
+function plainSlot(slot: IConsultationSlotDoc): IConsultationSlotDoc {
+  return {
+    startTime: slot.startTime,
+    endTime: slot.endTime,
+    isAvailable: slot.isAvailable,
+    leadId: slot.leadId ?? null,
+  };
+}
+
+/**
+ * Computes the day's next slot array: every preserved slot carried over verbatim, plus each
+ * incoming slot that does not overlap one of them. An incoming slot identical to a preserved slot
+ * is not a collision — it is the same slot, already carried over.
+ *
+ * `skip` (bulk generate) fills in around a preserved slot. `reject` (admin hand-edit) refuses,
+ * so the admin is told about the conflict rather than silently losing the slot they submitted.
+ */
+export function mergeSlots(
+  existing: IConsultationSlotDoc[],
+  incoming: SlotTime[],
+  incomingRanges: MinuteRange[],
+  onOverlap: OverlapPolicy,
+): MergeOutcome {
+  const preserved = existing.filter(isPreserved).map(plainSlot);
+  const preservedRanges = preserved.map(rangeOrNull);
+  const preservedKeys = new Set(preserved.map(slotKey));
+  const existingKeys = new Set(existing.map(slotKey));
+
+  const fresh: IConsultationSlotDoc[] = [];
+  incoming.forEach((slot, index) => {
+    if (preservedKeys.has(slotKey(slot))) return;
+
+    const clashIndex = preservedRanges.findIndex((range) => range !== null && overlaps(incomingRanges[index], range));
+    if (clashIndex !== -1) {
+      if (onOverlap === 'reject') {
+        const clash = preserved[clashIndex];
+        const reason = clash.leadId !== null ? 'is already booked' : 'was closed';
+        throw new ValidationError(
+          `Slot "${slot.startTime} - ${slot.endTime}" overlaps "${clash.startTime} - ${clash.endTime}", ` +
+            `which ${reason}. Cancel or move that slot first.`,
+        );
+      }
+      return;
+    }
+    fresh.push(freshSlot(slot));
+  });
+
+  return {
+    slots: sortByTime([...preserved, ...fresh]),
+    added: fresh.filter((slot) => !existingKeys.has(slotKey(slot))).length,
+    bookingsPreserved: preserved.filter((slot) => slot.leadId !== null).length,
+  };
+}
+
+/**
+ * Order-independent canonical form of a day's slots. A regenerate that would change nothing can
+ * then skip its write entirely, which keeps repeated/concurrent generates from fighting over `__v`.
+ */
+export function slotsFingerprint(slots: IConsultationSlotDoc[]): string {
+  return slots
+    .map((slot) => `${slot.startTime}|${slot.endTime}|${slot.isAvailable}|${slot.leadId?.toString() ?? ''}`)
+    .sort()
+    .join(',');
+}
+
+/** A losing race on the unique `date` index — the day was created by someone else a moment ago. */
+export function isDuplicateKeyError(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null || !('code' in error)) {
+    return false;
+  }
+  return error.code === 11000;
+}
+
+export function chunk<T>(items: T[], size: number): T[][] {
+  const batches: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    batches.push(items.slice(index, index + size));
+  }
+  return batches;
+}
+
+export function assertValidDate(date: string): void {
+  if (!DATE_PATTERN.test(date) || Number.isNaN(Date.parse(`${date}T00:00:00Z`))) {
+    throw new ValidationError('Date must be a real date in YYYY-MM-DD format.');
+  }
+}
+
+/** 0=Sunday .. 6=Saturday. An out-of-range day would otherwise match no date and silently no-op. */
+export function assertWeekdays(weekdays: number[]): void {
+  if (!Array.isArray(weekdays) || weekdays.length === 0) {
+    throw new ValidationError('Select at least one weekday.');
+  }
+  for (const weekday of weekdays) {
+    if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6) {
+      throw new ValidationError(`Invalid weekday "${weekday}". Use 0 (Sunday) through 6 (Saturday).`);
+    }
+  }
+}
+
 /** Rejects an oversized span BEFORE it is expanded into a date array. */
 export function assertSpanWithinLimit(fromDate: string, toDate: string): void {
-  if (!DATE_PATTERN.test(fromDate) || !DATE_PATTERN.test(toDate)) {
-    throw new ValidationError('Dates must be valid and in YYYY-MM-DD format.');
-  }
+  assertValidDate(fromDate);
+  assertValidDate(toDate);
   const from = Date.parse(`${fromDate}T00:00:00Z`);
   const to = Date.parse(`${toDate}T00:00:00Z`);
-  if (Number.isNaN(from) || Number.isNaN(to)) {
-    throw new ValidationError('Dates must be valid and in YYYY-MM-DD format.');
-  }
   if (to < from) {
     throw new ValidationError('End date must not be before start date.');
   }

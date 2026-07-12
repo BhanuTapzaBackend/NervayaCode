@@ -1,39 +1,94 @@
 import mongoose from 'mongoose';
 import connectDB from '@/lib/db/mongodb';
 import ConsultationSchedule, { type IConsultationSchedule } from '@/lib/models/consultationSchedule.model';
-import { ValidationError } from '@/lib/utils/error.util';
+import { ConflictError, ValidationError } from '@/lib/utils/error.util';
 import { buildSlots, eachDateInRange, weekdayOf } from '@/lib/utils/consultation-time.util';
 import {
   assertSpanWithinLimit,
-  freshSlot,
+  assertValidDate,
+  assertWeekdays,
+  chunk,
+  isDuplicateKeyError,
   isFree,
-  overlapsAny,
-  rangesOf,
-  slotKey,
+  mergeSlots,
+  slotsFingerprint,
   sortByTime,
   toRanges,
-  type BulkOps,
-  DATE_PATTERN,
+  MAX_WRITE_ATTEMPTS,
   MONTH_PATTERN,
-  REMOVABLE_SLOT,
+  type MinuteRange,
+  type OverlapPolicy,
 } from '@/lib/services/consultation-schedule.helpers';
 import type { GenerateRangeParams, GenerateRangeResult, PublicSlot, SlotTime } from '@/types/consultation.types';
 
+/** Separate dates are separate documents, so a few can be written at once without racing each other. */
+const DATE_CONCURRENCY = 20;
+
+interface DayWriteResult {
+  doc: IConsultationSchedule;
+  added: number;
+  bookingsPreserved: number;
+}
+
 /**
- * Bulk-generates slots across a date range.
+ * Version-guarded read-modify-write of ONE date. The merge is computed in JS but committed as a
+ * SINGLE conditional update fenced on the document's `__v`, so a slot array derived from a stale
+ * read can never be written: if anyone touched the day in between — a booking, another admin —
+ * `__v` moved on, the update matches nothing, and we start over from a fresh read.
  *
- * Never rewrites a day wholesale. It pulls ONLY free+open slots, re-reads what survived
- * (bookings and admin-closed slots), then pushes the template slots that do not overlap a
- * survivor. A booking that commits mid-flight therefore cannot be destroyed: worst case a
- * concurrent booker finds no free slot and gets a clean "slot taken".
+ * One write means the day is never momentarily empty (no availability blackout) and can never end
+ * up holding two copies of a slot. It is also why claimSlot/releaseSlot bump `__v`: a booking that
+ * did not move the version would be invisible to a generate already in flight, and get overwritten.
+ */
+async function writeDay(
+  date: string,
+  incoming: SlotTime[],
+  incomingRanges: MinuteRange[],
+  onOverlap: OverlapPolicy,
+): Promise<DayWriteResult> {
+  for (let attempt = 0; attempt < MAX_WRITE_ATTEMPTS; attempt += 1) {
+    const current = await ConsultationSchedule.findOne({ date });
+    const merged = mergeSlots(current?.slots ?? [], incoming, incomingRanges, onOverlap);
+
+    if (!current) {
+      try {
+        const created = await ConsultationSchedule.create({ date, slots: merged.slots });
+        return { doc: created, added: merged.added, bookingsPreserved: merged.bookingsPreserved };
+      } catch (error) {
+        // Someone created the day a moment before us. Re-read and merge onto theirs instead.
+        if (!isDuplicateKeyError(error)) throw error;
+        continue;
+      }
+    }
+
+    // Nothing to change (the usual case for a re-run, or for a generate racing an identical one).
+    // Skipping the write keeps `__v` still, so concurrent no-op generates never contend at all.
+    if (slotsFingerprint(current.slots) === slotsFingerprint(merged.slots)) {
+      return { doc: current, added: merged.added, bookingsPreserved: merged.bookingsPreserved };
+    }
+
+    const result = await ConsultationSchedule.updateOne(
+      { _id: current._id, __v: current.__v },
+      { $set: { slots: merged.slots }, $inc: { __v: 1 } },
+    );
+    if (result.matchedCount === 1) {
+      current.slots = merged.slots;
+      current.__v += 1;
+      return { doc: current, added: merged.added, bookingsPreserved: merged.bookingsPreserved };
+    }
+  }
+  throw new ConflictError('The schedule was being changed by someone else. Please try again.');
+}
+
+/**
+ * Bulk-generates slots across a date range. Each date is merged and written under its own version
+ * guard, so a booking that commits mid-flight survives and the day is never left without slots.
  */
 export async function generateRange(params: GenerateRangeParams): Promise<GenerateRangeResult> {
   await connectDB();
   const { fromDate, toDate, startTime, endTime, slotMinutes, weekdays } = params;
 
-  if (!Array.isArray(weekdays) || weekdays.length === 0) {
-    throw new ValidationError('Select at least one weekday.');
-  }
+  assertWeekdays(weekdays);
   assertSpanWithinLimit(fromDate, toDate);
 
   let template: SlotTime[];
@@ -52,39 +107,14 @@ export async function generateRange(params: GenerateRangeParams): Promise<Genera
     return { datesGenerated: 0, slotsCreated: 0, bookingsPreserved: 0 };
   }
 
-  // Snapshot of what already exists, used ONLY to report an accurate slotsCreated count —
-  // never to decide what to write, so it cannot reintroduce a read-modify-write race.
-  const before = await ConsultationSchedule.find({ date: { $in: targetDates } });
-  const existingKeys = new Map(before.map((doc) => [doc.date, new Set(doc.slots.map(slotKey))]));
-
-  // 1. Remove only slots that are free AND open. A booked or admin-closed slot cannot match.
-  const pulls: BulkOps = targetDates.map((date) => ({
-    updateOne: { filter: { date }, update: { $pull: { slots: REMOVABLE_SLOT } }, upsert: true },
-  }));
-  await ConsultationSchedule.bulkWrite(pulls);
-
-  // 2. Re-read the survivors, then 3. push only the template slots that do not collide with one.
-  const survivors = await ConsultationSchedule.find({ date: { $in: targetDates } });
-  const survivorsByDate = new Map(survivors.map((doc) => [doc.date, doc.slots]));
-
-  const pushes: BulkOps = [];
   let slotsCreated = 0;
   let bookingsPreserved = 0;
-
-  for (const date of targetDates) {
-    const kept = survivorsByDate.get(date) ?? [];
-    bookingsPreserved += kept.filter((slot) => slot.leadId !== null).length;
-
-    const keptRanges = rangesOf(kept);
-    const fresh = template.filter((_, index) => !overlapsAny(templateRanges[index], keptRanges)).map(freshSlot);
-    if (fresh.length === 0) continue;
-
-    const known = existingKeys.get(date) ?? new Set<string>();
-    slotsCreated += fresh.filter((slot) => !known.has(slotKey(slot))).length;
-    pushes.push({ updateOne: { filter: { date }, update: { $push: { slots: { $each: fresh } } } } });
-  }
-  if (pushes.length > 0) {
-    await ConsultationSchedule.bulkWrite(pushes);
+  for (const batch of chunk(targetDates, DATE_CONCURRENCY)) {
+    const written = await Promise.all(batch.map((date) => writeDay(date, template, templateRanges, 'skip')));
+    for (const day of written) {
+      slotsCreated += day.added;
+      bookingsPreserved += day.bookingsPreserved;
+    }
   }
 
   return { datesGenerated: targetDates.length, slotsCreated, bookingsPreserved };
@@ -118,7 +148,7 @@ export async function getPublicSlots(date: string): Promise<PublicSlot[]> {
 export async function getMonthAvailability(month: string): Promise<Record<string, number>> {
   await connectDB();
   if (!MONTH_PATTERN.test(month)) {
-    throw new ValidationError('Month must be in YYYY-MM format.');
+    throw new ValidationError('Month must be a real month in YYYY-MM format.');
   }
   const schedules = await ConsultationSchedule.find({ date: { $gte: `${month}-01`, $lte: `${month}-31` } });
   const availability: Record<string, number> = {};
@@ -129,57 +159,46 @@ export async function getMonthAvailability(month: string): Promise<Record<string
 }
 
 /**
- * Replaces one day's slots (admin hand-edit). Refuses to drop a booked slot, and uses the same
- * pull-survivors-push shape as generateRange so a concurrent booking is never overwritten.
+ * Replaces one day's slots (admin hand-edit) under the same version guard as generateRange.
+ * Refuses to drop a booked slot, and refuses to add a slot that overlaps a booked or closed one
+ * rather than quietly discarding it — the admin gets back exactly what they asked for, or an error.
  */
 export async function replaceDay(date: string, slots: SlotTime[]): Promise<IConsultationSchedule> {
   await connectDB();
-  if (!DATE_PATTERN.test(date)) {
-    throw new ValidationError('Date must be in YYYY-MM-DD format.');
-  }
+  assertValidDate(date);
   if (!Array.isArray(slots)) {
     throw new ValidationError('Slots must be a list.');
   }
   const incomingRanges = toRanges(slots);
 
+  // Best-effort, friendlier error for the common case. A booking that lands after this read is
+  // still safe: writeDay's merge preserves it, and rejects any submitted slot that overlaps it.
   const existing = await ConsultationSchedule.findOne({ date });
-  const booked = (existing?.slots ?? []).filter((slot) => slot.leadId !== null);
   const incomingTimes = new Set(slots.map((slot) => slot.startTime));
-  const dropped = booked.filter((slot) => !incomingTimes.has(slot.startTime));
+  const dropped = (existing?.slots ?? []).filter((slot) => slot.leadId !== null && !incomingTimes.has(slot.startTime));
   if (dropped.length > 0) {
     throw new ValidationError(
       `Cannot remove ${dropped.length} slot(s) that already have a booking. Cancel the booking first.`,
     );
   }
 
-  await ConsultationSchedule.updateOne({ date }, { $pull: { slots: REMOVABLE_SLOT } }, { upsert: true });
-  const survivors = await ConsultationSchedule.findOne({ date });
-  const keptRanges = rangesOf(survivors?.slots ?? []);
-  const fresh = slots.filter((_, index) => !overlapsAny(incomingRanges[index], keptRanges)).map(freshSlot);
-  if (fresh.length === 0) {
-    return survivors as IConsultationSchedule;
-  }
-
-  const updated = await ConsultationSchedule.findOneAndUpdate(
-    { date },
-    { $push: { slots: { $each: fresh } } },
-    { upsert: true, returnDocument: 'after' },
-  );
-  return updated as IConsultationSchedule;
+  const { doc } = await writeDay(date, slots, incomingRanges, 'reject');
+  return doc;
 }
 
 /**
  * Atomically claims a slot. Returns false if it was already taken or does not exist.
  *
- * This is a SINGLE conditional update on purpose. A check-then-write would leave a
- * gap in which two concurrent bookers could both pass the check. Mongo guarantees
- * only one of them matches this filter.
+ * This is a SINGLE conditional update on purpose. A check-then-write would leave a gap in which
+ * two concurrent bookers could both pass the check. Mongo guarantees only one of them matches this
+ * filter. The `__v` bump publishes the booking to any schedule rewrite that is mid-flight, whose
+ * version-guarded write will then miss and re-read rather than overwrite this booking away.
  */
 export async function claimSlot(date: string, startTime: string, leadId: mongoose.Types.ObjectId): Promise<boolean> {
   await connectDB();
   const result = await ConsultationSchedule.updateOne(
     { date, slots: { $elemMatch: { startTime, isAvailable: true, leadId: null } } },
-    { $set: { 'slots.$.leadId': leadId } },
+    { $set: { 'slots.$.leadId': leadId }, $inc: { __v: 1 } },
   );
   return result.modifiedCount === 1;
 }
@@ -189,7 +208,7 @@ export async function releaseSlot(date: string, startTime: string): Promise<void
   await connectDB();
   await ConsultationSchedule.updateOne(
     { date, slots: { $elemMatch: { startTime } } },
-    { $set: { 'slots.$.leadId': null } },
+    { $set: { 'slots.$.leadId': null }, $inc: { __v: 1 } },
   );
 }
 

@@ -1,0 +1,100 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  width: 100%;
+  min-height: var(--input-height);
+  padding: 0 var(--space-4);
+  background: var(--color-background);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-sizing: border-box;
+}
+
+.trigger:hover:not(:disabled) {
+  border-color: var(--color-border-light-hover);
+}
+
+.trigger:focus-visible,
+.trigger[data-state='open'] {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* No date chosen yet — read as a placeholder, not a value. */
+.trigger[data-empty] .triggerLabel {
+  color: var(--color-text-tertiary);
+  font-weight: var(--weight-medium);
+}
+
+.triggerLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.triggerIcon {
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.content {
+  z-index: 60;
+  padding: var(--spacing-sm);
+  background: var(--color-background);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+/*
+ * react-day-picker ships its own stylesheet and exposes these custom properties
+ * as its theming hooks. Setting them here keeps the calendar on our palette
+ * without overriding its internal class names.
+ */
+.calendar {
+  --rdp-accent-color: var(--color-accent);
+  --rdp-accent-background-color: var(--color-background-alt);
+  --rdp-today-color: var(--color-accent);
+  --rdp-day-height: 36px;
+  --rdp-day-width: 36px;
+  --rdp-day_button-height: 36px;
+  --rdp-day_button-width: 36px;
+  --rdp-day_button-border-radius: var(--radius-sm);
+  --rdp-selected-border: none;
+
+  margin: 0;
+  color: var(--color-text-body);
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+}
+
+.clear {
+  display: block;
+  width: 100%;
+  margin-top: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  background: none;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.clear:hover {
+  color: var(--color-text-primary);
+}

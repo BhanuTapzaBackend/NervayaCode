@@ -31,22 +31,34 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-body);
+  min-width: 0;
 }
 
-.field input,
-.field select {
-  padding: var(--spacing-sm);
+.field label {
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+/* Native time input — Select and DateField bring their own styling. */
+.field input {
+  width: 100%;
+  min-height: var(--input-height);
+  padding: 0 var(--space-4);
   background: var(--color-background);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
   color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  box-sizing: border-box;
 }
 
-.field input:focus,
-.field select:focus {
+.field input:focus {
   outline: none;
   border-color: var(--color-accent);
 }

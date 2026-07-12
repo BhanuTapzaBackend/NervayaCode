@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Dropdown } from '@/components/common';
+import { Select, DateField } from '@/components/common';
 import type { ConsultationFiltersParams } from '@/types/consultation.types';
 import styles from '../FilterBar/styles.module.css';
 
@@ -56,7 +56,7 @@ export default function ConsultationFilters({
     <div className={styles.bar} role="search" aria-label="Filter consultations">
       <div className={styles.field}>
         <label htmlFor="consultation-status">Status</label>
-        <Dropdown
+        <Select
           id="consultation-status"
           options={STATUS_OPTIONS}
           value={status}
@@ -70,28 +70,30 @@ export default function ConsultationFilters({
 
       <div className={styles.field}>
         <label htmlFor="consultation-date-from">From</label>
-        <input
+        <DateField
           id="consultation-date-from"
-          type="date"
           value={dateFrom}
           max={dateTo || undefined}
-          onChange={(e) => {
-            setDateFrom(e.target.value);
-            applyNow(status, e.target.value, dateTo);
+          placeholder="Any date"
+          ariaLabel="Bookings from date"
+          onChange={(v) => {
+            setDateFrom(v);
+            applyNow(status, v, dateTo);
           }}
         />
       </div>
 
       <div className={styles.field}>
         <label htmlFor="consultation-date-to">To</label>
-        <input
+        <DateField
           id="consultation-date-to"
-          type="date"
           value={dateTo}
           min={dateFrom || undefined}
-          onChange={(e) => {
-            setDateTo(e.target.value);
-            applyNow(status, dateFrom, e.target.value);
+          placeholder="Any date"
+          ariaLabel="Bookings to date"
+          onChange={(v) => {
+            setDateTo(v);
+            applyNow(status, dateFrom, v);
           }}
         />
       </div>

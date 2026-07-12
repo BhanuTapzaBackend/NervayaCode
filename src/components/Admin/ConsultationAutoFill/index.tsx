@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Button } from '@/components/common';
+import { Button, Select, DateField } from '@/components/common';
 import { consultationsApi } from '@/lib/api/consultations';
 import styles from './styles.module.css';
 
@@ -73,36 +73,55 @@ export default function ConsultationAutoFill({ onGenerated }: ConsultationAutoFi
       </p>
 
       <div className={styles.grid}>
-        <label className={styles.field}>
-          <span>From</span>
-          <input type="date" value={fromDate} max={toDate || undefined} onChange={(e) => setFromDate(e.target.value)} />
-        </label>
+        <div className={styles.field}>
+          <label htmlFor="autofill-from">From</label>
+          <DateField
+            id="autofill-from"
+            value={fromDate}
+            max={toDate || undefined}
+            placeholder="Start date"
+            ariaLabel="Generate from date"
+            onChange={setFromDate}
+          />
+        </div>
 
-        <label className={styles.field}>
-          <span>To</span>
-          <input type="date" value={toDate} min={fromDate || undefined} onChange={(e) => setToDate(e.target.value)} />
-        </label>
+        <div className={styles.field}>
+          <label htmlFor="autofill-to">To</label>
+          <DateField
+            id="autofill-to"
+            value={toDate}
+            min={fromDate || undefined}
+            placeholder="End date"
+            ariaLabel="Generate to date"
+            onChange={setToDate}
+          />
+        </div>
 
-        <label className={styles.field}>
-          <span>Start time</span>
-          <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-        </label>
+        <div className={styles.field}>
+          <label htmlFor="autofill-start-time">Start time</label>
+          <input
+            id="autofill-start-time"
+            type="time"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+          />
+        </div>
 
-        <label className={styles.field}>
-          <span>End time</span>
-          <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-        </label>
+        <div className={styles.field}>
+          <label htmlFor="autofill-end-time">End time</label>
+          <input id="autofill-end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+        </div>
 
-        <label className={styles.field}>
-          <span>Slot length</span>
-          <select value={slotMinutes} onChange={(e) => setSlotMinutes(Number(e.target.value))}>
-            {SLOT_LENGTHS.map((length) => (
-              <option key={length} value={length}>
-                {length} minutes
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className={styles.field}>
+          <label htmlFor="autofill-slot-length">Slot length</label>
+          <Select
+            id="autofill-slot-length"
+            options={SLOT_LENGTHS.map((length) => ({ value: String(length), label: `${length} minutes` }))}
+            value={String(slotMinutes)}
+            onChange={(v) => setSlotMinutes(Number(v))}
+            ariaLabel="Slot length"
+          />
+        </div>
       </div>
 
       <fieldset className={styles.weekdays}>

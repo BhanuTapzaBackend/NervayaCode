@@ -1,0 +1,100 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  width: 100%;
+  min-height: var(--input-height);
+  padding: 0 var(--space-4);
+  background: var(--color-background);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-sizing: border-box;
+}
+
+.trigger:hover:not([data-disabled]) {
+  border-color: var(--color-border-light-hover);
+}
+
+.trigger:focus-visible,
+.trigger[data-state='open'] {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.trigger[data-disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Radix sets data-placeholder on the trigger when nothing is selected. */
+.trigger[data-placeholder] {
+  color: var(--color-text-tertiary);
+}
+
+.triggerIcon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.content {
+  z-index: 60;
+  min-width: var(--radix-select-trigger-width);
+  max-height: var(--radix-select-content-available-height);
+  overflow: hidden;
+  background: var(--color-background);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+.viewport {
+  padding: var(--spacing-xs);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-body);
+  font-size: var(--text-caption);
+  line-height: 1.2;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+
+/* Radix drives hover and keyboard focus through a single highlighted state. */
+.item[data-highlighted] {
+  background: var(--color-background-alt);
+  color: var(--color-text-primary);
+}
+
+.item[data-state='checked'] {
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.item[data-disabled] {
+  color: var(--color-text-disabled);
+  pointer-events: none;
+}
+
+.itemIndicator {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}

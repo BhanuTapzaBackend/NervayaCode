@@ -7,8 +7,8 @@
  *
  * Run: npx tsx scripts/verify-slot-race.ts
  */
-import 'dotenv/config';
 import mongoose from 'mongoose';
+import connectDB from '../src/lib/db/mongodb';
 import ConsultationSchedule from '../src/lib/models/consultationSchedule.model';
 import { generateRange, claimSlot } from '../src/lib/services/consultation-schedule.service';
 
@@ -16,13 +16,7 @@ const TEST_DATE = '2099-01-01'; // far future — never collides with real data
 const CONCURRENT_BOOKERS = 25;
 
 async function main(): Promise<void> {
-  const uri = process.env.MONGODB_URI;
-  if (!uri) {
-    console.error('MONGODB_URI is not set.');
-    process.exit(1);
-  }
-
-  await mongoose.connect(uri);
+  await connectDB();
   await ConsultationSchedule.deleteOne({ date: TEST_DATE });
 
   await generateRange({

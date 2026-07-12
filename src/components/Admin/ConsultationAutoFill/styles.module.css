@@ -1,0 +1,100 @@
+.panel {
+  padding: var(--spacing-lg);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text-body);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.field label {
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+/* Native time input — Select and DateField bring their own styling. */
+.field input {
+  width: 100%;
+  min-height: var(--input-height);
+  padding: 0 var(--space-4);
+  background: var(--color-background);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  box-sizing: border-box;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.weekdays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  border: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-md);
+}
+
+.weekdays legend {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.weekday {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+  cursor: pointer;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.success {
+  color: var(--color-success);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}

@@ -7,55 +7,17 @@ import { Icon } from '@iconify/react';
 import { ICON_CHAT, ICON_USER, ICON_MAIL, ICON_CALENDAR, ICON_VIDEO, ICON_PHONE, ICON_CLOCK } from '@/constants/icons';
 import { Button, Input, Dropdown } from '@/components/common';
 import DatePicker from '@/components/Booking/DatePicker';
+import { toDateString } from '@/components/Booking/DatePicker/datePickerUtils';
 import TimeSlotGrid from '@/components/Booking/TimeSlotGrid';
 import { trackLeadSubmitted } from '@/utils/analytics';
 import axios from 'axios';
 import { TherapistSlot } from '@/types/session.types';
+import type { PublicSlot } from '@/types/consultation.types';
 import { useZohoLead } from '@/hooks/useZohoLead';
 
 interface AboutUsConsultationProps {
   centerCard?: boolean;
 }
-
-const generateWorkingHourSlots = () => {
-  const slots = [];
-  const startHour = 9; // 9 AM
-  const endHour = 18; // 6 PM
-
-  for (let hour = startHour; hour < endHour; hour++) {
-    for (const minute of [0, 30]) {
-      const h = hour > 12 ? hour - 12 : hour;
-      const ampm = hour >= 12 ? 'PM' : 'AM';
-      const displayHour = h === 0 ? 12 : h;
-      const displayMinute = minute === 0 ? '00' : '30';
-
-      const startTime = `${displayHour}:${displayMinute} ${ampm}`;
-
-      // Calculate end time
-      let nextMinute = minute + 30;
-      let nextHour = hour;
-      if (nextMinute === 60) {
-        nextMinute = 0;
-        nextHour++;
-      }
-      const nh = nextHour > 12 ? nextHour - 12 : nextHour;
-      const nampm = nextHour >= 12 ? 'PM' : 'AM';
-      const nDisplayHour = nh === 0 ? 12 : nh;
-      const nDisplayMinute = nextMinute === 0 ? '00' : '30';
-      const endTime = `${nDisplayHour}:${nDisplayMinute} ${nampm}`;
-
-      slots.push({
-        _id: `${hour}-${minute}`,
-        startTime,
-        endTime,
-        isAvailable: true,
-      });
-    }
-  }
-  return slots;
-};
-
-const DYNAMIC_SLOTS = generateWorkingHourSlots();
 
 const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) => {
   const pathname = usePathname();
@@ -73,8 +35,8 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [slotAvailability, setSlotAvailability] = useState<Map<string, number>>(new Map());
-  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
-  // const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
+  const [daySlots, setDaySlots] = useState<PublicSlot[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
   const today = useMemo(() => {
     const d = new Date();
@@ -82,31 +44,32 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
     return d;
   }, []);
 
-  // Fetch availability for the month
+  // Free-slot count per date, for the calendar badges.
+  // Dates are keyed by LOCAL calendar day, matching DatePicker's own toDateString
+  // lookup. Using toISOString here would shift the day for every user east of UTC
+  // (IST included) and silently ask for the wrong date.
   const fetchAvailability = useCallback(async (monthDate: Date) => {
-    // setIsLoadingAvailability(true);
     try {
-      const monthStr = monthDate.toISOString().slice(0, 7); // YYYY-MM
+      const monthStr = toDateString(monthDate).slice(0, 7); // YYYY-MM
       const response = await axios.get(`/api/consultations/availability?date=${monthStr}`);
-      const map = new Map();
-      Object.entries(response.data).forEach(([date, count]) => {
-        map.set(date, count);
-      });
-      setSlotAvailability(map);
+      const counts: Record<string, number> = response.data.data ?? {};
+      setSlotAvailability(new Map(Object.entries(counts)));
     } catch {
-      // } finally {
-      //   setIsLoadingAvailability(false);
+      setSlotAvailability(new Map());
     }
   }, []);
 
-  // Fetch specific booked slots for the selected date
-  const fetchBookedSlots = useCallback(async (date: Date) => {
+  // The slots the admin actually opened on the selected date.
+  const fetchDaySlots = useCallback(async (date: Date) => {
+    setIsLoadingSlots(true);
     try {
-      const dateStr = date.toISOString().split('T')[0];
-      const response = await axios.get(`/api/consultations/availability?date=${dateStr}`);
-      const booked = response.data.map((b: { time: string }) => b.time);
-      setBookedSlots(booked);
-    } catch {}
+      const response = await axios.get(`/api/consultations/availability?date=${toDateString(date)}`);
+      setDaySlots(response.data.data ?? []);
+    } catch {
+      setDaySlots([]);
+    } finally {
+      setIsLoadingSlots(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -114,15 +77,17 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
   }, [fetchAvailability, today]);
 
   useEffect(() => {
-    fetchBookedSlots(formData.date);
-  }, [formData.date, fetchBookedSlots]);
+    fetchDaySlots(formData.date);
+  }, [formData.date, fetchDaySlots]);
 
+  // Drop the selected time if it is no longer offered or no longer free.
   useEffect(() => {
-    // Also reset selected time if it's now booked
-    if (formData.time && bookedSlots.includes(formData.time)) {
+    if (!formData.time) return;
+    const stillBookable = daySlots.some((slot) => slot.startTime === formData.time && slot.isAvailable);
+    if (!stillBookable) {
       setFormData((prev) => ({ ...prev, time: '' }));
     }
-  }, [formData.time, bookedSlots]);
+  }, [formData.time, daySlots]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -186,7 +151,7 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
     try {
       await axios.post('/api/consultations', {
         ...formData,
-        date: formData.date.toISOString().split('T')[0],
+        date: toDateString(formData.date),
       });
 
       setMessage({
@@ -207,7 +172,7 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
         email: formData.email || undefined,
         phone: formData.mobile || undefined,
         source: 'Free Consultation',
-        message: `Consultation scheduled for ${formData.date.toISOString().split('T')[0]} at ${formData.time} via ${formData.connectionType}`,
+        message: `Consultation scheduled for ${toDateString(formData.date)} at ${formData.time} via ${formData.connectionType}`,
       });
 
       // Reset form
@@ -224,6 +189,10 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
       let errorMsg = 'Failed to schedule consultation. Please try again.';
       if (axios.isAxiosError(error)) {
         errorMsg = error.response?.data?.message || error.message || errorMsg;
+        // Somebody took the slot first — refresh the day so it visibly disappears.
+        if (error.response?.status === 409) {
+          void fetchDaySlots(formData.date);
+        }
       }
       setMessage({ type: 'error', text: errorMsg });
     } finally {
@@ -372,24 +341,29 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
                     <Icon icon={ICON_CLOCK} className={styles.labelIcon} />
                     Available Slots
                   </h4>
-                  <TimeSlotGrid
-                    slots={
-                      DYNAMIC_SLOTS.map((slot) => ({
-                        ...slot,
-                        therapistId: 'consultation',
-                        date: formData.date.toISOString().split('T')[0],
-                        isCustomized: false,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                        isAvailable: !bookedSlots.includes(slot.startTime),
-                      })) as TherapistSlot[]
-                    }
-                    selectedSlot={DYNAMIC_SLOTS.find((s) => s.startTime === formData.time)?._id || null}
-                    onSlotSelect={(_id: string) => {
-                      const slot = DYNAMIC_SLOTS.find((s) => s._id === _id);
-                      if (slot) setFormData({ ...formData, time: slot.startTime });
-                    }}
-                  />
+                  {isLoadingSlots ? (
+                    <p className={styles.emptySlots}>Loading slots...</p>
+                  ) : daySlots.length === 0 ? (
+                    <p className={styles.emptySlots}>No slots available on this date. Please pick another day.</p>
+                  ) : (
+                    <TimeSlotGrid
+                      slots={
+                        daySlots.map((slot) => ({
+                          _id: slot.startTime,
+                          startTime: slot.startTime,
+                          endTime: slot.endTime,
+                          isAvailable: slot.isAvailable,
+                          therapistId: 'consultation',
+                          date: toDateString(formData.date),
+                          isCustomized: false,
+                          createdAt: new Date().toISOString(),
+                          updatedAt: new Date().toISOString(),
+                        })) as TherapistSlot[]
+                      }
+                      selectedSlot={formData.time || null}
+                      onSlotSelect={(id: string) => setFormData((prev) => ({ ...prev, time: id }))}
+                    />
+                  )}
                 </div>
               </div>
             </div>

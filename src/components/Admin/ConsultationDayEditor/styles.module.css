@@ -1,0 +1,114 @@
+.editor {
+  padding: var(--spacing-lg);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text-body);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.close {
+  background: none;
+  border: none;
+  font-size: var(--font-size-xl);
+  line-height: 1;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.empty {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.slotList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-md);
+  display: grid;
+  gap: var(--spacing-xs);
+}
+
+.slot,
+.slotBooked {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+}
+
+.slotBooked {
+  background: var(--color-background-alt);
+  color: var(--color-text-secondary);
+}
+
+.lockedLabel {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+.remove {
+  background: none;
+  border: none;
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.addRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.addLabel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+}
+
+.addLabel input {
+  min-height: var(--input-height);
+  padding: 0 var(--space-4);
+  background: var(--color-background);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  box-sizing: border-box;
+}
+
+.addLabel input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.error {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}

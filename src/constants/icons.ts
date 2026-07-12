@@ -139,6 +139,7 @@ export const SIDEBAR_ICON_MAP: SidebarIconMap = {
   FaCartShopping: ICON_CART,
   FaChartPie: ICON_DASHBOARD,
   FaCalendarCheck: ICON_CALENDAR,
+  FaClock: ICON_CLOCK,
   FaUserGroup: ICON_USERS_GROUP,
   FaClipboardList: ICON_CLIPBOARD,
   FaFileMedical: ICON_FILE,

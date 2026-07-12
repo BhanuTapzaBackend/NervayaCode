@@ -1,8 +1,12 @@
+import mongoose from 'mongoose';
 import connectDB from '@/lib/db/mongodb';
 import ConsultationLead from '@/lib/models/consultationLead.model';
-import { ValidationError } from '@/lib/utils/error.util';
+import { ValidationError, ConflictError, NotFoundError } from '@/lib/utils/error.util';
+import { claimSlot, releaseSlot } from '@/lib/services/consultation-schedule.service';
 import { getConsultationRoomUrl } from '@/lib/services/jitsi.service';
 import { sendMeetLinkViaWhatsApp } from '@/lib/services/meet-link-whatsapp.service';
+import type { ConsultationFiltersParams } from '@/types/consultation.types';
+import type { PaginationMeta } from '@/types/pagination.types';
 import nodemailer from 'nodemailer';
 
 /**
@@ -127,53 +131,130 @@ export async function createConsultationLead(data: {
   firstName: string;
   lastName: string;
   connectionType: string;
-  email: string;
-  mobile: string;
+  email?: string;
+  mobile?: string;
   date: string;
   time: string;
 }) {
   await connectDB();
+  const { email, mobile, date, time } = data;
+
+  // The same person must not hold two bookings at one time. The unique indexes on the
+  // model are the real guard; this check exists only to give a friendlier message.
+  const duplicateQuery: Record<string, string | object> = { date, time, status: { $ne: 'cancelled' } };
+  if (email) duplicateQuery.email = email;
+  if (mobile) duplicateQuery.mobile = mobile;
+
+  const alreadyBooked = await ConsultationLead.findOne(duplicateQuery);
+  if (alreadyBooked) {
+    throw new ValidationError('You have already booked a consultation for this time slot.');
+  }
+
+  // Mint the id up front so the slot can be claimed for this exact lead. Claiming
+  // is a single atomic conditional update: concurrent bookers cannot both win.
+  const leadId = new mongoose.Types.ObjectId();
+
+  const claimed = await claimSlot(date, time, leadId);
+  if (!claimed) {
+    throw new ConflictError('That slot was just booked. Please choose another time.');
+  }
+
+  let lead;
   try {
-    const { email, mobile, date, time } = data;
-
-    // Check for double booking (handled by unique index but better UX to check first)
-    const existingQuery: Record<string, string | object> = { date, time, status: { $ne: 'cancelled' } };
-    if (email) existingQuery.email = email;
-    if (mobile) existingQuery.mobile = mobile;
-
-    const existingLead = await ConsultationLead.findOne(existingQuery);
-    if (existingLead) {
-      throw new ValidationError('You have already booked a consultation for this time slot.');
-    }
-
-    const lead = await ConsultationLead.create(data);
-
-    // For video consultations, generate the public Jitsi room link and persist it.
-    if (lead.connectionType === 'Video Call') {
-      lead.meetLink = getConsultationRoomUrl(lead._id.toString());
-      await lead.save();
-
-      // If the lead also gave a mobile, send the link over WhatsApp (10-digit India numbers → +91).
-      if (lead.mobile) {
-        sendMeetLinkViaWhatsApp({
-          toE164: `+91${lead.mobile}`,
-          name: lead.firstName,
-          date: lead.date,
-          time: lead.time,
-          meetLink: lead.meetLink,
-        }).catch(() => undefined);
-      }
-    }
-
-    // Fire and forget email invite
-    sendCalendarInvite(lead).catch(() => undefined);
-
-    return lead;
+    lead = await ConsultationLead.create({ _id: leadId, ...data });
   } catch (error) {
+    // Never leave a slot claimed by a lead that does not exist.
+    await releaseSlot(date, time, leadId);
     const mongoError = error as { code?: number };
     if (mongoError?.code === 11000) {
       throw new ValidationError('A booking for this contact at the selected time already exists.');
     }
     throw error;
   }
+
+  // For video consultations, generate the public Jitsi room link and persist it.
+  if (lead.connectionType === 'Video Call') {
+    lead.meetLink = getConsultationRoomUrl(lead._id.toString());
+    await lead.save();
+
+    // If the lead also gave a mobile, send the link over WhatsApp (10-digit India numbers → +91).
+    if (lead.mobile) {
+      sendMeetLinkViaWhatsApp({
+        toE164: `+91${lead.mobile}`,
+        name: lead.firstName,
+        date: lead.date,
+        time: lead.time,
+        meetLink: lead.meetLink,
+      }).catch(() => undefined);
+    }
+  }
+
+  // Fire and forget email invite
+  sendCalendarInvite(lead).catch(() => undefined);
+
+  return lead;
+}
+
+/** Paginated bookings for the admin list. Filters: date range and status. */
+export async function listConsultations(
+  page: number,
+  limit: number,
+  filters: ConsultationFiltersParams = {},
+): Promise<{ data: unknown[]; meta: PaginationMeta }> {
+  await connectDB();
+
+  const query: Record<string, unknown> = {};
+  if (filters.status) query.status = filters.status;
+  if (filters.dateFrom || filters.dateTo) {
+    const dateQuery: Record<string, string> = {};
+    if (filters.dateFrom) dateQuery.$gte = filters.dateFrom;
+    if (filters.dateTo) dateQuery.$lte = filters.dateTo;
+    query.date = dateQuery;
+  }
+
+  const skip = (page - 1) * limit;
+  const [data, total] = await Promise.all([
+    ConsultationLead.find(query).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit).lean(),
+    ConsultationLead.countDocuments(query),
+  ]);
+
+  return {
+    data,
+    meta: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
+  };
+}
+
+/**
+ * Confirms or cancels a booking.
+ *
+ * Cancelling releases the slot back into the pool — that is why this is not a
+ * one-line status write.
+ */
+export async function updateConsultationStatus(id: string, status: 'confirmed' | 'cancelled') {
+  await connectDB();
+
+  const lead = await ConsultationLead.findById(id);
+  if (!lead) {
+    throw new NotFoundError('Consultation not found');
+  }
+
+  if (lead.status === status) {
+    return lead;
+  }
+
+  // Cancelling gave the slot back, and somebody else may already hold it. Re-confirming
+  // would leave this lead "confirmed" while owning no slot — and a later cancel would
+  // then try to release a slot that is now someone else's. Cancellation is terminal.
+  if (lead.status === 'cancelled') {
+    throw new ValidationError('This consultation was cancelled and its slot released. Ask the customer to rebook.');
+  }
+
+  lead.status = status;
+  await lead.save();
+
+  if (status === 'cancelled') {
+    await releaseSlot(lead.date, lead.time, lead._id);
+  }
+
+  return lead;
 }

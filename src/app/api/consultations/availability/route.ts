@@ -1,60 +1,43 @@
-import { NextResponse } from 'next/server';
-import ConsultationLead from '@/lib/models/consultationLead.model';
-import connectDB from '@/lib/db/mongodb';
+import { NextRequest, NextResponse } from 'next/server';
+import { getMonthAvailability, getPublicSlots } from '@/lib/services/consultation-schedule.service';
+import { successResponse, errorResponse } from '@/lib/utils/response.util';
+import { handleError } from '@/lib/utils/error.util';
 
-export async function GET(req: Request) {
+const MONTH_PATTERN = /^\d{4}-\d{2}$/;
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Availability for the public booking form.
+ *
+ * ?date=YYYY-MM     -> Record<date, freeSlotCount>, drives the calendar badges
+ * ?date=YYYY-MM-DD  -> PublicSlot[], the slots offered on that day
+ *
+ * Both read the admin-managed schedule. A date the admin never opened simply
+ * has no slots, rather than the fictional 9-6 grid this route used to invent.
+ */
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const date = searchParams.get('date'); // YYYY-MM or YYYY-MM-DD
+    const date = request.nextUrl.searchParams.get('date');
 
-    await connectDB();
-
-    if (date && date.split('-').length === 3) {
-      // Find bookings for specific date
-      const bookings = await ConsultationLead.find({
-        date,
-        status: { $ne: 'cancelled' },
-      }).select('time');
-      return NextResponse.json(bookings);
+    if (!date) {
+      return NextResponse.json(errorResponse('A date (YYYY-MM or YYYY-MM-DD) is required', null, 400), {
+        status: 400,
+      });
     }
 
-    // Start of the month
-    const startOfMonth = new Date(`${date}-01T00:00:00Z`);
-    // End of the month
-    const endOfMonth = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 0, 23, 59, 59);
-
-    // Find all bookings for this month
-    const bookings = await ConsultationLead.find({
-      date: {
-        $gte: startOfMonth.toISOString().split('T')[0],
-        $lte: endOfMonth.toISOString().split('T')[0],
-      },
-      status: { $ne: 'cancelled' },
-    });
-
-    // Total possible slots per day (9 AM - 6 PM, 30 min slots = 18 slots)
-    const TOTAL_SLOTS_PER_DAY = 18;
-
-    // Group by date
-    const availabilityMap: Record<string, number> = {};
-
-    // Initialize days in month
-    const daysInMonth = endOfMonth.getDate();
-    for (let i = 1; i <= daysInMonth; i++) {
-      const d = String(i).padStart(2, '0');
-      const dateKey = `${date}-${d}`;
-      availabilityMap[dateKey] = TOTAL_SLOTS_PER_DAY;
+    if (DATE_PATTERN.test(date)) {
+      const slots = await getPublicSlots(date);
+      return NextResponse.json(successResponse('Slots retrieved', slots));
     }
 
-    // Subtract bookings
-    bookings.forEach((booking) => {
-      if (availabilityMap[booking.date]) {
-        availabilityMap[booking.date]--;
-      }
-    });
+    if (MONTH_PATTERN.test(date)) {
+      const availability = await getMonthAvailability(date);
+      return NextResponse.json(successResponse('Availability retrieved', availability));
+    }
 
-    return NextResponse.json(availabilityMap);
-  } catch (_error: unknown) {
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(errorResponse('Date must be YYYY-MM or YYYY-MM-DD', null, 400), { status: 400 });
+  } catch (error) {
+    const { message, statusCode, error: errData } = handleError(error);
+    return NextResponse.json(errorResponse(message, errData, statusCode), { status: statusCode });
   }
 }

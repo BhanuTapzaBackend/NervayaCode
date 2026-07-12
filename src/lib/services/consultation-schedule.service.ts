@@ -83,6 +83,10 @@ async function writeDay(
 /**
  * Bulk-generates slots across a date range. Each date is merged and written under its own version
  * guard, so a booking that commits mid-flight survives and the day is never left without slots.
+ *
+ * REPLACES rather than adds: a day's free slots become exactly this window, so generating an
+ * afternoon over a day that held a morning drops the morning. Deliberate — re-running with a
+ * narrower window is how an admin shrinks a day. Booked and admin-closed slots always survive.
  */
 export async function generateRange(params: GenerateRangeParams): Promise<GenerateRangeResult> {
   await connectDB();

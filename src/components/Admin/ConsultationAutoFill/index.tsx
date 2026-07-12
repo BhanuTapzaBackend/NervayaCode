@@ -69,7 +69,9 @@ export default function ConsultationAutoFill({ onGenerated }: ConsultationAutoFi
     <section className={styles.panel}>
       <h2 className={styles.title}>Auto-fill availability</h2>
       <p className={styles.subtitle}>
-        Generate slots across a date range. Existing bookings are always kept — re-running this never cancels anyone.
+        Generate slots across a date range. This <strong>replaces</strong> the free slots on each day it touches, so a
+        day&apos;s times become exactly the window below — to keep an earlier window as well, widen this one to cover
+        both. Booked and closed slots are always kept; re-running this never cancels anyone.
       </p>
 
       <div className={styles.grid}>

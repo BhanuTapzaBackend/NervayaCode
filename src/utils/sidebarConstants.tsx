@@ -71,6 +71,8 @@ export const adminMenuGroups: NavigationMenuGroup[] = [
       { title: 'Sleep Supplements', path: '/admin/supplements', icon: 'FaPills' },
       { title: 'Orders', path: '/admin/orders', icon: 'FaBoxOpen' },
       { title: 'Sessions', path: '/admin/sessions', icon: 'FaCalendarCheck' },
+      { title: 'Consultations', path: '/admin/consultations', icon: 'FaHeadset' },
+      { title: 'Consultation Slots', path: '/admin/consultations/availability', icon: 'FaClock' },
       { title: 'Promo Codes', path: '/admin/promo-codes', icon: 'FaTag' },
       { title: 'Blogs', path: '/admin/blogs', icon: 'FaNewspaper' },
       { title: 'Reviews', path: '/admin/reviews', icon: 'FaStar' },

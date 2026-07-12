@@ -37,6 +37,27 @@ export interface GenerateRangeResult {
   bookingsPreserved: number;
 }
 
+export interface ConsultationLead {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  connectionType: 'Video Call' | 'Phone Call';
+  email?: string;
+  mobile?: string;
+  date: string;
+  time: string;
+  status: 'pending' | 'confirmed' | 'cancelled';
+  meetLink?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConsultationScheduleDay {
+  _id: string;
+  date: string;
+  slots: IConsultationSlot[];
+}
+
 export interface ConsultationFiltersParams {
   status?: string;
   dateFrom?: string;

@@ -7,10 +7,44 @@
 .mainWrapper {
   position: relative;
   width: 100%;
+  aspect-ratio: 1 / 1;
   border-radius: var(--radius-xl);
   overflow: hidden;
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
   border: 1px solid var(--color-glass-border);
+  /* Let the browser own vertical scrolling; only horizontal drags reach useSwipe. */
+  touch-action: pan-y;
+}
+
+.mainWrapper:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Blurred copy of the current photo, filling the letterbox area behind it. */
+.backdrop {
+  object-fit: cover;
+  filter: blur(28px) saturate(1.2);
+  transform: scale(1.15);
+  opacity: 0.85;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.mainImage {
+  object-fit: contain;
+  z-index: 1;
+  animation: gallery-fade var(--transition-base) ease;
+}
+
+@keyframes gallery-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .badge {
@@ -23,15 +57,91 @@
   border-radius: var(--radius);
   font-size: 0.9rem;
   font-weight: var(--weight-bold);
-  z-index: 2;
+  z-index: 3;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
-.mainImage {
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  display: block;
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background var(--transition-base) ease;
+}
+
+.arrow:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.arrow:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.arrowPrev {
+  left: var(--space-4);
+}
+
+.arrowNext {
+  right: var(--space-4);
+}
+
+.dots {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-4);
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition:
+    width var(--transition-base) ease,
+    background var(--transition-base) ease;
+}
+
+.dot:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.dot:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.dotActive {
+  width: 24px;
+  background: var(--color-accent);
+}
+
+.dotActive:hover {
+  background: var(--color-accent);
 }
 
 .thumbnails {
@@ -67,6 +177,11 @@
 }
 
 @media (max-width: 768px) {
+  /* Swipe and dots cover navigation here; arrows would sit on top of the product. */
+  .arrow {
+    display: none;
+  }
+
   .thumbImage {
     width: 60px;
     height: 60px;
@@ -75,5 +190,17 @@
   .badge {
     padding: 6px 12px;
     font-size: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mainImage {
+    animation: none;
+  }
+
+  .arrow,
+  .dot,
+  .thumb {
+    transition: none;
   }
 }

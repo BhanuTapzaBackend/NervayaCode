@@ -53,6 +53,7 @@ const SupplementProductCard: React.FC<SupplementProductCardProps> = ({ supplemen
           name: supplement.name,
           price: supplement.price,
           image: imageUrl,
+          stock: supplement.stock,
         });
         if (!result.success) {
           toast.error(result.message || 'Unable to add to cart. This item may be out of stock.');
@@ -82,6 +83,7 @@ const SupplementProductCard: React.FC<SupplementProductCardProps> = ({ supplemen
           name: supplement.name,
           price: supplement.price,
           image: imageUrl,
+          stock: supplement.stock,
         });
       }
       if (!isAuthenticated) {

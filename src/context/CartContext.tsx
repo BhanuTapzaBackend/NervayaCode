@@ -23,6 +23,11 @@ export interface AddCartItemParams {
   name: string;
   price: number;
   image?: string;
+  /**
+   * Only consumed by the guest cart, which has no populated Supplement to read
+   * live stock from. Server carts ignore it and use the real stock instead.
+   */
+  stock?: number;
   metadata?: Record<string, unknown>;
 }
 

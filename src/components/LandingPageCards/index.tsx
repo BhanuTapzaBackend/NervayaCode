@@ -58,6 +58,7 @@ const Cards = () => {
             name: supplement.name,
             price: supplement.price,
             image: supplement.images?.length ? supplement.images[0] : supplement.image,
+            stock: supplement.stock,
           });
           if (result.success) {
             router.push('/cart');

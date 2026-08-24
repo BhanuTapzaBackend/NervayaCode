@@ -11,6 +11,8 @@ export interface GuestCartItem {
   image?: string;
   price: number;
   quantity: number;
+  /** Captured at add-time so the cart can cap quantity without a populated Supplement. */
+  stock?: number;
   metadata?: Record<string, unknown>;
 }
 
@@ -43,12 +45,15 @@ export function addToGuestCart(item: {
   image?: string;
   price: number;
   quantity: number;
+  stock?: number;
   metadata?: Record<string, unknown>;
 }): GuestCartItem[] {
   const items = readStore();
   const existing = items.find((i) => i.itemId === item.itemId && i.itemType === item.itemType);
   if (existing) {
     existing.quantity += item.quantity;
+    // Refresh the cached stock; it may have moved since the item was first added.
+    if (item.stock !== undefined) existing.stock = item.stock;
   } else {
     items.push({ ...item });
   }
@@ -88,6 +93,7 @@ export function guestCartToDisplayCart(items: GuestCartItem[]): Cart {
     image: i.image,
     quantity: i.quantity,
     price: i.price,
+    stock: i.stock,
   }));
   const totalAmount = cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
   return {

@@ -32,6 +32,7 @@ export default function SupplementsClient({ supplements, serverError = null }: S
         name: supplement.name,
         price: supplement.price,
         image: supplement.images?.length ? supplement.images[0] : supplement.image,
+        stock: supplement.stock,
       });
       if (!result.success) {
         throw new Error(result.message || 'Failed to add to cart');

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Sidebar from '@/components/Sidebar/LazySidebar';
 import PageHeader from '@/components/PageHeader/PageHeader';
 import CheckoutForm from '@/components/Checkout/CheckoutForm';
+import CartItem from '@/components/Cart/CartItem';
 import PaymentHandler from '@/components/Checkout/PaymentHandler';
 import { useCheckout } from './useCheckout';
 import { CheckoutOrderSummary } from './CheckoutOrderSummary';
@@ -42,6 +43,9 @@ export default function CheckoutPage() {
     promoError,
     handlePromoCodeApply,
     handlePromoCodeRemove,
+    handleQuantityChange,
+    handleRemoveItem,
+    updatingItem,
     handleProceedToPayment,
     razorpayOrderId,
     razorpayKeyId,
@@ -128,6 +132,19 @@ export default function CheckoutPage() {
               </div>
             ) : (
               <>
+                <section className={styles.reviewItems} aria-label="Items in your order">
+                  <h2 className={styles.reviewItemsTitle}>Review your order</h2>
+                  {cart.items.map((item) => (
+                    <CartItem
+                      key={`${typeof item.itemId === 'object' ? item.itemId?._id : item.itemId}-${item.itemType}`}
+                      item={item}
+                      onQuantityChange={handleQuantityChange}
+                      onRemove={handleRemoveItem}
+                      disabled={updatingItem || creatingOrder}
+                    />
+                  ))}
+                </section>
+
                 <CheckoutSavedAddresses
                   addresses={savedAddresses}
                   onUseAddress={handleUseAddress}

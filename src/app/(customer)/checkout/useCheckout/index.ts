@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
-import { ITEM_TYPE } from '@/lib/constants/enums';
+import { ITEM_TYPE, type ItemType } from '@/lib/constants/enums';
 import { promoApi } from '@/lib/api/promo';
+import { cartApi } from '@/lib/api/cart';
+import { useCart } from '@/context/CartContext';
+import type { ApiResponse } from '@/lib/api/types';
 import type { Cart, Order, ShippingAddress, SavedAddress, Supplement } from '@/types/supplement.types';
 import {
   trackBeginCheckout,
@@ -46,7 +49,9 @@ interface OrderResponse {
 
 export function useCheckout() {
   const router = useRouter();
+  const { refreshCart } = useCart();
   const [cart, setCart] = useState<Cart | null>(null);
+  const [updatingItem, setUpdatingItem] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
   const [razorpayOrderId, setRazorpayOrderId] = useState<string | null>(null);
   const [razorpayKeyId, setRazorpayKeyId] = useState<string | null>(null);
@@ -185,6 +190,73 @@ export function useCheckout() {
     setPromoError(null);
   }, []);
 
+  /**
+   * Promo discounts are calculated server-side against the cart total, so editing
+   * quantities invalidates whatever was applied. The new total is passed in rather
+   * than read from state, which still holds the pre-edit cart at this point.
+   */
+  const reapplyPromoCode = useCallback(
+    async (cartId: string, newTotal: number) => {
+      if (!appliedPromoCode) return;
+      try {
+        const result = await promoApi.apply(appliedPromoCode, cartId, newTotal);
+        setPromoDiscount(result.discount ?? 0);
+        setPromoError(null);
+      } catch (err) {
+        // The code no longer qualifies (usually a minimum-order rule). Drop it
+        // instead of leaving a discount that no longer reflects the total.
+        const msg = err instanceof Error ? err.message : 'Promo code no longer applies';
+        setAppliedPromoCode(null);
+        setPromoDiscount(0);
+        setPromoError(`${mapPromoErrorMessage(msg)} — promo code removed`);
+      }
+    },
+    [appliedPromoCode, mapPromoErrorMessage],
+  );
+
+  const applyCartMutation = useCallback(
+    async (mutate: () => Promise<ApiResponse<Cart>>) => {
+      setUpdatingItem(true);
+      setError(null);
+      try {
+        const response = await mutate();
+        if (!response.success || !response.data) {
+          setError(response.message || 'Could not update your cart');
+          return;
+        }
+
+        const updated = response.data;
+        setCart(updated);
+
+        // Nothing left to check out; /cart owns the empty state.
+        if (updated.items.length === 0) {
+          router.push('/cart');
+          return;
+        }
+
+        await reapplyPromoCode(updated._id, updated.totalAmount);
+        // Checkout holds its own copy of the cart, so the navbar badge needs telling.
+        await refreshCart();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not update your cart');
+      } finally {
+        setUpdatingItem(false);
+      }
+    },
+    [reapplyPromoCode, refreshCart, router],
+  );
+
+  const handleQuantityChange = useCallback(
+    (itemId: string, quantity: number, itemType: ItemType) =>
+      applyCartMutation(() => cartApi.update(itemId, quantity, itemType)),
+    [applyCartMutation],
+  );
+
+  const handleRemoveItem = useCallback(
+    (itemId: string, itemType: ItemType) => applyCartMutation(() => cartApi.remove(itemId, itemType)),
+    [applyCartMutation],
+  );
+
   const handleProceedToPayment = useCallback(async () => {
     if (!cart) return;
     if (!isDigitalOnly && !selectedAddress) {
@@ -272,6 +344,9 @@ export function useCheckout() {
     promoError,
     handlePromoCodeApply,
     handlePromoCodeRemove,
+    handleQuantityChange,
+    handleRemoveItem,
+    updatingItem,
     handleProceedToPayment,
     razorpayOrderId,
     razorpayKeyId,

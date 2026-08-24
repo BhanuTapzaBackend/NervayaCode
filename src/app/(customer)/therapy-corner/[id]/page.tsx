@@ -350,32 +350,7 @@ export default function TherapistProfilePage() {
                       comment: t.message,
                       initials: t.name.slice(0, 2).toUpperCase(),
                     }));
-                    const merged = [...therapistReviews, ...existingTestimonials];
-                    return merged.length > 0
-                      ? merged
-                      : [
-                          {
-                            name: 'Sarah M.',
-                            initials: 'SM',
-                            rating: 5,
-                            comment:
-                              'Anu helped me navigate through the darkest period of my life. Her compassionate approach and practical strategies made all the difference.',
-                          },
-                          {
-                            name: 'James K.',
-                            initials: 'JK',
-                            rating: 5,
-                            comment:
-                              "I was skeptical about therapy, but Anu's warm demeanor and professional expertise changed my perspective. Highly recommended!",
-                          },
-                          {
-                            name: 'Maria L.',
-                            initials: 'ML',
-                            rating: 5,
-                            comment:
-                              "The tools and insights I gained from my sessions with Anu have been life-changing. She truly cares about her clients' well-being.",
-                          },
-                        ];
+                    return [...therapistReviews, ...existingTestimonials];
                   })()}
                   title="Testimonials"
                   autoScroll

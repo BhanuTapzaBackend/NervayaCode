@@ -173,6 +173,14 @@
   font-weight: var(--weight-bold);
 }
 
+@media (max-width: 768px) {
+  .navbarMenu a[aria-current='page'] {
+    background: rgba(186, 154, 255, 0.16);
+    border-left: 3px solid var(--color-accent-highlight);
+    padding-left: calc(var(--space-5) - 3px);
+  }
+}
+
 .navbarDropdown {
   position: relative;
   display: flex;

@@ -11,6 +11,8 @@ import { ROUTES } from '@/utils/routesConstants';
 import { validateReturnUrl } from '@/utils/returnUrl';
 import { AUTH_STORAGE_KEYS, COOKIE_OPTIONS } from '@/utils/cookieConstants';
 import { trackLoggedIn, updateGaUserContext } from '@/utils/analytics';
+import { cartApi } from '@/lib/api/cart';
+import { getGuestCartItems, clearGuestCart } from '@/utils/guestCart';
 
 interface User {
   _id: string;
@@ -139,10 +141,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const handleAuthSuccess = (data: AuthData, isFirstTime: boolean = false, returnUrl?: string) => {
+  const mergeGuestCart = async () => {
+    const guestItems = getGuestCartItems();
+    if (guestItems.length === 0) return;
+    try {
+      await Promise.all(
+        guestItems.map((item) =>
+          cartApi.add(item.itemId, item.quantity, item.itemType, item.name, item.price, item.image, item.metadata),
+        ),
+      );
+      clearGuestCart();
+    } catch {
+      // Best-effort merge — leave the guest cart intact so nothing is silently lost if it fails.
+    }
+  };
+
+  const handleAuthSuccess = async (data: AuthData, isFirstTime: boolean = false, returnUrl?: string) => {
     verifyAbortRef.current?.abort();
     setUser(data.user);
     setIsAuthenticated(true);
+
+    if (data.user.role === ROLES.CUSTOMER) {
+      await mergeGuestCart();
+    }
 
     if (typeof window !== 'undefined') {
       const expiresAt = Date.now() + COOKIE_OPTIONS.AUTH_TOKEN_MAX_AGE * 1000;

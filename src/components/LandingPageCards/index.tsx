@@ -7,15 +7,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import styles from './styles.module.css';
 import { landingPageCardsData } from '@/utils/landingPageCardsData';
-import { useAuth } from '@/hooks/useAuth';
 import { supplementsApi } from '@/lib/api/supplements';
-import { ROUTES } from '@/utils/routesConstants';
+import { useCart } from '@/context/CartContext';
 import { ITEM_TYPE } from '@/lib/constants/enums';
+import { DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
 import type { Supplement } from '@/types/supplement.types';
 
 const Cards = () => {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { addItem } = useCart();
   const [supplements, setSupplements] = useState<Supplement[]>([]);
 
   useEffect(() => {
@@ -29,21 +29,41 @@ const Cards = () => {
   }, []);
 
   const handleAddToCart = useCallback(
-    (title: string) => {
-      if (!isAuthenticated) {
-        router.push(`${ROUTES.LOGIN}?returnUrl=${encodeURIComponent('/')}`);
-        return;
-      }
-
+    async (title: string) => {
       if (title === 'Deep Rest') {
-        router.push(`/cart?addItemId=drift-off-session&itemType=${ITEM_TYPE.DRIFT_OFF}`);
+        const result = await addItem({
+          itemId: 'drift-off-session',
+          itemType: ITEM_TYPE.DRIFT_OFF,
+          quantity: 1,
+          name: 'Deep Rest Session',
+          price: 999,
+          image: DRIFT_OFF_SESSION_IMAGE,
+        });
+        if (result.success) {
+          router.push('/cart');
+        } else {
+          toast.error(result.message || 'Unable to add to cart');
+        }
       } else if (title === 'Sleep Supplements') {
         if (supplements.length === 0) {
           toast.error('There are no supplements');
           return;
         }
         if (supplements.length === 1) {
-          router.push(`/cart?addItemId=${supplements[0]._id}&itemType=${ITEM_TYPE.SUPPLEMENT}`);
+          const supplement = supplements[0];
+          const result = await addItem({
+            itemId: supplement._id,
+            itemType: ITEM_TYPE.SUPPLEMENT,
+            quantity: 1,
+            name: supplement.name,
+            price: supplement.price,
+            image: supplement.images?.length ? supplement.images[0] : supplement.image,
+          });
+          if (result.success) {
+            router.push('/cart');
+          } else {
+            toast.error(result.message || 'Unable to add to cart');
+          }
         } else {
           router.push('/sleep-supplements');
         }
@@ -51,7 +71,7 @@ const Cards = () => {
         router.push('/therapy-corner');
       }
     },
-    [isAuthenticated, router, supplements],
+    [router, supplements, addItem],
   );
 
   return (

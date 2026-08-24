@@ -19,7 +19,6 @@ export const PROTECTED_ROUTES = [
   '/dashboard',
   '/profile',
   '/account',
-  '/cart',
   '/checkout',
   '/order-success',
   // Requires auth (logged-out users are redirected to login) but is not role-restricted.

@@ -8,10 +8,10 @@ import { GlobalLoader, StatusState } from '@/components/common';
 import { ProductImageGallery, ProductInfo, ProductTabs } from '@/components/Supplements/ProductDetail';
 import { Supplement } from '@/types/supplement.types';
 import { supplementsApi } from '@/lib/api/supplements';
-import { cartApi } from '@/lib/api/cart';
 import { getApiErrorMessage } from '@/lib/utils/apiError.util';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/context/CartContext';
+import { ITEM_TYPE } from '@/lib/constants/enums';
 import { ROUTES } from '@/utils/routesConstants';
 import { trackViewItem, trackAddToCart } from '@/utils/analytics';
 import { toast } from 'sonner';
@@ -27,7 +27,7 @@ export default function SupplementDetailPage() {
   const [adding, setAdding] = useState(false);
   const [buying, setBuying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { refreshCart } = useCart();
+  const { addItem } = useCart();
 
   const fetchSupplement = useCallback(async () => {
     const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : '';
@@ -79,18 +79,18 @@ export default function SupplementDetailPage() {
   const handleBuyNow = async () => {
     if (!supplement) return;
     if (!supplement.stock || supplement.stock <= 0) return;
-    if (!isAuthenticated) {
-      const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : '';
-      const currentPath = `/sleep-supplements/${id}`;
-      const returnUrl = encodeURIComponent(currentPath);
-      router.push(`${ROUTES.LOGIN}?returnUrl=${returnUrl}`);
-      return;
-    }
     setBuying(true);
     setError(null);
     try {
-      const response = await cartApi.add(supplement._id, quantity);
-      if (response.success) {
+      const result = await addItem({
+        itemId: supplement._id,
+        itemType: ITEM_TYPE.SUPPLEMENT,
+        quantity,
+        name: supplement.name,
+        price: supplement.price,
+        image: supplement.images?.length ? supplement.images[0] : supplement.image,
+      });
+      if (result.success) {
         trackAddToCart({
           currency: 'INR',
           value: supplement.price * quantity,
@@ -106,10 +106,13 @@ export default function SupplementDetailPage() {
             },
           ],
         });
-        refreshCart();
-        router.push('/checkout');
+        if (!isAuthenticated) {
+          router.push(`${ROUTES.LOGIN}?returnUrl=${encodeURIComponent('/checkout')}`);
+        } else {
+          router.push('/checkout');
+        }
       } else {
-        setError('Failed to add to cart');
+        setError(result.message || 'Failed to add to cart');
         setBuying(false);
       }
     } catch (err) {
@@ -121,18 +124,18 @@ export default function SupplementDetailPage() {
   const handleAddToCart = async () => {
     if (!supplement) return;
     if (!supplement.stock || supplement.stock <= 0) return;
-    if (!isAuthenticated) {
-      const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : '';
-      const currentPath = `/sleep-supplements/${id}`;
-      const returnUrl = encodeURIComponent(currentPath);
-      router.push(`${ROUTES.LOGIN}?returnUrl=${returnUrl}`);
-      return;
-    }
     setAdding(true);
     setError(null);
     try {
-      const response = await cartApi.add(supplement._id, quantity);
-      if (response.success) {
+      const result = await addItem({
+        itemId: supplement._id,
+        itemType: ITEM_TYPE.SUPPLEMENT,
+        quantity,
+        name: supplement.name,
+        price: supplement.price,
+        image: supplement.images?.length ? supplement.images[0] : supplement.image,
+      });
+      if (result.success) {
         trackAddToCart({
           currency: 'INR',
           value: supplement.price * quantity,
@@ -148,7 +151,6 @@ export default function SupplementDetailPage() {
             },
           ],
         });
-        refreshCart();
         toast.info('Added to cart successfully!', {
           style: { background: 'var(--color-accent)', color: 'var(--color-background)', border: 'none' },
         });
@@ -156,7 +158,7 @@ export default function SupplementDetailPage() {
           router.push('/cart');
         }, 1000);
       } else {
-        setError('Failed to add to cart');
+        setError(result.message || 'Failed to add to cart');
       }
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to add to cart'));

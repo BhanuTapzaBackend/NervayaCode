@@ -4,13 +4,36 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import api from '@/lib/axios';
 import { useAuth } from '@/hooks/useAuth';
 import type { Cart } from '@/types/supplement.types';
+import type { ItemType } from '@/lib/constants/enums';
 import { getCartItemCount } from '@/utils/cart.util';
+import { cartApi } from '@/lib/api/cart';
+import {
+  getGuestCartItems,
+  addToGuestCart,
+  updateGuestCartItemQuantity,
+  removeFromGuestCart,
+  guestCartToDisplayCart,
+  GUEST_CART_CHANGED_EVENT,
+} from '@/utils/guestCart';
+
+export interface AddCartItemParams {
+  itemId: string;
+  itemType: ItemType;
+  quantity: number;
+  name: string;
+  price: number;
+  image?: string;
+  metadata?: Record<string, unknown>;
+}
 
 interface CartContextType {
   cartCount: number;
   cart: Cart | null;
   cartLoading: boolean;
   refreshCart: () => Promise<void>;
+  addItem: (params: AddCartItemParams) => Promise<{ success: boolean; message?: string }>;
+  updateItemQuantity: (itemId: string, itemType: ItemType, quantity: number) => Promise<void>;
+  removeItem: (itemId: string, itemType: ItemType) => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType>({
@@ -18,6 +41,9 @@ const CartContext = createContext<CartContextType>({
   cart: null,
   cartLoading: false,
   refreshCart: async () => {},
+  addItem: async () => ({ success: false }),
+  updateItemQuantity: async () => {},
+  removeItem: async () => {},
 });
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
@@ -26,11 +52,17 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<Cart | null>(null);
   const [cartLoading, setCartLoading] = useState(false);
 
+  const loadGuestCart = useCallback(() => {
+    const guestItems = getGuestCartItems();
+    const guestCart = guestCartToDisplayCart(guestItems);
+    setCart(guestCart);
+    setCartCount(getCartItemCount(guestCart.items));
+    setCartLoading(false);
+  }, []);
+
   const refreshCart = useCallback(async () => {
     if (!isAuthenticated) {
-      setCart(null);
-      setCartCount(0);
-      setCartLoading(false);
+      loadGuestCart();
       return;
     }
 
@@ -61,10 +93,13 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setCartLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loadGuestCart]);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      loadGuestCart();
+      return;
+    }
     let cancelled = false;
     const deferCartFetch = () => {
       if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
@@ -84,7 +119,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, refreshCart]);
+  }, [isAuthenticated, refreshCart, loadGuestCart]);
 
   useEffect(() => {
     const handleAuthChange = () => {
@@ -94,9 +129,69 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     return () => window.removeEventListener('auth-state-changed', handleAuthChange);
   }, [refreshCart]);
 
-  const displayCount = isAuthenticated ? cartCount : 0;
+  useEffect(() => {
+    if (isAuthenticated) return;
+    const handleGuestCartChange = () => loadGuestCart();
+    window.addEventListener(GUEST_CART_CHANGED_EVENT, handleGuestCartChange);
+    return () => window.removeEventListener(GUEST_CART_CHANGED_EVENT, handleGuestCartChange);
+  }, [isAuthenticated, loadGuestCart]);
+
+  const addItem = useCallback(
+    async (params: AddCartItemParams): Promise<{ success: boolean; message?: string }> => {
+      if (!isAuthenticated) {
+        addToGuestCart(params);
+        return { success: true };
+      }
+      const response = await cartApi.add(
+        params.itemId,
+        params.quantity,
+        params.itemType,
+        params.name,
+        params.price,
+        params.image,
+        params.metadata,
+      );
+      if (response.success) {
+        await refreshCart();
+        return { success: true };
+      }
+      return { success: false, message: response.message };
+    },
+    [isAuthenticated, refreshCart],
+  );
+
+  const updateItemQuantity = useCallback(
+    async (itemId: string, itemType: ItemType, quantity: number) => {
+      if (!isAuthenticated) {
+        updateGuestCartItemQuantity(itemId, itemType, quantity);
+        return;
+      }
+      const response = await cartApi.update(itemId, quantity, itemType);
+      if (response.success) {
+        await refreshCart();
+      }
+    },
+    [isAuthenticated, refreshCart],
+  );
+
+  const removeItem = useCallback(
+    async (itemId: string, itemType: ItemType) => {
+      if (!isAuthenticated) {
+        removeFromGuestCart(itemId, itemType);
+        return;
+      }
+      const response = await cartApi.remove(itemId, itemType);
+      if (response.success) {
+        await refreshCart();
+      }
+    },
+    [isAuthenticated, refreshCart],
+  );
+
   return (
-    <CartContext.Provider value={{ cartCount: displayCount, cart, cartLoading, refreshCart }}>
+    <CartContext.Provider
+      value={{ cartCount, cart, cartLoading, refreshCart, addItem, updateItemQuantity, removeItem }}
+    >
       {children}
     </CartContext.Provider>
   );

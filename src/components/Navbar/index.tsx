@@ -126,11 +126,7 @@ const Navbar = () => {
           />
 
           <div className={styles.navbarUtilityActions}>
-            <NavbarCartPreview
-              isAuthenticated={isAuthenticated}
-              visible={shouldShowCartPreview}
-              onNavigate={closeMobileMenu}
-            />
+            <NavbarCartPreview visible={shouldShowCartPreview} onNavigate={closeMobileMenu} />
 
             {isAuthenticated && !isMobileViewport && (
               <NavbarAccountLink

@@ -276,7 +276,3 @@ export async function handlePaymentWebhook(razorpayOrderId: string, paymentId: s
   }
   return { success: true };
 }
-
-export function calculateTotal(items: { price: number; quantity: number }[]): number {
-  return items.reduce((total, item) => total + item.price * item.quantity, 0);
-}

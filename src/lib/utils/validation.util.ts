@@ -1,9 +1,3 @@
-export function validateEmail(email: string): boolean {
-  if (email.length > 320) return false;
-  const emailRegex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{1,63}$/;
-  return emailRegex.test(email);
-}
-
 export function validateName(name: string): boolean {
   return name.trim().length >= 2;
 }

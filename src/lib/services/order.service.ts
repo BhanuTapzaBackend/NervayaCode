@@ -123,7 +123,6 @@ export async function createOrder(userId: string, params: CreateOrderParams) {
 
   // Promo usage is incremented in payment.service.ts AFTER successful payment verification
   // to ensure items stay in cart if payment is cancelled or fails.
-  // await clearCart(userId);
 
   return await Order.findById(order._id);
 }
@@ -215,15 +214,6 @@ export async function createDirectOrder(userId: string, params: DirectOrderParam
   });
 
   return await Order.findById(order._id);
-}
-
-export async function clearCart(userId: string) {
-  await connectDB();
-  const cart = await Cart.findOne({ userId: toObjectId(userId) });
-  if (cart) {
-    cart.items = [];
-    await cart.save();
-  }
 }
 
 export async function getOrderById(orderId: string) {

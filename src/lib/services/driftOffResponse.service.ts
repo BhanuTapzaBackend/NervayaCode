@@ -127,11 +127,6 @@ export async function getDriftOffResponsesByUser(
   };
 }
 
-export async function getLatestDriftOffResponse(userId: string): Promise<DriftOffResponseDocument | null> {
-  await connectDB();
-  return DriftOffResponse.findOne({ userId: toObjectId(userId), completedAt: { $ne: null } }).sort({ completedAt: -1 });
-}
-
 export async function getDriftOffResponseById(responseId: string): Promise<DriftOffResponseDocument> {
   await connectDB();
   if (!Types.ObjectId.isValid(responseId)) {

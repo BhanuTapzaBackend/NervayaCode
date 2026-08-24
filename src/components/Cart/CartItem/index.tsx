@@ -9,6 +9,9 @@ import { QuantitySelector } from '@/components/common';
 import { formatPrice } from '@/utils/cart.util';
 import styles from './styles.module.css';
 
+/** Cap used for non-supplements and for supplements whose stock isn't known. */
+const DEFAULT_MAX_QUANTITY = 10;
+
 interface CartItemProps {
   item: CartItemType;
   onQuantityChange?: (itemId: string, quantity: number, itemType: ItemType) => void;
@@ -28,7 +31,16 @@ const CartItem: React.FC<CartItemProps> = ({ item, onQuantityChange, onRemove, d
   const defaultImage = isSupplement ? '/default-supplement.png' : '/drift-off-session.png';
   const itemName = item.name || supplement?.name || 'Session';
   const itemImage = item.image || supplement?.image || defaultImage;
-  const maxStock = isSupplement ? supplement?.stock || item.quantity : 10;
+
+  /**
+   * Server carts populate `itemId`, so stock comes from the Supplement. Guest carts
+   * keep `itemId` as a string and carry a denormalised `stock` instead. Falling back
+   * to `item.quantity` would pin max to the current value and permanently disable
+   * the increment button, so an unknown stock falls back to the shared cap instead
+   * and lets the server reject anything genuinely unavailable.
+   */
+  const knownStock = supplement?.stock ?? item.stock;
+  const maxStock = isSupplement ? (knownStock ?? DEFAULT_MAX_QUANTITY) : DEFAULT_MAX_QUANTITY;
 
   const handleQuantityChange = (newQuantity: number) => {
     if (onQuantityChange && idStr) {
@@ -43,13 +55,11 @@ const CartItem: React.FC<CartItemProps> = ({ item, onQuantityChange, onRemove, d
   };
 
   const itemTotal = item.price * item.quantity;
+  const productHref = isSupplement && idStr ? `/sleep-supplements/${idStr}` : '#';
 
   return (
     <div className={styles.cartItem}>
-      <Link
-        href={isSupplement && supplement ? `/sleep-supplements/${supplement._id}` : '#'}
-        className={styles.imageLink}
-      >
+      <Link href={productHref} className={styles.imageLink}>
         <div className={styles.imageWrapper}>
           <Image
             src={itemImage}
@@ -64,10 +74,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, onQuantityChange, onRemove, d
         </div>
       </Link>
       <div className={styles.details}>
-        <Link
-          href={isSupplement && supplement ? `/sleep-supplements/${supplement._id}` : '#'}
-          className={styles.nameLink}
-        >
+        <Link href={productHref} className={styles.nameLink}>
           <h3 className={styles.name}>{itemName}</h3>
         </Link>
         <p className={styles.price}>{formatPrice(item.price)} each</p>

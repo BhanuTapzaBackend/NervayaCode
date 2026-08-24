@@ -9,8 +9,10 @@ import { Supplement } from '@/types/supplement.types';
 import { formatPrice } from '@/utils/cart.util';
 import { StarRating } from '@/components/common';
 import { ITEM_TYPE } from '@/lib/constants/enums';
-import { cartApi } from '@/lib/api/cart';
 import { getApiErrorMessage } from '@/lib/api/apiError';
+import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/hooks/useAuth';
+import { ROUTES } from '@/utils/routesConstants';
 import styles from './SupplementProductCard.module.css';
 
 interface SupplementProductCardProps {
@@ -23,6 +25,8 @@ const SupplementProductCard: React.FC<SupplementProductCardProps> = ({ supplemen
   const [adding, setAdding] = useState(false);
   const [buying, setBuying] = useState(false);
   const router = useRouter();
+  const { addItem } = useCart();
+  const { isAuthenticated } = useAuth();
 
   const imageUrl = supplement.images?.length ? supplement.images[0] : supplement.image;
   const originalPrice = supplement.originalPrice;
@@ -42,7 +46,18 @@ const SupplementProductCard: React.FC<SupplementProductCardProps> = ({ supplemen
       if (onAddToCart) {
         await onAddToCart(supplement._id, 1);
       } else {
-        await cartApi.add(supplement._id, 1, ITEM_TYPE.SUPPLEMENT);
+        const result = await addItem({
+          itemId: supplement._id,
+          itemType: ITEM_TYPE.SUPPLEMENT,
+          quantity: 1,
+          name: supplement.name,
+          price: supplement.price,
+          image: imageUrl,
+          stock: supplement.stock,
+        });
+        if (!result.success) {
+          toast.error(result.message || 'Unable to add to cart. This item may be out of stock.');
+        }
       }
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Unable to add to cart. This item may be out of stock.'));
@@ -61,9 +76,21 @@ const SupplementProductCard: React.FC<SupplementProductCardProps> = ({ supplemen
       if (onAddToCart) {
         await onAddToCart(supplement._id, 1);
       } else {
-        await cartApi.add(supplement._id, 1, ITEM_TYPE.SUPPLEMENT);
+        await addItem({
+          itemId: supplement._id,
+          itemType: ITEM_TYPE.SUPPLEMENT,
+          quantity: 1,
+          name: supplement.name,
+          price: supplement.price,
+          image: imageUrl,
+          stock: supplement.stock,
+        });
       }
-      router.push('/checkout');
+      if (!isAuthenticated) {
+        router.push(`${ROUTES.LOGIN}?returnUrl=${encodeURIComponent('/checkout')}`);
+      } else {
+        router.push('/checkout');
+      }
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Unable to add to cart. This item may be out of stock.'));
     } finally {

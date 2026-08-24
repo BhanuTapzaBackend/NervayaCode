@@ -15,7 +15,6 @@ import { formatPrice } from '@/utils/cart.util';
 import styles from './styles.module.css';
 
 interface NavbarCartPreviewProps {
-  isAuthenticated: boolean;
   visible: boolean;
   onNavigate: () => void;
 }
@@ -49,9 +48,8 @@ function getCartItemImage(item: CartItem): string {
 
 function getCartItemHref(item: CartItem): string {
   const supplement = getSupplementFromCartItem(item);
-  return item.itemType === ITEM_TYPE.SUPPLEMENT && supplement?._id
-    ? `/sleep-supplements/${supplement._id}`
-    : ROUTES.DEEP_REST;
+  const idStr = supplement?._id || (typeof item.itemId === 'string' ? item.itemId : undefined);
+  return item.itemType === ITEM_TYPE.SUPPLEMENT && idStr ? `/sleep-supplements/${idStr}` : ROUTES.DEEP_REST;
 }
 
 function getCartItemKey(item: CartItem, index: number): string {
@@ -61,14 +59,14 @@ function getCartItemKey(item: CartItem, index: number): string {
   return `${item.itemType}-${rawId}`;
 }
 
-export function NavbarCartPreview({ isAuthenticated, visible, onNavigate }: NavbarCartPreviewProps) {
+export function NavbarCartPreview({ visible, onNavigate }: NavbarCartPreviewProps) {
   const { cartCount, cart, cartLoading, refreshCart } = useCart();
   const router = useRouter();
   const pathname = usePathname();
   const [isCartPreviewOpen, setIsCartPreviewOpen] = useState(false);
   const cartCloseTimeoutRef = useRef<number | null>(null);
 
-  const cartLinkHref = isAuthenticated ? ROUTES.CART : `${ROUTES.LOGIN}?returnUrl=${encodeURIComponent(ROUTES.CART)}`;
+  const cartLinkHref = ROUTES.CART;
   const cartPreviewItems = cart?.items.slice(0, 3) ?? [];
   const remainingCartItems = Math.max(0, (cart?.items.length ?? 0) - cartPreviewItems.length);
 
@@ -103,10 +101,7 @@ export function NavbarCartPreview({ isAuthenticated, visible, onNavigate }: Navb
   const openCartPreview = () => {
     clearCartCloseTimeout();
     setIsCartPreviewOpen(true);
-
-    if (isAuthenticated) {
-      void refreshCart();
-    }
+    void refreshCart();
   };
 
   const closeCartPreview = () => {
@@ -153,11 +148,11 @@ export function NavbarCartPreview({ isAuthenticated, visible, onNavigate }: Navb
         onClick={handleCartTriggerClick}
         aria-haspopup="dialog"
         aria-expanded={isCartPreviewOpen}
-        aria-label={isAuthenticated ? `Open cart with ${cartCount} items` : 'Sign in to view cart'}
+        aria-label={`Open cart with ${cartCount} items`}
       >
         <span className={styles.cartTriggerIconWrap}>
           <Icon icon={ICON_CART} width={22} height={22} />
-          {isAuthenticated && cartCount > 0 && (
+          {cartCount > 0 && (
             <Badge variant="purple" size="xs" className={styles.cartBadge}>
               {cartCount}
             </Badge>
@@ -174,25 +169,12 @@ export function NavbarCartPreview({ isAuthenticated, visible, onNavigate }: Navb
       >
         <div className={styles.cartPreviewHeader}>
           <div>
-            <p className={styles.cartPreviewEyebrow}>{isAuthenticated ? 'Cart Preview' : 'Personal Cart'}</p>
-            {!isAuthenticated && <h3 className={styles.cartPreviewTitle}>Sign in to unlock your cart</h3>}
+            <p className={styles.cartPreviewEyebrow}>Cart Preview</p>
           </div>
-          {isAuthenticated && cartCount > 0 && <Badge size="sm">{cartCount} items</Badge>}
+          {cartCount > 0 && <Badge size="sm">{cartCount} items</Badge>}
         </div>
 
-        {!isAuthenticated ? (
-          <div className={styles.cartPreviewState}>
-            <p className={styles.cartPreviewMessage}>
-              Sign in to save supplements, Deep Rest sessions, and therapist bookings, then preview everything here
-              right from the navbar.
-            </p>
-            <div className={styles.cartPreviewActions}>
-              <Link href={cartLinkHref} className={styles.cartPreviewPrimary} onClick={handlePreviewLinkClick}>
-                Log in to view cart
-              </Link>
-            </div>
-          </div>
-        ) : cartLoading && !cart ? (
+        {cartLoading && !cart ? (
           <div className={styles.cartPreviewState}>
             <Icon icon={ICON_LOADING} width={28} height={28} className={styles.cartPreviewLoader} />
             <p className={styles.cartPreviewMessage}>Pulling your latest cart in...</p>

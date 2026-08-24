@@ -85,6 +85,13 @@ export interface CartItem {
   image?: string;
   quantity: number;
   price: number;
+  /**
+   * Denormalised stock, carried only by guest carts. Server carts populate
+   * `itemId` with the full Supplement, so the live stock is read from there;
+   * guest carts keep `itemId` as a bare string and would otherwise have no
+   * upper bound to enforce.
+   */
+  stock?: number;
 }
 
 export interface Cart {

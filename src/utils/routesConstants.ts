@@ -19,7 +19,6 @@ export const PROTECTED_ROUTES = [
   '/dashboard',
   '/profile',
   '/account',
-  '/cart',
   '/checkout',
   '/order-success',
   // Requires auth (logged-out users are redirected to login) but is not role-restricted.
@@ -33,10 +32,18 @@ export const THERAPIST_ROUTES = ['/therapist'] as const;
 
 export const AUTH_ROUTES = ['/login', '/signup'] as const;
 
+/**
+ * Role gate, not an auth gate: `isProtectedPath` deliberately ignores this list, so
+ * listing a route here keeps it reachable by logged-out visitors while steering
+ * THERAPIST and ADMIN sessions back to their own dashboards. `/cart` relies on that
+ * distinction — guests must be able to build a cart before signing in (only
+ * `/checkout` requires an account), but the cart itself is meaningless for staff roles.
+ */
 export const CUSTOMER_ONLY_ROUTES = [
   '/dashboard',
   '/sleep-blog',
   '/sleep-supplements',
+  '/cart',
   '/deep-rest',
   '/drift-off',
   '/therapy-corner',

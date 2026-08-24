@@ -12,7 +12,7 @@ const HomePage = () => {
       <section className={styles.heroSection}>
         <div className={styles.heroCopy}>
           <h1 className={styles.heroTitle}>
-            <span className={styles.heroTitleLine}>Begin the body&apos;s natural detox</span>
+            <span className={styles.heroTitleLine}>Begin the body&apos;s natural detox.</span>
             <span className={styles.heroTitleLine}>Sleep deeper, heal better.</span>
           </h1>
 

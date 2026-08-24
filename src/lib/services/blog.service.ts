@@ -82,12 +82,6 @@ export async function createBlog(data: CreateBlogData): Promise<IBlog> {
   return blog;
 }
 
-export async function getAllBlogs(filter: Record<string, unknown> = {}): Promise<IBlog[]> {
-  await connectDB();
-  const blogs = await Blog.find(filter).sort({ createdAt: -1 }).limit(200).lean();
-  return blogs;
-}
-
 export interface AdminBlogsPaginatedResult {
   blogs: IBlog[];
   total: number;
@@ -124,16 +118,6 @@ export async function getAllBlogsPaginated(
     page: currentPage,
     limit,
   };
-}
-
-export async function getPublishedBlogs(tag?: string): Promise<IBlog[]> {
-  await connectDB();
-  const filter: Record<string, unknown> = { isPublished: true };
-  if (tag) {
-    filter.tags = { $in: [tag] };
-  }
-  const blogs = await Blog.find(filter).sort({ createdAt: -1 }).limit(200).lean();
-  return blogs;
 }
 
 export interface PaginatedBlogsResult {
@@ -245,16 +229,4 @@ export async function deleteBlog(id: string): Promise<{ message: string }> {
     throw new NotFoundError('Blog not found');
   }
   return { message: 'Blog deleted successfully' };
-}
-
-export async function getBlogsByTag(tag: string): Promise<IBlog[]> {
-  await connectDB();
-  const blogs = await Blog.find({
-    tags: { $in: [tag] },
-    isPublished: true,
-  })
-    .sort({ createdAt: -1 })
-    .limit(200)
-    .lean();
-  return blogs;
 }

@@ -3,8 +3,7 @@ export const IMAGES = {
 
   CARD_THERAPY_SESSION: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/therapy_session_szvksr.png',
   CARD_DRIFT_OFF: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/drift_off.png',
-  CARD_SLEEP_SUPPLEMENTS:
-    'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/sleep_supplements_apjqre.png',
+  CARD_SLEEP_SUPPLEMENTS: '/card_sleep_supplements.png',
 
   AUTH_HERO_MORNING: '/assets/auth/morning-v2.png',
   AUTH_HERO_NIGHT: '/assets/auth/night-v1.png',

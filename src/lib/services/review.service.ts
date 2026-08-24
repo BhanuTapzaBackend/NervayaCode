@@ -86,24 +86,6 @@ export async function create(
   return review;
 }
 
-export async function deleteReview(reviewId: string, userId: string) {
-  await connectDB();
-  if (!Types.ObjectId.isValid(reviewId)) {
-    throw new ValidationError('Invalid review ID');
-  }
-  const review = await Review.findOneAndDelete({
-    _id: reviewId,
-    userId: toObjectId(userId),
-  });
-  if (!review) {
-    throw new ValidationError('Review not found');
-  }
-  if (review.itemType === 'Supplement') {
-    await updateSupplementAggregates(review.productId.toString());
-  }
-  return { message: 'Review deleted successfully' };
-}
-
 export async function updateSupplementAggregates(productId: string) {
   const [result] = await Review.aggregate([
     { $match: { productId: new Types.ObjectId(productId), isVisible: true } },

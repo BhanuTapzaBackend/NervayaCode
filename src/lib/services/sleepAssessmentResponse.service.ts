@@ -419,16 +419,6 @@ export async function getAllAssessments(): Promise<ISleepAssessmentResponse[]> {
   return await hydrateAssessments(castHydratableAssessments(assessments));
 }
 
-export async function deleteAllResponses(): Promise<void> {
-  await connectDB();
-
-  try {
-    await SleepAssessmentResponse.deleteMany({});
-  } catch (error) {
-    throw error;
-  }
-}
-
 export async function deleteAssessment(assessmentId: string): Promise<void> {
   await connectDB();
 

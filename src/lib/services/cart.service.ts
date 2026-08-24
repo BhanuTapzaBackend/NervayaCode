@@ -236,7 +236,3 @@ export async function clearCart(userId: string) {
   await cart.save();
   return cart;
 }
-
-export function calculateTotal(items: ICartItem[]): number {
-  return items.reduce((total, item) => total + item.price * item.quantity, 0);
-}

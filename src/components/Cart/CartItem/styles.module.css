@@ -1,5 +1,9 @@
 .cartItem {
   display: flex;
+  /* This card is reused in the narrow checkout column, where the viewport media
+     queries below never fire because only the *container* is narrow. Wrapping
+     lets the line total drop to its own row instead of spilling out of the card. */
+  flex-wrap: wrap;
   padding: 24px;
   gap: 24px;
   background: var(--color-white-bright);
@@ -52,7 +56,10 @@
 }
 
 .details {
-  flex: 1;
+  /* An explicit basis makes the total wrap once space runs out, and min-width: 0
+     stops the button row's min-content width from forcing an overflow. */
+  flex: 1 1 220px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -83,6 +90,7 @@
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--spacing-md);
   align-items: center;
   margin-top: var(--spacing-sm);
@@ -129,6 +137,8 @@
   align-items: center;
   justify-content: flex-end;
   min-width: 120px;
+  /* Stays right-aligned whether it shares the row or wraps below it. */
+  margin-left: auto;
 }
 
 @media (max-width: 768px) {

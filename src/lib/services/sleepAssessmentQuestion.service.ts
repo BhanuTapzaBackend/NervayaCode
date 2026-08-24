@@ -7,18 +7,6 @@ import type { CreateQuestionInput, UpdateQuestionInput } from '@/types/sleepAsse
 
 const OPTION_BASED_TYPES = ['single_choice', 'multiple_choice', 'scale'] as const;
 
-export async function getAllActiveQuestions(): Promise<ISleepAssessmentQuestion[]> {
-  await connectDB();
-
-  try {
-    const questions = await SleepAssessmentQuestion.find({ isActive: true }).sort({ order: 1 }).lean();
-
-    return questions as ISleepAssessmentQuestion[];
-  } catch (error) {
-    throw error;
-  }
-}
-
 export async function getActiveOptionBasedQuestions(): Promise<ISleepAssessmentQuestion[]> {
   await connectDB();
 
@@ -165,27 +153,6 @@ export async function deleteQuestion(identifier: string): Promise<void> {
   }
 }
 
-export async function reorderQuestions(questionOrders: { questionId: string; order: number }[]): Promise<void> {
-  await connectDB();
-
-  try {
-    const bulkOps = questionOrders.map(({ questionId, order }) => {
-      const filter = Types.ObjectId.isValid(questionId) ? { _id: new Types.ObjectId(questionId) } : { questionId };
-
-      return {
-        updateOne: {
-          filter,
-          update: { $set: { order } },
-        },
-      };
-    });
-
-    await SleepAssessmentQuestion.bulkWrite(bulkOps);
-  } catch (error) {
-    throw error;
-  }
-}
-
 export async function toggleQuestionActive(identifier: string, isActive: boolean): Promise<ISleepAssessmentQuestion> {
   await connectDB();
 
@@ -199,16 +166,6 @@ export async function toggleQuestionActive(identifier: string, isActive: boolean
     }
 
     return question.toObject() as ISleepAssessmentQuestion;
-  } catch (error) {
-    throw error;
-  }
-}
-
-export async function deleteAllQuestions(): Promise<void> {
-  await connectDB();
-
-  try {
-    await SleepAssessmentQuestion.deleteMany({});
   } catch (error) {
     throw error;
   }

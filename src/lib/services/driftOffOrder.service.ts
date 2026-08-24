@@ -39,28 +39,3 @@ export async function getDriftOffOrdersByUser(
     meta: { total, page, limit, totalPages: Math.ceil(total / limit) || 1 },
   };
 }
-
-export async function getPaidDriftOffOrderByUser(userId: string): Promise<IDriftOffOrder | null> {
-  await connectDB();
-  return DriftOffOrder.findOne({ userId: toObjectId(userId), paymentStatus: 'paid' })
-    .sort({ createdAt: -1 })
-    .lean() as Promise<IDriftOffOrder | null>;
-}
-
-export async function updateOrderPaymentStatus(
-  orderId: string,
-  paymentStatus: 'paid' | 'failed',
-  paymentId?: string,
-): Promise<IDriftOffOrder> {
-  await connectDB();
-  if (!Types.ObjectId.isValid(orderId)) {
-    throw new ValidationError('Invalid order ID');
-  }
-  const update: Record<string, unknown> = { paymentStatus };
-  if (paymentId) update.paymentId = paymentId;
-  const order = await DriftOffOrder.findByIdAndUpdate(orderId, update, { new: true });
-  if (!order) {
-    throw new NotFoundError('Deep Rest order not found');
-  }
-  return order;
-}

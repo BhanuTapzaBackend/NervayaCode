@@ -6,13 +6,6 @@ import { formatTimeAgo } from '@/lib/utils/timeAgo.util';
 import { parseSessionStartDateTime } from '@/lib/utils/sessionDateTime.util';
 import { SEVERITY_BANNER_MAP } from './AssessmentTile/severityBanner';
 
-export interface SessionCounts {
-  pending: number;
-  confirmed: number;
-  completed: number;
-  cancelled: number;
-}
-
 export interface NextSessionInfo {
   session: Session;
   dateTime: Date;
@@ -39,15 +32,6 @@ export interface ActivityModelItem {
   timeLabel: string;
   iconKey: ActivityIconKey;
   time: Date;
-}
-
-export function getSessionCounts(sessions: Session[]): SessionCounts {
-  const counts: SessionCounts = { pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
-  for (const s of sessions) {
-    const key = (s.status || '').toLowerCase() as keyof SessionCounts;
-    if (key in counts) counts[key] += 1;
-  }
-  return counts;
 }
 
 export function getNextSessionInfo(sessions: Session[], nowMs: number = Date.now()): NextSessionInfo | null {

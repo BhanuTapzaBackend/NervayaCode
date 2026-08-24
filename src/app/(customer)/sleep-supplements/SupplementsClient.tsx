@@ -2,16 +2,13 @@
 
 import { useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar/LazySidebar';
 import PageHeader from '@/components/PageHeader/PageHeader';
 import { StatusState } from '@/components/common';
 import SupplementCatalog from '@/components/Supplements/SupplementCatalog';
 import { Supplement } from '@/types/supplement.types';
-import { cartApi } from '@/lib/api/cart';
-import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/context/CartContext';
-import { ROUTES } from '@/utils/routesConstants';
+import { ITEM_TYPE } from '@/lib/constants/enums';
 import styles from './styles.module.css';
 
 interface SupplementsClientProps {
@@ -20,24 +17,28 @@ interface SupplementsClientProps {
 }
 
 export default function SupplementsClient({ supplements, serverError = null }: SupplementsClientProps) {
-  const router = useRouter();
-  const { isAuthenticated } = useAuth();
-  const { refreshCart } = useCart();
+  const { addItem } = useCart();
 
   const handleAddToCart = useCallback(
     async (supplementId: string, quantity: number) => {
-      if (!isAuthenticated) {
-        router.push(`${ROUTES.LOGIN}?returnUrl=${encodeURIComponent('/supplements')}`);
-        return;
-      }
-      const response = await cartApi.add(supplementId, quantity);
-      if (response.success) {
-        await refreshCart();
-      } else {
+      const supplement = supplements.find((s) => s._id === supplementId);
+      if (!supplement) {
         throw new Error('Failed to add to cart');
       }
+      const result = await addItem({
+        itemId: supplementId,
+        itemType: ITEM_TYPE.SUPPLEMENT,
+        quantity,
+        name: supplement.name,
+        price: supplement.price,
+        image: supplement.images?.length ? supplement.images[0] : supplement.image,
+        stock: supplement.stock,
+      });
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to add to cart');
+      }
     },
-    [isAuthenticated, router, refreshCart],
+    [supplements, addItem],
   );
   const showFailure = serverError != null;
   const showEmpty = !showFailure && supplements.length === 0;

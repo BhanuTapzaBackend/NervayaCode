@@ -1,42 +1,34 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar/LazySidebar';
 import { GlobalLoader } from '@/components/common/GlobalLoader';
 import PageHeader from '@/components/PageHeader/PageHeader';
-import { Cart, CartItem as CartItemType, Supplement } from '@/types/supplement.types';
+import { CartItem as CartItemType, Supplement } from '@/types/supplement.types';
 import CartItem from '@/components/Cart/CartItem';
 import CartSummary from '@/components/Cart/CartSummary';
 import Pagination from '@/components/common/Pagination';
 import { ITEM_TYPE, type ItemType } from '@/lib/constants/enums';
 import { PAGE_SIZE_3 } from '@/lib/constants/pagination.constants';
-import { cartApi } from '@/lib/api/cart';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/hooks/useAuth';
+import { ROUTES } from '@/utils/routesConstants';
 import StatusState from '@/components/common/StatusState';
 import styles from './styles.module.css';
 import { DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
 
 export default function CartPage() {
   const router = useRouter();
-  const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const { refreshCart } = useCart();
+  const { cart, addItem, updateItemQuantity, removeItem, refreshCart } = useCart();
+  const { isAuthenticated } = useAuth();
   const hasInitialized = useRef(false);
 
   // We no longer use showLoader() for the initial page load to keep it 'inside the page'
-
-  const fetchCart = useCallback(async (): Promise<Cart | null> => {
-    const response = await cartApi.get();
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to load cart');
-    }
-
-    return response.data ?? null;
-  }, []);
 
   const initializeCart = useCallback(async () => {
     try {
@@ -48,51 +40,43 @@ export default function CartPage() {
       const itemType = params.get('itemType') as ItemType | null;
       const isValidAutoAddType = itemType === ITEM_TYPE.DRIFT_OFF || itemType === ITEM_TYPE.SUPPLEMENT;
 
-      let nextCart: Cart | null = null;
-
       if (addItemId && isValidAutoAddType) {
-        const response =
+        const result =
           itemType === ITEM_TYPE.DRIFT_OFF
-            ? await cartApi.add(addItemId, 1, ITEM_TYPE.DRIFT_OFF, 'Deep Rest Session', 999, DRIFT_OFF_SESSION_IMAGE)
-            : await cartApi.add(addItemId, 1, ITEM_TYPE.SUPPLEMENT);
+            ? await addItem({
+                itemId: addItemId,
+                itemType: ITEM_TYPE.DRIFT_OFF,
+                quantity: 1,
+                name: 'Deep Rest Session',
+                price: 999,
+                image: DRIFT_OFF_SESSION_IMAGE,
+              })
+            : await addItem({ itemId: addItemId, itemType: ITEM_TYPE.SUPPLEMENT, quantity: 1, name: '', price: 0 });
 
-        if (!response.success) {
-          throw new Error(response.message || 'Failed to add item to cart');
+        if (!result.success) {
+          throw new Error(result.message || 'Failed to add item to cart');
         }
-
-        nextCart = response.data ?? null;
-        void refreshCart();
 
         params.delete('addItemId');
         params.delete('itemType');
         const search = params.toString();
         const nextUrl = `${window.location.pathname}${search ? `?${search}` : ''}`;
         window.history.replaceState(window.history.state, '', nextUrl);
+      } else {
+        await refreshCart();
       }
-
-      if (!nextCart) {
-        nextCart = await fetchCart();
-      }
-
-      setCart(nextCart);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load cart');
     } finally {
       setLoading(false);
     }
-  }, [fetchCart, refreshCart]);
+  }, [addItem, refreshCart]);
 
   const handleQuantityChange = async (itemId: string, quantity: number, itemType: ItemType) => {
     setUpdating(true);
     try {
       setError(null);
-      const response = await cartApi.update(itemId, quantity, itemType);
-      if (response.success && response.data) {
-        setCart(response.data);
-        refreshCart();
-      } else {
-        setError('Failed to update cart');
-      }
+      await updateItemQuantity(itemId, itemType, quantity);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update cart';
       setError(message);
@@ -105,13 +89,7 @@ export default function CartPage() {
     setUpdating(true);
     try {
       setError(null);
-      const response = await cartApi.remove(itemId, itemType);
-      if (response.success && response.data) {
-        setCart(response.data);
-        refreshCart();
-      } else {
-        setError('Failed to remove item');
-      }
+      await removeItem(itemId, itemType);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to remove item';
       setError(message);
@@ -121,6 +99,10 @@ export default function CartPage() {
   };
 
   const handleCheckout = () => {
+    if (!isAuthenticated) {
+      router.push(`${ROUTES.LOGIN}?returnUrl=${encodeURIComponent('/checkout')}`);
+      return;
+    }
     router.push('/checkout');
   };
 

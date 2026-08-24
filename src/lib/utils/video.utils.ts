@@ -20,11 +20,3 @@ export function getEmbedUrl(url: string): string | null {
 
   return null;
 }
-
-/**
- * Checks if the URL is a direct video file (heuristic).
- */
-export function isDirectVideoUrl(url: string): boolean {
-  if (!url) return false;
-  return /\.(mp4|webm|ogg|quicktime|mov)(?:\?.*)?$/i.test(url);
-}

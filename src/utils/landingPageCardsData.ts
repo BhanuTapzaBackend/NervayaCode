@@ -23,7 +23,7 @@ export const landingPageCardsData: LandingPageCard[] = [
     image: IMAGES.CARD_SLEEP_SUPPLEMENTS,
     title: 'Sleep Supplements',
     description:
-      'Our non-habit forming, fully herbal and no-melatonin formula helps you unwind naturally and drift into deep, restorative sleep. Wake up refreshed, never dependent.',
+      'Our non-habit forming, fully herbal and non-melatonin formula helps you unwind naturally and drift into deep, restorative sleep. Wake up refreshed, never dependent.',
     href: '/sleep-supplements',
     primaryCta: {
       text: 'Buy Now',
@@ -58,7 +58,7 @@ export const landingPageCardsData: LandingPageCard[] = [
       "Tailor-made sessions crafted just for you by blending guided hypnosis & meditation to help you release the day's burdens and drift into a quieter, more peaceful dimension. Wake up rejuvenated every morning.",
     href: '/deep-rest',
     primaryCta: {
-      text: 'Buy Audio',
+      text: 'Get Audio',
       href: '/deep-rest/payment',
     },
     secondaryCta: {

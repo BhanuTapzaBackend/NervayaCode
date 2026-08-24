@@ -329,12 +329,21 @@
   overflow: hidden;
 }
 
+/* Inside the drawer the accent fill reads as a selected row rather than a call to
+   action, so Contact Us drops the button treatment and matches the plain links
+   around it. The desktop navbar keeps the CTA styling. */
 @media (max-width: 768px) {
   .navbarMenu .navbarCta {
     width: 100%;
-    margin: var(--space-4) 0 0;
+    margin: 0;
     text-align: left;
     padding: var(--space-4) var(--space-5);
+    font-size: 0.96rem;
+    color: var(--nav-pill-text);
+    background: var(--nav-pill-bg);
+    border: 1px solid var(--nav-pill-border);
+    border-radius: var(--radius);
+    box-shadow: none;
   }
 }
 
@@ -342,4 +351,15 @@
   background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%);
   transform: translateY(-3px);
   box-shadow: 0 12px 35px rgba(var(--color-accent-rgb), 0.45);
+}
+
+/* Must follow the rule above to win on source order, since specificity is equal. */
+@media (max-width: 768px) {
+  .navbarMenu .navbarCta:hover {
+    color: var(--nav-pill-hover-text);
+    background: var(--nav-pill-hover-bg);
+    border-color: var(--nav-pill-hover-border);
+    transform: none;
+    box-shadow: none;
+  }
 }

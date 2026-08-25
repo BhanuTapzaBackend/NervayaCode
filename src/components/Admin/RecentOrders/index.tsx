@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { formatPrice } from '@/utils/cart.util';
+import { formatOrderId, orderStatusVariant, paymentStatusVariant } from '@/utils/order-status.util';
 import { Badge } from '@/components/common';
 import styles from './styles.module.css';
 
@@ -40,22 +41,28 @@ export default function RecentOrders({ orders, emptyMessage = 'No recent orders.
           </tr>
         </thead>
         <tbody>
-          {orders.map((order) => (
-            <tr key={order._id}>
-              <td>
-                <Link href="/admin/orders" className={styles.link}>
-                  #{String(order._id).slice(-8)}
-                </Link>
-              </td>
-              <td>{formatPrice(order.totalAmount)}</td>
-              <td>
-                <Badge size="xs" variant="neutral">
-                  {order.orderStatus ?? order.paymentStatus ?? '—'}
-                </Badge>
-              </td>
-              <td className={styles.date}>{new Date(order.createdAt).toLocaleDateString()}</td>
-            </tr>
-          ))}
+          {orders.map((order) => {
+            const status = order.orderStatus ?? order.paymentStatus;
+            const variant = order.orderStatus
+              ? orderStatusVariant(order.orderStatus)
+              : paymentStatusVariant(order.paymentStatus);
+            return (
+              <tr key={order._id}>
+                <td>
+                  <Link href="/admin/orders" className={styles.link}>
+                    {formatOrderId(String(order._id))}
+                  </Link>
+                </td>
+                <td>{formatPrice(order.totalAmount)}</td>
+                <td>
+                  <Badge size="sm" shape="pill" variant={variant}>
+                    {status ?? '—'}
+                  </Badge>
+                </td>
+                <td className={styles.date}>{new Date(order.createdAt).toLocaleDateString()}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

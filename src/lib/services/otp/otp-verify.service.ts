@@ -1,6 +1,7 @@
 import { normalizePhone, validateOtpCode } from '@/lib/utils/validation.util';
 import { checkOTPVerifyRateLimit } from '@/lib/utils/rate-limit.util';
 import { verifyAndConsumeOtp, type OtpPurpose } from './otp-store';
+import { getTestLogin } from '@/lib/constants/test-logins';
 
 export interface VerifyOtpResult {
   success: boolean;
@@ -27,7 +28,9 @@ export async function verifyOtp(
     return { success: false, message: 'Invalid purpose', statusCode: 400 };
   }
 
-  if (!(await checkOTPVerifyRateLimit(normalizedPhone))) {
+  const isTestAccount = Boolean(getTestLogin(normalizedPhone));
+
+  if (!isTestAccount && !(await checkOTPVerifyRateLimit(normalizedPhone))) {
     return {
       success: false,
       message: 'Too many verification attempts. Please try again later.',

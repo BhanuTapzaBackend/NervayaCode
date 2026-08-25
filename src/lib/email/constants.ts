@@ -1,3 +1,5 @@
+import { getSiteUrl } from '@/lib/utils/site-url.util';
+
 export const EMAIL_COLORS = {
   headerBg: '#020617',
   accent: 'var(--color-accent)',
@@ -10,7 +12,7 @@ export const EMAIL_COLORS = {
 
 export const EMAIL_CONFIG = {
   appName: 'Nervaya',
-  appUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://nervaya.com',
+  appUrl: getSiteUrl(),
   supportEmail: 'support@nervaya.com',
   welcomeHeroImageUrl: 'https://res.cloudinary.com/disrq2eh8/image/upload/v1771770997/welcome-hero_mygw11.png',
 };

@@ -15,6 +15,7 @@ import { getRazorpayInstance, initiateRefund } from '@/lib/utils/razorpay.util';
 import { getPromoCodeByCode, incrementUsage } from '@/lib/services/promo.service';
 import { sendRefundNotificationEmail } from '@/lib/services/email/refund-notification.service';
 import { toObjectId } from '@/lib/utils/objectId.util';
+import { hasPaymentBypass } from '@/lib/constants/test-logins';
 
 export interface RazorpayOrderResponse {
   id: string;
@@ -49,6 +50,20 @@ export async function createRazorpayOrder(orderId: string, amount: number, userI
     throw new ValidationError('Order already paid');
   }
 
+  // Final sanity check for therapy slots before taking payment (or bypassing it).
+  await assertTherapySlotsAvailable(order.items);
+
+  // Fixed test customer: settle the order server-side and skip Razorpay entirely.
+  // Stock deduction, therapy sessions and cart clearing all still run through the
+  // normal success processor. See src/lib/constants/test-logins.ts for caveats.
+  const buyer = await User.findById(toObjectId(userId)).select('phone').lean();
+  if (buyer?.phone && hasPaymentBypass(buyer.phone)) {
+    const paymentId = `test_bypass_${orderId.slice(-8)}`;
+    await Order.findByIdAndUpdate(orderId, { razorpayOrderId: paymentId });
+    await processPaymentSuccess(orderId, paymentId);
+    return { bypassed: true as const, orderId, id: paymentId };
+  }
+
   const amountInPaisa = Math.round(amount * 100);
 
   const options = {
@@ -61,25 +76,6 @@ export async function createRazorpayOrder(orderId: string, amount: number, userI
   };
 
   const razorpay = getRazorpayInstance();
-
-  // Final sanity check for therapy slots before taking payment
-  for (const item of order.items) {
-    if (item.itemType === ITEM_TYPE.THERAPY) {
-      const { date, slot } = item.metadata || {};
-      if (date && slot) {
-        const existingSession = await Session.findOne({
-          therapistId: item.itemId,
-          date,
-          startTime: slot,
-          status: { $ne: 'cancelled' },
-        });
-        if (existingSession) {
-          throw new ValidationError(`The therapy session on ${date} at ${slot} has just been booked by someone else.`);
-        }
-      }
-    }
-  }
-
   const razorpayOrder = await razorpay.orders.create(options);
 
   await Order.findByIdAndUpdate(orderId, {
@@ -87,6 +83,31 @@ export async function createRazorpayOrder(orderId: string, amount: number, userI
   });
 
   return razorpayOrder;
+}
+
+interface TherapySlotItem {
+  itemType: string;
+  itemId: Types.ObjectId | string;
+  metadata?: { date?: string; slot?: string };
+}
+
+/** Throws if a therapy item in the order targets a slot someone else just claimed. */
+async function assertTherapySlotsAvailable(items: TherapySlotItem[]): Promise<void> {
+  for (const item of items) {
+    if (item.itemType !== ITEM_TYPE.THERAPY) continue;
+    const { date, slot } = item.metadata ?? {};
+    if (!date || !slot) continue;
+
+    const existingSession = await Session.findOne({
+      therapistId: item.itemId,
+      date,
+      startTime: slot,
+      status: { $ne: 'cancelled' },
+    });
+    if (existingSession) {
+      throw new ValidationError(`The therapy session on ${date} at ${slot} has just been booked by someone else.`);
+    }
+  }
 }
 
 /**

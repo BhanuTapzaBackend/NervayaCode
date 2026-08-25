@@ -34,5 +34,7 @@ export interface Therapist {
     clientSince?: string;
   }>;
   isAvailable: boolean;
+  /** Admin display order — 1 shows first; UNPRIORITIZED means "not numbered". */
+  priority?: number;
   consultingHours?: ConsultingHour[];
 }

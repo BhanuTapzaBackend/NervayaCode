@@ -11,7 +11,7 @@ import { therapistsApi } from '@/lib/api/therapists';
 import { Therapist } from '@/types/therapist.types';
 import { PAGE_SIZE_10 } from '@/lib/constants/pagination.constants';
 import styles from './styles.module.css';
-import { ConfirmDeleteDialog } from '@/components/Admin/common';
+import { ConfirmDeleteDialog, PriorityInput } from '@/components/Admin/common';
 import { toast } from 'sonner';
 
 export default function AdminTherapistsPage() {
@@ -58,6 +58,19 @@ export default function AdminTherapistsPage() {
 
   const handleDeleteClick = (id: string, name: string) => {
     setConfirmDelete({ id, name });
+  };
+
+  // Saved from the inline "Order" box. Refetch afterwards so the list re-sorts
+  // into the new order rather than leaving the row where it was.
+  const handlePriorityChange = async (id: string, priority: number) => {
+    try {
+      const result = await therapistsApi.update(id, { priority });
+      if (!result.success) throw new Error(result.message || 'Failed to update order');
+      toast.success('Display order updated');
+      await fetchTherapists();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update order');
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -193,6 +206,14 @@ export default function AdminTherapistsPage() {
                   </div>
                 </div>
                 <div className={styles.actions}>
+                  <label className={styles.priority}>
+                    <span className={styles.priorityLabel}>Order</span>
+                    <PriorityInput
+                      value={therapist.priority}
+                      onSave={(priority) => handlePriorityChange(therapist._id, priority)}
+                      label={`Display order for ${therapist.name}`}
+                    />
+                  </label>
                   <Link href={`/admin/therapists/${therapist._id}/slots`} className={styles.slotsButton}>
                     Manage Slots
                   </Link>

@@ -146,7 +146,11 @@ export default function TherapyCornerPage() {
   );
 
   const filteredTherapists = useMemo(() => {
-    return therapists.sort((a, b) => {
+    // Available therapists lead — an unavailable one at the top is a dead end
+    // however highly it is prioritized. Array.sort is stable, so the admin's
+    // priority order from the API is preserved within each group.
+    // Copy first: sorting `therapists` in place mutates the hook's state array.
+    return [...therapists].sort((a, b) => {
       if (a.isAvailable === b.isAvailable) return 0;
       return a.isAvailable ? -1 : 1;
     });

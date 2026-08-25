@@ -1,5 +1,6 @@
 import { normalizePhone } from '@/lib/utils/validation.util';
 import { checkOTPSendLimit } from '@/lib/utils/rate-limit.util';
+import { getTestLogin } from '@/lib/constants/test-logins';
 import { generateOtpCode, saveOtp, type OtpPurpose } from './otp-store';
 import type { OtpDelivery } from './otp-delivery.interface';
 import { ConsoleOtpDelivery } from './console-otp-delivery';
@@ -53,6 +54,15 @@ export async function sendOtp(
         statusCode: 400,
       };
     }
+  }
+
+  // Fixed test accounts: store their constant code and skip WhatsApp delivery
+  // entirely, so repeated test logins never burn the send budget. See
+  // src/lib/constants/test-logins.ts for the security caveats.
+  const testLogin = getTestLogin(normalizedPhone);
+  if (testLogin) {
+    await saveOtp(normalizedPhone, purpose, testLogin.otp);
+    return { success: true, statusCode: 200 };
   }
 
   const limitByPhone = await checkOTPSendLimit(normalizedPhone);

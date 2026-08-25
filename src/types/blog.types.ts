@@ -15,6 +15,8 @@ export interface Blog {
   ctaText: string;
   ctaLink: string;
   isPublished: boolean;
+  /** Admin display order — 1 shows first; UNPRIORITIZED means "not numbered". */
+  priority?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,5 +49,7 @@ export interface BlogListItem {
   tags: string[];
   readTime: number;
   isPublished: boolean;
+  /** Admin display order — 1 shows first; UNPRIORITIZED means "not numbered". */
+  priority?: number;
   createdAt: Date;
 }

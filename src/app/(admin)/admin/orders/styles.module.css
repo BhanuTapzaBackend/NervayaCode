@@ -19,11 +19,34 @@
   background: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  transition: border-color 0.18s ease;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .card:hover {
   border-color: var(--color-border-light-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.card:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
+}
+
+.card:hover .viewHint,
+.card:focus-visible .viewHint {
+  color: var(--color-accent);
+}
+
+.viewHint {
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  transition: color 0.18s ease;
 }
 
 .cardHeader {
@@ -72,7 +95,7 @@
 .cardFooter {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: var(--space-3);
   padding-top: var(--space-3);
   border-top: 1px solid var(--color-border);
@@ -98,5 +121,9 @@
 
   .cardFooter {
     justify-content: flex-start;
+  }
+
+  .viewHint {
+    margin-left: 0;
   }
 }

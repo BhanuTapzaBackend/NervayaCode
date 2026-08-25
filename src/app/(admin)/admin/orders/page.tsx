@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import PageHeader from '@/components/PageHeader/PageHeader';
 import { Badge, Pagination, StatusState } from '@/components/common';
 import { GlobalLoader } from '@/components/common/GlobalLoader';
 import Button from '@/components/common/Button';
 import OrderFilters from '@/components/Admin/OrderFilters';
+import OrderDetailModal from '@/components/Admin/OrderDetailModal';
 import { useAdminOrders } from '@/queries/orders/useOrders';
 import type { OrderFiltersParams } from '@/lib/api/orders';
 import type { Order } from '@/types/supplement.types';
 import { formatPrice } from '@/utils/cart.util';
+import { formatOrderId, orderStatusVariant, paymentStatusVariant } from '@/utils/order-status.util';
 import { PAGE_SIZE_10 } from '@/lib/constants/pagination.constants';
 import styles from './styles.module.css';
 
@@ -23,42 +25,6 @@ function countActiveFilters(f: OrderFiltersParams): number {
   if (f.maxAmount != null && !Number.isNaN(f.maxAmount)) n++;
   if (f.userId?.trim()) n++;
   return n;
-}
-
-type StatusVariant = 'success' | 'warning' | 'error' | 'info' | 'purple' | 'neutral';
-
-function orderStatusVariant(status: string): StatusVariant {
-  switch (status) {
-    case 'delivered':
-      return 'success';
-    case 'pending':
-      return 'warning';
-    case 'cancelled':
-      return 'error';
-    case 'confirmed':
-    case 'shipped':
-      return 'info';
-    default:
-      return 'neutral';
-  }
-}
-
-function paymentStatusVariant(status: string): StatusVariant {
-  switch (status) {
-    case 'paid':
-      return 'success';
-    case 'pending':
-      return 'warning';
-    case 'failed':
-    case 'refunded':
-      return 'error';
-    default:
-      return 'neutral';
-  }
-}
-
-function formatOrderId(id: string): string {
-  return `#${id.slice(-8).toUpperCase()}`;
 }
 
 function formatItems(order: Order): string {
@@ -75,6 +41,7 @@ function formatDate(value: string | Date): string {
 export default function AdminOrdersPage() {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<OrderFiltersParams>({});
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const limit = PAGE_SIZE_10;
   const { data: orders, meta, isLoading, error, refetch } = useAdminOrders(page, limit, filters);
   const paginationMeta = meta ?? { page: 1, limit, total: 0, totalPages: 1 };
@@ -88,11 +55,17 @@ export default function AdminOrdersPage() {
     setPage(1);
   }, []);
 
+  const handleCardKeyDown = useCallback((event: React.KeyboardEvent<HTMLElement>, order: Order) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    setSelectedOrder(order);
+  }, []);
+
   const rows = orders ?? [];
 
   return (
     <div>
-      <PageHeader title="Orders" subtitle="View all orders (read-only)." />
+      <PageHeader title="Orders" subtitle="View all orders (read-only). Select an order to see its details." />
       <OrderFilters
         initialFilters={filters}
         onApply={handleFiltersApply}
@@ -118,7 +91,15 @@ export default function AdminOrdersPage() {
         <>
           <section className={styles.list} aria-label="Orders">
             {rows.map((order) => (
-              <article key={order._id} className={styles.card}>
+              <article
+                key={order._id}
+                className={styles.card}
+                role="button"
+                tabIndex={0}
+                aria-label={`View details for order ${formatOrderId(String(order._id))}`}
+                onClick={() => setSelectedOrder(order)}
+                onKeyDown={(event) => handleCardKeyDown(event, order)}
+              >
                 <header className={styles.cardHeader}>
                   <span className={styles.orderId}>{formatOrderId(String(order._id))}</span>
                   <span className={styles.date}>{formatDate(order.createdAt)}</span>
@@ -136,6 +117,9 @@ export default function AdminOrdersPage() {
                   <Badge variant={paymentStatusVariant(order.paymentStatus)} shape="pill" size="sm">
                     {order.paymentStatus}
                   </Badge>
+                  <span className={styles.viewHint} aria-hidden="true">
+                    View details
+                  </span>
                 </footer>
               </article>
             ))}
@@ -153,6 +137,8 @@ export default function AdminOrdersPage() {
           </div>
         </>
       )}
+
+      <OrderDetailModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
     </div>
   );
 }

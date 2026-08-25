@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import { deepRestApi } from '@/lib/api/deepRest';
+import type { PaymentSuccessDetails } from '@/components/DeepRest/PaymentSuccessScreen';
 
 interface DeepRestPaymentState {
   deepRestOrderId: string | null;
@@ -12,6 +13,8 @@ interface DeepRestPaymentState {
   isVerifying: boolean;
   error: string | null;
   showPaymentHandler: boolean;
+  /** Set only for the fixed test customer, whose order settled without Razorpay. */
+  bypassSuccess: PaymentSuccessDetails | null;
 }
 
 export function useDeepRestPayment() {
@@ -23,6 +26,7 @@ export function useDeepRestPayment() {
     isVerifying: false,
     error: null,
     showPaymentHandler: false,
+    bypassSuccess: null,
   });
 
   const initiatePayment = useCallback(async () => {
@@ -54,14 +58,37 @@ export function useDeepRestPayment() {
         return;
       }
 
+      // Test customer: the server already settled the order, so never mount the
+      // Razorpay handler — hand the success details straight to the page.
+      if (razorpayRes.data.bypassed) {
+        setState({
+          deepRestOrderId,
+          razorpayOrderId: razorpayRes.data.id,
+          razorpayKeyId: null,
+          isCreating: false,
+          isVerifying: false,
+          error: null,
+          showPaymentHandler: false,
+          bypassSuccess: {
+            paymentId: razorpayRes.data.id,
+            razorpayOrderId: razorpayRes.data.id,
+            orderId: deepRestOrderId,
+            amount: orderRes.data.amount,
+            date: new Date(),
+          },
+        });
+        return;
+      }
+
       setState({
         deepRestOrderId,
         razorpayOrderId: razorpayRes.data.id,
-        razorpayKeyId: razorpayRes.data.key_id,
+        razorpayKeyId: razorpayRes.data.key_id ?? null,
         isCreating: false,
         isVerifying: false,
         error: null,
         showPaymentHandler: true,
+        bypassSuccess: null,
       });
     } catch (err) {
       let msg = 'Failed to process payment';

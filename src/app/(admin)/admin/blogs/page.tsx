@@ -58,6 +58,22 @@ export default function AdminBlogsPage() {
     fetchBlogs(pagination.page, searchQuery);
   }, [pagination.page, searchQuery, fetchBlogs]);
 
+  // Saved from the inline "Order" box. Refetch afterwards so the list re-sorts
+  // into the new order rather than leaving the row where it was.
+  const handlePriorityChange = useCallback(
+    async (id: string, priority: number) => {
+      try {
+        const response = await blogsApi.update(id, { priority });
+        if (!response.success) throw new Error(response.message || 'Failed to update order');
+        toast.success('Display order updated');
+        await fetchBlogs(pagination.page, searchQuery);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to update order');
+      }
+    },
+    [fetchBlogs, pagination.page, searchQuery],
+  );
+
   const goToPage = (page: number) => {
     if (page < 1 || page > pagination.totalPages) return;
     setPagination((prev) => ({ ...prev, page }));
@@ -177,6 +193,7 @@ export default function AdminBlogsPage() {
               blog={blog}
               formatDate={formatDate}
               onDelete={() => setConfirmDelete({ id: blog._id, title: blog.title })}
+              onPriorityChange={(priority) => handlePriorityChange(blog._id, priority)}
             />
           ))}
         </ul>

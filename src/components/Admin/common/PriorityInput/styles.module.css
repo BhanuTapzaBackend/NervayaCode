@@ -1,0 +1,47 @@
+.input {
+  width: 3.25rem;
+  padding: var(--space-3) var(--space-2);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.input::placeholder {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--color-border-light-hover);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
+}
+
+.input:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+/* Chrome/Safari spinners crowd a box this narrow. */
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

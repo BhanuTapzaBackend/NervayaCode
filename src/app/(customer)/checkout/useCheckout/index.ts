@@ -39,7 +39,8 @@ function cartItemsToGaItems(cart: Cart): ItemParams[] {
 
 interface PaymentCreateResponse {
   success: boolean;
-  data?: { id: string; key_id: string };
+  /** `bypassed` is set only for the fixed test customer, whose order is already paid. */
+  data?: { id: string; key_id?: string; bypassed?: boolean };
 }
 
 interface OrderResponse {
@@ -295,7 +296,11 @@ export function useCheckout() {
         orderId: orderResponse.data._id,
         amount: orderResponse.data.totalAmount,
       })) as PaymentCreateResponse;
-      if (paymentResponse.success && paymentResponse.data) {
+      if (paymentResponse.success && paymentResponse.data?.bypassed) {
+        // Test customer: the server already settled the order, so skip Razorpay.
+        await refreshCart();
+        router.push(`/order-success/${orderResponse.data._id}`);
+      } else if (paymentResponse.success && paymentResponse.data) {
         setRazorpayOrderId(paymentResponse.data.id);
         if (paymentResponse.data.key_id) setRazorpayKeyId(paymentResponse.data.key_id);
       } else {
@@ -318,7 +323,7 @@ export function useCheckout() {
     } finally {
       setCreatingOrder(false);
     }
-  }, [cart, selectedAddress, appliedPromoCode, promoDiscount, isDigitalOnly]);
+  }, [cart, selectedAddress, appliedPromoCode, promoDiscount, isDigitalOnly, refreshCart, router]);
 
   return {
     cart,

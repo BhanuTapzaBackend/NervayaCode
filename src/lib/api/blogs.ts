@@ -57,7 +57,7 @@ export const blogsApi = {
 
   update: (
     id: string,
-    data: Partial<BlogFormData> & { content?: string; tags?: string[] },
+    data: Partial<BlogFormData> & { content?: string; tags?: string[]; priority?: number },
   ): Promise<ApiResponse<Blog>> => {
     return api.put(`/blogs/${id}`, data) as Promise<ApiResponse<Blog>>;
   },

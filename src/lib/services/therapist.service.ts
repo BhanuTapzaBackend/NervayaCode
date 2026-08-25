@@ -4,6 +4,8 @@ import { generateSlotsFromConsultingHours } from '@/lib/services/therapistSchedu
 import connectDB from '@/lib/db/mongodb';
 import { ValidationError } from '@/lib/utils/error.util';
 import { Types } from 'mongoose';
+import { normalizePriority } from '@/lib/constants/priority.constants';
+import { prioritySortStages, stripPrioritySortKey } from '@/lib/utils/priority-sort.util';
 
 function toSlug(value: string) {
   return value
@@ -77,8 +79,15 @@ export async function createTherapist(data: Partial<ITherapist>) {
 
 export async function getAllTherapists(filter: Record<string, unknown> = {}) {
   await connectDB();
-  const therapists = await Therapist.find(filter).sort({ createdAt: -1 }).limit(200).lean();
-  return therapists;
+  // Admin priority first (1 = top); un-numbered therapists fall to the bottom,
+  // newest-first. See priority-sort.util.ts for why this is an aggregation.
+  const therapists = await Therapist.aggregate([
+    { $match: filter },
+    ...prioritySortStages(),
+    { $limit: 200 },
+    stripPrioritySortKey(),
+  ]);
+  return therapists as ITherapist[];
 }
 
 export async function getTherapistById(id: string) {
@@ -102,6 +111,11 @@ export async function updateTherapist(id: string, data: Partial<ITherapist>) {
   const updateData: Partial<ITherapist> = { ...data };
   if (!updateData.slug && updateData.name) {
     updateData.slug = toSlug(updateData.name);
+  }
+
+  // Clamp admin input: 0, negatives and junk all mean "not prioritized".
+  if ('priority' in data) {
+    updateData.priority = normalizePriority(data.priority);
   }
 
   const therapist = await Therapist.findByIdAndUpdate(id, updateData, {

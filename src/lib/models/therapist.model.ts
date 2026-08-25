@@ -1,5 +1,6 @@
 import mongoose, { Schema, Model, Document } from 'mongoose';
 import { GENDER, Gender } from '../constants/enums';
+import { UNPRIORITIZED } from '../constants/priority.constants';
 
 export interface IConsultingHour {
   dayOfWeek: number;
@@ -34,6 +35,8 @@ export interface ITherapist extends Document {
     clientSince?: string;
   }>;
   isAvailable: boolean;
+  /** Admin display order — 1 shows first; UNPRIORITIZED means "not numbered". */
+  priority: number;
   consultingHours?: IConsultingHour[];
   createdAt: Date;
   updatedAt: Date;
@@ -153,6 +156,11 @@ const therapistSchema = new Schema<ITherapist>(
       type: Boolean,
       default: true,
     },
+    priority: {
+      type: Number,
+      default: UNPRIORITIZED,
+      min: 1,
+    },
     consultingHours: {
       type: [
         {
@@ -184,7 +192,14 @@ const therapistSchema = new Schema<ITherapist>(
   },
 );
 
-therapistSchema.index({ isAvailable: 1, createdAt: -1 });
+therapistSchema.index({ isAvailable: 1, priority: 1, createdAt: -1 });
+
+// Force Mongoose to use the updated schema in development. Without this the
+// model compiled before a schema change survives hot-reload, and `strict: true`
+// silently drops the new field on write — the update succeeds but nothing saves.
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.Therapist;
+}
 
 const Therapist: Model<ITherapist> =
   mongoose.models.Therapist || mongoose.model<ITherapist>('Therapist', therapistSchema);

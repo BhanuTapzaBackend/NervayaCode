@@ -217,6 +217,23 @@ export default function BookingModal({
         const rzpData = await rzpRes.json();
         if (!rzpRes.ok || !rzpData.success) throw new Error(rzpData.message || 'Failed to initialize payment');
 
+        // Test customer: the server already settled the order, so skip Razorpay.
+        if (rzpData.data?.bypassed) {
+          trackTherapyBooked({
+            therapy_type: therapist?.specializations?.[0] || 'General Therapy',
+            therapist_id: therapistId,
+            therapist_name: therapistName,
+            slot_datetime: `${schedule.date} ${slot.startTime}`,
+            price: therapist?.sessionFee ?? 0,
+            currency: 'INR',
+          });
+          toast.info('Booking confirmed successfully!', {
+            style: { background: 'var(--color-accent)', color: 'var(--color-background)', border: 'none' },
+          });
+          router.push(`/order-success/${orderId}`);
+          return;
+        }
+
         if (!window.Razorpay) throw new Error('Payment gateway not loaded. Please try again.');
 
         const options = {

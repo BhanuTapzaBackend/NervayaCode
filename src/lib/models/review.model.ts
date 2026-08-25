@@ -61,6 +61,13 @@ reviewSchema.index(
 reviewSchema.index({ itemType: 1, isVisible: 1, createdAt: -1 });
 reviewSchema.index({ responseId: 1 }, { sparse: true });
 
+// Force Mongoose to use the updated schema in development. Without this the model
+// compiled before a schema change survives hot-reload, and `strict: true` silently
+// drops the new field on write — the update succeeds having written nothing.
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.Review;
+}
+
 const Review: Model<IReview> = mongoose.models.Review || mongoose.model<IReview>('Review', reviewSchema);
 
 export default Review;

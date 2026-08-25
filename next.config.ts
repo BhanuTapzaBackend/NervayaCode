@@ -2,6 +2,12 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  // The invoice PDF reads its embedded font from disk at runtime. Next only
+  // traces files it sees imported, so without this the TTF is absent from the
+  // serverless bundle and invoices fail in production while working locally.
+  outputFileTracingIncludes: {
+    '/api/**': ['./src/lib/pdf/fonts/**'],
+  },
   images: {
     unoptimized: false,
     formats: ['image/avif', 'image/webp'],

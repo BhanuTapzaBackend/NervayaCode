@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { Order } from '@/types/supplement.types';
+import { OrderThumbnails } from './OrderThumbnails';
 import { formatPrice } from '@/utils/cart.util';
 import { Icon } from '@iconify/react';
 import { ICON_CALENDAR_LUCIDE, ICON_HASHTAG, ICON_MAP_PIN, ICON_COPY, ICON_CHEVRON_RIGHT } from '@/constants/icons';
@@ -19,22 +19,18 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onViewDetails }) =>
   return (
     <li className={styles.orderCard}>
       <div className={styles.orderImagePlaceholder}>
-        {firstItem.image ? (
-          <Image
-            src={firstItem.image}
-            alt={firstItem.name}
-            fill
-            sizes="(max-width: 768px) 100vw, 160px"
-            className={styles.productImage}
-          />
-        ) : null}
+        <OrderThumbnails items={order.items ?? []} />
       </div>
 
       <div className={styles.orderDetails}>
         <div className={styles.orderHeaderMain}>
           <h3 className={styles.productTitle}>{firstItem.name}</h3>
           <p className={styles.productSubtitle}>
-            {order.items.length > 1 ? `+ ${order.items.length - 1} more items` : 'Supplement'}
+            {order.items.length > 1
+              ? `${order.items.length} items · ${formatPrice(order.totalAmount)}`
+              : firstItem.quantity > 1
+                ? `Qty ${firstItem.quantity} · ${formatPrice(order.totalAmount)}`
+                : 'Supplement'}
           </p>
           <p className={styles.productDescription}>
             Your ordered items are currently being processed. Total amount: {formatPrice(order.totalAmount)}.

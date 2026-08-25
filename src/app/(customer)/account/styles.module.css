@@ -298,3 +298,67 @@
     padding: var(--spacing-md) var(--spacing-xl);
   }
 }
+
+/* Phone field: fixed +91 prefix so the input only ever holds national digits. */
+.phoneField {
+  display: flex;
+  align-items: stretch;
+}
+
+.phonePrefix {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border-light);
+  border-right: none;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  background: var(--color-accent-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.phoneInput {
+  flex: 1;
+  min-width: 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  letter-spacing: 0.04em;
+}
+
+/* Confirmation modal */
+.confirmBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.confirmText {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.confirmCancel {
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirmCancel:hover {
+  border-color: var(--color-border-light-hover);
+  color: var(--color-text-primary);
+}

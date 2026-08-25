@@ -99,6 +99,13 @@ const userSchema = new Schema<IUser>(
 // Enforce email uniqueness only when an email is actually present (it is optional).
 userSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $type: 'string' } } });
 
+// Force Mongoose to use the updated schema in development. Without this the model
+// compiled before a schema change survives hot-reload, and `strict: true` silently
+// drops the new field on write — the update succeeds having written nothing.
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.User;
+}
+
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', userSchema);
 
 export default User;

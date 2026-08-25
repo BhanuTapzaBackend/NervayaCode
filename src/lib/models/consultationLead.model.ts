@@ -84,6 +84,13 @@ consultationLeadSchema.index(
 // "also the date adn day Scheduling be insuch a way that single time slot should be double booked by same person adn same time OK"
 // Contextually usually people mean "should NOT be". I will assume "should NOT be" double booked by same person.
 
+// Force Mongoose to use the updated schema in development. Without this the model
+// compiled before a schema change survives hot-reload, and `strict: true` silently
+// drops the new field on write — the update succeeds having written nothing.
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.ConsultationLead;
+}
+
 const ConsultationLead: Model<IConsultationLead> =
   mongoose.models.ConsultationLead || mongoose.model<IConsultationLead>('ConsultationLead', consultationLeadSchema);
 

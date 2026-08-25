@@ -9,7 +9,7 @@ import { getApiErrorMessage } from '@/lib/utils/apiError.util';
 import { ROLES, Role } from '@/lib/constants/roles';
 import { ROUTES } from '@/utils/routesConstants';
 import { validateReturnUrl } from '@/utils/returnUrl';
-import { AUTH_STORAGE_KEYS, COOKIE_OPTIONS } from '@/utils/cookieConstants';
+import { AUTH_STORAGE_KEYS, AUTH_FLOW_STORAGE_KEYS, COOKIE_OPTIONS } from '@/utils/cookieConstants';
 import { trackLoggedIn, updateGaUserContext } from '@/utils/analytics';
 import { cartApi } from '@/lib/api/cart';
 import { getGuestCartItems, clearGuestCart } from '@/utils/guestCart';
@@ -77,6 +77,11 @@ function clearAuthStorage() {
   localStorage.removeItem(AUTH_STORAGE_KEYS.AUTH_USER);
   localStorage.removeItem(AUTH_STORAGE_KEYS.AUTH_EXPIRES_AT);
   localStorage.removeItem(AUTH_STORAGE_KEYS.IS_LOGGED_IN);
+  // The login wizard's step lives in sessionStorage and survives logout
+  // otherwise, so /login reopens on the OTP screen with a stale countdown.
+  for (const key of Object.values(AUTH_FLOW_STORAGE_KEYS)) {
+    sessionStorage.removeItem(key);
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

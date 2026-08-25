@@ -42,6 +42,10 @@ export interface IOrder extends Document {
 
   promoCode?: string;
   promoDiscount?: number;
+  /** Allocated once the order is paid; never reissued. */
+  invoiceNumber?: string;
+  /** Cloudinary URL of the rendered invoice PDF. */
+  invoiceUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -172,6 +176,8 @@ const orderSchema = new Schema<IOrder>(
     },
     promoCode: { type: String },
     promoDiscount: { type: Number, min: 0 },
+    invoiceNumber: { type: String, index: true },
+    invoiceUrl: { type: String },
   },
   {
     timestamps: true,

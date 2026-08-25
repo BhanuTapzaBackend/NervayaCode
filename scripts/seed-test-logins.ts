@@ -20,9 +20,20 @@ import { TEST_LOGINS, type TestLogin } from '../src/lib/constants/test-logins';
 async function seedTherapistProfile(entry: TestLogin): Promise<string | undefined> {
   if (!entry.therapistProfile) return undefined;
 
+  // Mon-Fri 9-5. Upserting the document directly skips the defaults that
+  // createTherapist() applies, and without consulting hours slot generation
+  // produces nothing — the therapist shows "No upcoming online slot" and
+  // cannot be booked, which makes the account useless for testing.
+  const consultingHours = [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+    dayOfWeek,
+    startTime: '09:00 AM',
+    endTime: '05:00 PM',
+    isEnabled: dayOfWeek >= 1 && dayOfWeek <= 5,
+  }));
+
   const profile = await Therapist.findOneAndUpdate(
     { email: entry.email },
-    { ...entry.therapistProfile, name: entry.name, email: entry.email, isAvailable: true },
+    { ...entry.therapistProfile, name: entry.name, email: entry.email, isAvailable: true, consultingHours },
     { upsert: true, new: true, runValidators: true },
   );
   if (!profile) throw new Error(`Failed to seed therapist profile for ${entry.email}`);

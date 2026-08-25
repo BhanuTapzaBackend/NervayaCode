@@ -17,7 +17,9 @@ import { TherapyHighlightCard } from './TherapyHighlightCard';
 import { BenefitsTimeline } from './BenefitsTimeline';
 import { IndividualModulesGrid } from './IndividualModulesGrid';
 import { TherapistSelectionModal } from './TherapistSelectionModal';
+import { BookedSessionCard } from './BookedSessionCard';
 import { useSleepPlanData } from './useSleepPlanData';
+import { usePlanSession } from './usePlanSession';
 import { useBundleCheckout, type AddingState } from './useBundleCheckout';
 import styles from './styles.module.css';
 
@@ -28,6 +30,7 @@ interface RecommendationViewProps {
 export function RecommendationView({ result }: Readonly<RecommendationViewProps>) {
   const { refreshCart } = useCart();
   const plan = useSleepPlanData();
+  const { session: bookedSession } = usePlanSession();
 
   const [therapistModalOpen, setTherapistModalOpen] = useState(false);
   const [adding, setAdding] = useState<AddingState>(null);
@@ -136,12 +139,18 @@ export function RecommendationView({ result }: Readonly<RecommendationViewProps>
               />
             )}
 
-            {bundle.showTherapy && (
-              <TherapyHighlightCard
-                therapyPrice={plan.therapyPrice}
-                isAdding={adding === 'therapy'}
-                onAddToCart={bundle.startTherapySelection}
-              />
+            {/* A booked session replaces the CTA — the page used to keep asking
+                even after one was booked and paid for. */}
+            {bookedSession ? (
+              <BookedSessionCard session={bookedSession} />
+            ) : (
+              bundle.showTherapy && (
+                <TherapyHighlightCard
+                  therapyPrice={plan.therapyPrice}
+                  isAdding={adding === 'therapy'}
+                  onAddToCart={bundle.startTherapySelection}
+                />
+              )
             )}
 
             <BenefitsTimeline />

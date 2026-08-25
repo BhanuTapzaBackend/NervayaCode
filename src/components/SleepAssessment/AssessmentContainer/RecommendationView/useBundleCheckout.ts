@@ -1,10 +1,12 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { type AssessmentResult, type ServiceKey, getBundleItems, getTherapyPriority } from '@/utils/sleepAssessment';
 import { cartApi } from '@/lib/api/cart';
+import { useAuth } from '@/hooks/useAuth';
+import { sleepPlanApi, type PlanPricing, type PlanServiceKey } from '@/lib/api/sleepPlan';
 import { ITEM_TYPE } from '@/lib/constants/enums';
 import { DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
 import {
@@ -51,6 +53,7 @@ export function useBundleCheckout({
   refreshCart,
 }: UseBundleCheckoutArgs): UseBundleCheckoutReturn {
   const router = useRouter();
+  const { user } = useAuth();
   const [therapyFlow, setTherapyFlow] = useState<TherapyFlow>('standalone');
 
   const bundleItems = useMemo(() => getBundleItems(result.services), [result.services]);
@@ -98,15 +101,118 @@ export function useBundleCheckout({
     [supplementPrice, plan.deepRestPrice, plan.therapyPrice],
   );
 
-  const pricing = useMemo(() => {
-    const original = selectedItems.reduce((sum, key) => sum + itemUnitPrice(key), 0);
-    const discounted = Math.round(original * (1 - plan.discountPct / 100));
-    return {
-      originalPrice: original,
-      discountedPrice: discounted,
-      savingsAmount: original - discounted,
+  // Priced by the server, from the same function that prices the order, so the
+  // number shown here cannot drift from the number charged. The local sum is
+  // only a placeholder while the quote is in flight.
+  const [quote, setQuote] = useState<PlanPricing | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (selectedItems.length === 0) {
+      setQuote(null);
+      return;
+    }
+    sleepPlanApi
+      .getQuote(selectedItems as PlanServiceKey[])
+      .then((res) => {
+        if (active && res.success && res.data) setQuote(res.data);
+      })
+      .catch(() => {
+        if (active) setQuote(null);
+      });
+    return () => {
+      active = false;
     };
-  }, [selectedItems, itemUnitPrice, plan.discountPct]);
+  }, [selectedItems]);
+
+  const pricing = useMemo(() => {
+    const localSubtotal = selectedItems.reduce((sum, key) => sum + itemUnitPrice(key), 0);
+    if (!quote) {
+      return { originalPrice: localSubtotal, discountedPrice: localSubtotal, savingsAmount: 0 };
+    }
+    return {
+      originalPrice: quote.subtotal,
+      discountedPrice: quote.total,
+      savingsAmount: quote.discountAmount,
+    };
+  }, [quote, selectedItems, itemUnitPrice]);
+
+  /**
+   * Takes an existing pending order through payment.
+   *
+   * Mirrors the direct-booking flow: create the Razorpay order, honour the test
+   * customer's bypass, otherwise open the checkout and verify on success.
+   */
+  const payForOrder = useCallback(
+    async (orderId: string, amount: number) => {
+      const rzpRes = await fetch('/api/payments/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, amount }),
+      });
+      const rzpData = await rzpRes.json();
+      if (!rzpRes.ok || !rzpData.success) throw new Error(rzpData.message || 'Failed to initialize payment');
+
+      if (rzpData.data?.bypassed) {
+        router.push(`/order-success/${orderId}`);
+        return;
+      }
+      if (!window.Razorpay) throw new Error('Payment gateway not loaded. Please try again.');
+
+      const rzp = new window.Razorpay({
+        key: rzpData.data.key_id,
+        amount: Math.round(amount * 100),
+        currency: 'INR',
+        name: 'Nervaya',
+        description: 'Your personalised sleep plan',
+        order_id: rzpData.data.id,
+        prefill: { name: user?.name ?? '', email: user?.email ?? '', contact: user?.phone ?? '' },
+        theme: { color: 'var(--color-accent)' },
+        handler: async (response: { razorpay_payment_id: string; razorpay_signature: string }) => {
+          const verifyRes = await fetch('/api/payments/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId,
+              paymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            }),
+          });
+          const verifyData = await verifyRes.json();
+          if (verifyRes.ok && verifyData.success) {
+            router.push(`/order-success/${orderId}`);
+          } else {
+            toast.error(verifyData.message || 'Payment verification failed');
+            setAdding(null);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            toast.info('Payment cancelled — your slot is held for a few more minutes.');
+            setAdding(null);
+          },
+        },
+      });
+      rzp.open();
+    },
+    [router, setAdding, user],
+  );
+
+  /** Buys the plan as one server-priced order, holding the therapy slot first. */
+  const purchasePlan = useCallback(
+    async (therapy?: { therapistId: string; date: string; slot: string }) => {
+      try {
+        const res = await sleepPlanApi.checkout({ services: selectedItems as PlanServiceKey[], therapy });
+        if (!res.success || !res.data) throw new Error(res.message || 'Could not start your plan');
+        const { order } = res.data;
+        await payForOrder(String(order._id), order.totalAmount);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Could not start your plan');
+        setAdding(null);
+      }
+    },
+    [selectedItems, payForOrder, setAdding],
+  );
 
   // Therapy is excluded — it can't be added to cart without therapist/date/slot from the modal.
   const addBundleNonTherapyItems = useCallback(async () => {
@@ -154,35 +260,18 @@ export function useBundleCheckout({
 
   const handleStartPlan = useCallback(async () => {
     if (!showBundle) return;
+    setAdding('plan');
     if (selectedHasTherapy) {
-      setAdding('plan');
-      if (!THERAPIST_RECOMMENDATION_MODAL_ENABLED) {
-        await addBundleAndPickTherapist();
-        return;
-      }
+      // The package is one payment, so the slot has to be chosen and held
+      // BEFORE paying — hence the modal here regardless of
+      // THERAPIST_RECOMMENDATION_MODAL_ENABLED, which governs the standalone
+      // therapy CTAs that deliberately send people to Therapy Corner.
       setTherapyFlow('plan-start');
       openTherapistModal();
       return;
     }
-    setAdding('plan');
-    try {
-      await addBundleNonTherapyItems();
-      await refreshCart();
-      router.push('/checkout');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not start your plan');
-      setAdding(null);
-    }
-  }, [
-    showBundle,
-    selectedHasTherapy,
-    addBundleNonTherapyItems,
-    addBundleAndPickTherapist,
-    refreshCart,
-    router,
-    setAdding,
-    openTherapistModal,
-  ]);
+    await purchasePlan();
+  }, [showBundle, selectedHasTherapy, purchasePlan, setAdding, openTherapistModal]);
 
   const handleAddPlanToCart = useCallback(async () => {
     if (!showBundle) return;
@@ -222,7 +311,12 @@ export function useBundleCheckout({
       const flow = therapyFlow;
       setTherapyFlow('standalone');
       const fromBundle = flow === 'plan-start' || flow === 'plan-cart';
-      if (!fromBundle) setAdding('therapy');
+      if (fromBundle) {
+        // One server-priced order for the whole plan, therapy included.
+        await purchasePlan({ therapistId: selection.therapistId, date: selection.date, slot: selection.slot });
+        return;
+      }
+      setAdding('therapy');
       try {
         await cartApi.add(
           selection.therapistId,
@@ -231,25 +325,22 @@ export function useBundleCheckout({
           selection.therapistName,
           selection.sessionFee,
           selection.therapistImage,
-          fromBundle
-            ? { date: selection.date, slot: selection.slot, source: SLEEP_PLAN_BUNDLE_SOURCE }
-            : { date: selection.date, slot: selection.slot },
+          { date: selection.date, slot: selection.slot },
         );
-        if (fromBundle) await addBundleNonTherapyItems();
         await refreshCart();
-        const goToCheckout = flow === 'plan-start' || (flow === 'standalone' && action === 'book');
-        if (goToCheckout) {
+        // Only the standalone flow reaches here; the package returned above.
+        if (action === 'book') {
           router.push('/checkout');
           return;
         }
-        toast.success(fromBundle ? 'Your sleep plan was added to cart' : 'Therapy session added to cart');
+        toast.success('Therapy session added to cart');
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Could not add to cart');
       } finally {
         setAdding(null);
       }
     },
-    [therapyFlow, addBundleNonTherapyItems, refreshCart, router, setAdding, closeTherapistModal],
+    [therapyFlow, purchasePlan, refreshCart, router, setAdding, closeTherapistModal],
   );
 
   // Single entry point for the standalone therapy CTAs (highlight card + individual module tile).

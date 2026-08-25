@@ -37,3 +37,33 @@ const OTP_CODE_REGEX = /^\d{6}$/;
 export function validateOtpCode(code: string): boolean {
   return typeof code === 'string' && OTP_CODE_REGEX.test(code.trim());
 }
+
+/**
+ * Optional-email validator. Deliberately the same shape as the `match` rule on
+ * the User schema, so the API and the model can never disagree about what a
+ * valid address is.
+ */
+const EMAIL_REGEX = /^\S{1,64}@\S{1,255}\.\S{1,63}$/;
+
+export function validateEmail(email: string): boolean {
+  return typeof email === 'string' && EMAIL_REGEX.test(email.trim());
+}
+
+/**
+ * Indian mobile numbers: exactly 10 digits starting 6-9. Landlines and the
+ * 0-/1-prefixed ranges are excluded — a number that cannot receive WhatsApp is
+ * useless as a login credential here.
+ *
+ * Takes the 10-digit national part, not the E.164 form.
+ */
+const INDIAN_MOBILE_REGEX = /^[6-9]\d{9}$/;
+
+export function validateIndianMobile(tenDigits: string): boolean {
+  return typeof tenDigits === 'string' && INDIAN_MOBILE_REGEX.test(tenDigits.trim());
+}
+
+/** The 10-digit national part of an E.164 Indian number, or null. */
+export function toNationalDigits(input: string): string | null {
+  const normalized = normalizePhone(input);
+  return normalized ? normalized.slice(-10) : null;
+}

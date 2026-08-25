@@ -18,6 +18,7 @@ import {
 import { getShippingCost } from '@/utils/shipping.util';
 import { DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
 import { toObjectId } from '@/lib/utils/objectId.util';
+import { isHeldByAnother } from '@/lib/services/slot-hold.service';
 
 export interface CreateOrderParams {
   shippingAddress?: IOrder['shippingAddress'];
@@ -182,6 +183,17 @@ export async function createDirectOrder(userId: string, params: DirectOrderParam
       });
       if (existingSession) {
         throw new ValidationError('Slot is already booked');
+      }
+      // A sleep-plan checkout may be mid-payment for this slot with no Session
+      // yet, so the query above would miss it.
+      if (
+        await isHeldByAnother(userId, {
+          therapistId: String(therapist._id),
+          date: String(date),
+          startTime: String(slot),
+        })
+      ) {
+        throw new ValidationError('That time slot has just been taken. Please choose another.');
       }
     }
 

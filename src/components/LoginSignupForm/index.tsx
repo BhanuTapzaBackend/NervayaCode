@@ -20,6 +20,7 @@ import { SignupForm } from './SignupForm';
 import styles from './styles.module.css';
 import { IMAGES } from '@/utils/imageConstants';
 import { useZohoLead } from '@/hooks/useZohoLead';
+import { AUTH_FLOW_STORAGE_KEYS } from '@/utils/cookieConstants';
 
 export interface LoginSignupFormProps {
   initialMode?: AuthFormMode;
@@ -52,13 +53,13 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
 
   // Restore state from sessionStorage on mount
   useEffect(() => {
-    const savedStep = sessionStorage.getItem('nervaya_auth_step');
+    const savedStep = sessionStorage.getItem(AUTH_FLOW_STORAGE_KEYS.STEP);
     if (savedStep) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setAuthStep(savedStep as AuthStep);
     }
 
-    const savedPurpose = sessionStorage.getItem('nervaya_auth_purpose');
+    const savedPurpose = sessionStorage.getItem(AUTH_FLOW_STORAGE_KEYS.PURPOSE);
     if (savedPurpose) {
       setOtpPurpose(savedPurpose as OtpPurpose);
     }
@@ -66,8 +67,8 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
 
   // Sync state to sessionStorage
   useEffect(() => {
-    sessionStorage.setItem('nervaya_auth_step', authStep);
-    sessionStorage.setItem('nervaya_auth_purpose', otpPurpose);
+    sessionStorage.setItem(AUTH_FLOW_STORAGE_KEYS.STEP, authStep);
+    sessionStorage.setItem(AUTH_FLOW_STORAGE_KEYS.PURPOSE, otpPurpose);
   }, [authStep, otpPurpose]);
 
   const {
@@ -104,7 +105,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
 
           // The backend already sent the initial login OTP. Start the resend
           // cooldown so OTPVerificationStep doesn't auto-send a duplicate.
-          sessionStorage.setItem('nervaya_auth_otpExpiresAt', String(Date.now() + 600 * 1000));
+          sessionStorage.setItem(AUTH_FLOW_STORAGE_KEYS.OTP_EXPIRES_AT, String(Date.now() + 600 * 1000));
         }
       } catch {
         /* error surfaced via AuthContext + error prop */
@@ -131,7 +132,7 @@ const LoginSignupForm: React.FC<LoginSignupFormProps> = ({ initialMode = AUTH_FO
 
           // The backend automatically sends the initial OTP for signup.
           // Start the 10-minute cooldown timer now so the resend button isn't immediately clickable.
-          sessionStorage.setItem('nervaya_auth_otpExpiresAt', String(Date.now() + 600 * 1000));
+          sessionStorage.setItem(AUTH_FLOW_STORAGE_KEYS.OTP_EXPIRES_AT, String(Date.now() + 600 * 1000));
 
           // Capture the lead even if they abandon at the OTP step.
           pushLead({

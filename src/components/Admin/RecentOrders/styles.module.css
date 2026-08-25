@@ -41,18 +41,6 @@
   text-decoration: underline;
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.28rem 0.62rem;
-  border-radius: var(--radius-full);
-  font-size: var(--text-label);
-  font-weight: var(--weight-semibold);
-  background: rgba(var(--color-accent-rgb), 0.08);
-  color: var(--color-accent);
-  text-transform: capitalize;
-}
-
 .date {
   color: var(--color-text-secondary);
 }

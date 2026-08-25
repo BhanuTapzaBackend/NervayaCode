@@ -54,7 +54,7 @@
 
 .variant-warning {
   background: var(--color-warning-dim);
-  color: var(--color-warning);
+  color: var(--color-warning-text);
 }
 
 .variant-error {
@@ -67,10 +67,12 @@
   color: var(--color-info);
 }
 
+/* Neutral sits on the light admin/app surfaces, so it needs an opaque
+   slate tint — a white-on-white wash renders the chip invisible. */
 .variant-neutral {
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(246, 242, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(100, 116, 139, 0.1);
+  color: var(--color-text-slate-400);
+  border-color: rgba(100, 116, 139, 0.22);
 }
 
 .variant-purple {
@@ -80,5 +82,5 @@
 
 .variant-amber {
   background: var(--color-warning-dim);
-  color: var(--color-warning);
+  color: var(--color-warning-text);
 }

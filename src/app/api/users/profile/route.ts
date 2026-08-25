@@ -14,13 +14,18 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name } = body;
+    const { name, email } = body;
 
     if (!name || typeof name !== 'string') {
       return NextResponse.json(errorResponse('Name is required', null, 400), { status: 400 });
     }
 
-    const result = await updateProfile(authResult.user.userId, name);
+    // Email is optional: omit the key to leave it untouched, send "" to clear it.
+    if (email !== undefined && email !== null && typeof email !== 'string') {
+      return NextResponse.json(errorResponse('Email must be a string', null, 400), { status: 400 });
+    }
+
+    const result = await updateProfile(authResult.user.userId, name, email);
 
     return NextResponse.json(successResponse('Profile updated successfully', result));
   } catch (error) {

@@ -19,6 +19,7 @@ export default function AccountPage() {
   const { user, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('settings');
   const [profileName, setProfileName] = useState('');
+  const [profileEmail, setProfileEmail] = useState('');
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
@@ -26,6 +27,7 @@ export default function AccountPage() {
   useEffect(() => {
     if (user) {
       setProfileName(user.name);
+      setProfileEmail(user.email ?? '');
     }
   }, [user]);
 
@@ -38,16 +40,25 @@ export default function AccountPage() {
       setProfileError('Name must be at least 2 characters');
       return;
     }
+    const email = profileEmail.trim();
+    if (email && !/^\S{1,64}@\S{1,255}\.\S{1,63}$/.test(email)) {
+      setProfileError('Please enter a valid email address');
+      return;
+    }
     setProfileLoading(true);
     try {
-      const res = (await api.patch('/users/profile', { name: profileName.trim() })) as {
+      const res = (await api.patch('/users/profile', { name: profileName.trim(), email })) as {
         success?: boolean;
-        data?: { user?: { name: string } };
+        data?: { user?: { name: string; email?: string } };
         message?: string;
       };
       if (res?.success && res?.data?.user) {
-        updateUser(res.data.user);
-        setProfileSuccess('Profile updated successfully.');
+        // Clearing the email drops the key from the response, so carry the
+        // submitted value through rather than reading it back.
+        updateUser({ ...res.data.user, email: email || undefined });
+        setProfileSuccess(
+          email ? 'Profile updated. Receipts and invoices will go to this address.' : 'Profile updated successfully.',
+        );
       } else {
         setProfileError(res?.message || 'Failed to update profile.');
       }
@@ -102,6 +113,27 @@ export default function AccountPage() {
                   disabled={!user}
                   aria-describedby={profileError ? 'profile-error' : undefined}
                 />
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label className={styles.label} htmlFor="account-email">
+                  <Icon icon={ICON_MAIL} className={styles.icon} /> Email address
+                </label>
+                <input
+                  id="account-email"
+                  type="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  placeholder="you@example.com"
+                  value={profileEmail}
+                  onChange={(e) => setProfileEmail(e.target.value)}
+                  className={styles.input}
+                  aria-describedby="account-email-hint"
+                />
+                <span id="account-email-hint" className={styles.hint}>
+                  Optional. Add it and we&apos;ll email your order confirmations and invoices here too. Leave it blank
+                  and we&apos;ll only send them on WhatsApp.
+                </span>
               </div>
 
               <div className={styles.inputGroup}>

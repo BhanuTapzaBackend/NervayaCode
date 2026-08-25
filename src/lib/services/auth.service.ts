@@ -1,6 +1,6 @@
 import User from '@/lib/models/user.model';
 import { generateToken } from '@/lib/utils/jwt.util';
-import { validatePhone, validateName } from '@/lib/utils/validation.util';
+import { validatePhone, validateName, validateEmail } from '@/lib/utils/validation.util';
 import { ValidationError, AuthenticationError } from '@/lib/utils/error.util';
 import connectDB from '@/lib/db/mongodb';
 import { ROLES, Role } from '@/lib/constants/roles';
@@ -84,14 +84,34 @@ export async function createSessionAfterOtp(phone: string) {
   };
 }
 
-export async function updateProfile(userId: string, name: string) {
+export async function updateProfile(userId: string, name: string, email?: string | null) {
   await connectDB();
 
   if (!validateName(name)) {
     throw new ValidationError('Name must be at least 2 characters long');
   }
 
-  const user = await User.findByIdAndUpdate(userId, { name: name.trim() }, { new: true, runValidators: true });
+  const update: { name: string; email?: string | null } = { name: name.trim() };
+
+  // Email is optional (phone is the identifier). `undefined` means "not
+  // submitted, leave alone"; an empty string means the user cleared it, which
+  // must store null — "" would collide on the sparse unique index the moment a
+  // second user also cleared theirs.
+  if (email !== undefined) {
+    const trimmed = email?.trim() ?? '';
+    if (trimmed && !validateEmail(trimmed)) {
+      throw new ValidationError('Please enter a valid email address');
+    }
+    update.email = trimmed ? trimmed.toLowerCase() : null;
+  }
+
+  const user = await User.findByIdAndUpdate(userId, update, { new: true, runValidators: true }).catch((error) => {
+    // Sparse unique index on email.
+    if ((error as { code?: number }).code === 11000) {
+      throw new ValidationError('That email is already linked to another account');
+    }
+    throw error;
+  });
 
   if (!user) {
     throw new AuthenticationError('User not found');

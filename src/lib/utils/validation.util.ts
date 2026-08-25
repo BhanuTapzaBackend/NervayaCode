@@ -37,3 +37,14 @@ const OTP_CODE_REGEX = /^\d{6}$/;
 export function validateOtpCode(code: string): boolean {
   return typeof code === 'string' && OTP_CODE_REGEX.test(code.trim());
 }
+
+/**
+ * Optional-email validator. Deliberately the same shape as the `match` rule on
+ * the User schema, so the API and the model can never disagree about what a
+ * valid address is.
+ */
+const EMAIL_REGEX = /^\S{1,64}@\S{1,255}\.\S{1,63}$/;
+
+export function validateEmail(email: string): boolean {
+  return typeof email === 'string' && EMAIL_REGEX.test(email.trim());
+}

@@ -18,6 +18,8 @@ export async function createSession(
   date: string,
   startTime: string,
   mongooseSession?: mongoose.ClientSession,
+  /** Set for paid sessions so the session can be traced back to its order. */
+  orderId?: string,
 ) {
   await connectDB();
 
@@ -69,6 +71,7 @@ export async function createSession(
             startTime,
             endTime,
             status: SESSION_STATUS.PENDING,
+            ...(orderId && { orderId: toObjectId(orderId) }),
           },
         ],
         { session: txnSession },

@@ -4,6 +4,8 @@ import { SESSION_STATUS, SESSION_STATUS_VALUES, SessionStatus } from '@/lib/cons
 export interface ISession extends Document {
   userId: mongoose.Types.ObjectId;
   therapistId: mongoose.Types.ObjectId;
+  /** The order that paid for this session. Absent on legacy sessions. */
+  orderId?: mongoose.Types.ObjectId;
   date: string;
   startTime: string;
   endTime: string;
@@ -28,6 +30,11 @@ const sessionSchema = new Schema<ISession>(
       type: Schema.Types.ObjectId,
       ref: 'Therapist',
       required: [true, 'Therapist ID is required'],
+      index: true,
+    },
+    orderId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Order',
       index: true,
     },
     date: {

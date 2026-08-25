@@ -16,6 +16,7 @@ import { getPromoCodeByCode, incrementUsage } from '@/lib/services/promo.service
 import { sendRefundNotificationEmail } from '@/lib/services/email/refund-notification.service';
 import { toObjectId } from '@/lib/utils/objectId.util';
 import { hasPaymentBypass } from '@/lib/constants/test-logins';
+import { releaseSlot } from '@/lib/services/slot-hold.service';
 
 export interface RazorpayOrderResponse {
   id: string;
@@ -201,8 +202,13 @@ async function processPaymentSuccess(orderId: string, paymentId: string) {
               date,
               slot,
               session,
+              lockedOrder._id.toString(),
             );
             therapyToFinalize.push({ session: createdSession, date, startTime: slot });
+            // The Session now owns the slot via its own unique index, so the
+            // pre-payment hold has done its job and must go — otherwise it
+            // blocks the customer's own reschedule until the TTL expires.
+            await releaseSlot({ therapistId: item.itemId.toString(), date, startTime: slot }, session);
           }
         }
       }

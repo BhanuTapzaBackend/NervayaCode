@@ -1,13 +1,16 @@
 // Import from jose subpaths (not the barrel) to keep the bundle lean, mirroring jwt.util.ts.
 import { SignJWT } from 'jose/jwt/sign';
 import { importPKCS8 } from 'jose/key/import';
+import { getSiteUrl } from '@/lib/utils/site-url.util';
 
 // JaaS (Jitsi as a Service) credentials — generated in the 8x8 JaaS console.
 const JAAS_APP_ID = process.env.JAAS_APP_ID;
 const JAAS_KID = process.env.JAAS_KID;
 const JAAS_PRIVATE_KEY = process.env.JAAS_PRIVATE_KEY;
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://nervaya.com';
+// Read per call, not once at module load: getSiteUrl() filters out Vercel's
+// *.vercel.app deployment hostnames so room links always carry the brand domain.
+const appUrl = (): string => getSiteUrl();
 
 /** Deterministic room identifier derived from the session id. Single source of truth. */
 export function getRoomName(sessionId: string): string {
@@ -16,7 +19,7 @@ export function getRoomName(sessionId: string): string {
 
 /** Absolute URL to the embedded in-app meeting page (used by Join buttons and emails). */
 export function getRoomUrl(sessionId: string): string {
-  return `${APP_URL}/session/${sessionId}/room`;
+  return `${appUrl()}/session/${sessionId}/room`;
 }
 
 /** Room identifier for an (anonymous) free 1-on-1 consultation lead. */
@@ -26,7 +29,7 @@ export function getConsultationRoomName(leadId: string): string {
 
 /** Absolute URL to the public consultation meeting page (emailed to the lead). */
 export function getConsultationRoomUrl(leadId: string): string {
-  return `${APP_URL}/consultation/${leadId}/room`;
+  return `${appUrl()}/consultation/${leadId}/room`;
 }
 
 export interface JaasTokenUser {

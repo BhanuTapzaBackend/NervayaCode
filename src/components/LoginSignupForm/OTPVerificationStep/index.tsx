@@ -5,6 +5,7 @@ import { useOTP } from '@/hooks/useOTP';
 import type { OtpPurpose } from '@/types/auth.types';
 import type { AuthData } from '@/context/AuthContext';
 import styles from './styles.module.css';
+import { AUTH_FLOW_STORAGE_KEYS } from '@/utils/cookieConstants';
 
 const RESEND_COOLDOWN_SEC = 600;
 const OTP_LENGTH = 6;
@@ -27,12 +28,12 @@ export function OTPVerificationStep({ phone, purpose, onSuccess, onBack, autoSen
     clearError();
     sendOtp(phone, purpose);
     setCooldown(RESEND_COOLDOWN_SEC);
-    sessionStorage.setItem('nervaya_auth_otpExpiresAt', String(Date.now() + RESEND_COOLDOWN_SEC * 1000));
+    sessionStorage.setItem(AUTH_FLOW_STORAGE_KEYS.OTP_EXPIRES_AT, String(Date.now() + RESEND_COOLDOWN_SEC * 1000));
   }, [phone, purpose, sendOtp, clearError]);
 
   useEffect(() => {
     if (autoSend) {
-      const expiresAt = sessionStorage.getItem('nervaya_auth_otpExpiresAt');
+      const expiresAt = sessionStorage.getItem(AUTH_FLOW_STORAGE_KEYS.OTP_EXPIRES_AT);
       const remaining = expiresAt ? Math.floor((parseInt(expiresAt, 10) - Date.now()) / 1000) : 0;
 
       if (remaining > 0) {
@@ -44,10 +45,9 @@ export function OTPVerificationStep({ phone, purpose, onSuccess, onBack, autoSen
       const id = setTimeout(() => sendOtpOnce(), 0);
       return () => clearTimeout(id);
     } else {
-      const expiresAt = sessionStorage.getItem('nervaya_auth_otpExpiresAt');
+      const expiresAt = sessionStorage.getItem(AUTH_FLOW_STORAGE_KEYS.OTP_EXPIRES_AT);
       const remaining = expiresAt ? Math.floor((parseInt(expiresAt, 10) - Date.now()) / 1000) : 0;
       if (remaining > 0) {
-         
         setCooldown(remaining);
       }
     }

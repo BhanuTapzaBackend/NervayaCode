@@ -7,7 +7,11 @@ import { type AssessmentResult, type ServiceKey, getBundleItems, getTherapyPrior
 import { cartApi } from '@/lib/api/cart';
 import { ITEM_TYPE } from '@/lib/constants/enums';
 import { DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
-import { SLEEP_PLAN_BUNDLE_SOURCE } from '@/lib/constants/sleepPlan.constants';
+import {
+  SLEEP_PLAN_BUNDLE_SOURCE,
+  THERAPIST_RECOMMENDATION_MODAL_ENABLED,
+  THERAPY_CORNER_PATH,
+} from '@/lib/constants/sleepPlan.constants';
 import type { SleepPlanData } from './useSleepPlanData';
 import type { TherapistSelection, TherapyAction } from './TherapistSelectionModal';
 
@@ -34,6 +38,7 @@ export interface UseBundleCheckoutReturn {
   handleStartPlan: () => Promise<void>;
   handleAddPlanToCart: () => Promise<void>;
   handleTherapyConfirm: (selection: TherapistSelection, action: TherapyAction) => Promise<void>;
+  startTherapySelection: () => void;
   resetTherapyFlow: () => void;
 }
 
@@ -130,11 +135,32 @@ export function useBundleCheckout({
     }
   }, [selectedItems, plan.supplement, plan.deepRestPrice]);
 
+  // Modal paused: park the rest of the plan in the cart, then let the user pick a therapist
+  // on /therapy-corner and book the session from there.
+  const addBundleAndPickTherapist = useCallback(async () => {
+    const hasOtherItems = selectedItems.some((key) => key !== 'THERAPY');
+    try {
+      await addBundleNonTherapyItems();
+      if (hasOtherItems) {
+        await refreshCart();
+        toast.success('Your plan is in the cart — now pick the therapist for your session.');
+      }
+      router.push(THERAPY_CORNER_PATH);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not add plan to cart');
+      setAdding(null);
+    }
+  }, [selectedItems, addBundleNonTherapyItems, refreshCart, router, setAdding]);
+
   const handleStartPlan = useCallback(async () => {
     if (!showBundle) return;
     if (selectedHasTherapy) {
-      setTherapyFlow('plan-start');
       setAdding('plan');
+      if (!THERAPIST_RECOMMENDATION_MODAL_ENABLED) {
+        await addBundleAndPickTherapist();
+        return;
+      }
+      setTherapyFlow('plan-start');
       openTherapistModal();
       return;
     }
@@ -147,13 +173,26 @@ export function useBundleCheckout({
       toast.error(err instanceof Error ? err.message : 'Could not start your plan');
       setAdding(null);
     }
-  }, [showBundle, selectedHasTherapy, addBundleNonTherapyItems, refreshCart, router, setAdding, openTherapistModal]);
+  }, [
+    showBundle,
+    selectedHasTherapy,
+    addBundleNonTherapyItems,
+    addBundleAndPickTherapist,
+    refreshCart,
+    router,
+    setAdding,
+    openTherapistModal,
+  ]);
 
   const handleAddPlanToCart = useCallback(async () => {
     if (!showBundle) return;
     if (selectedHasTherapy) {
-      setTherapyFlow('plan-cart');
       setAdding('cart');
+      if (!THERAPIST_RECOMMENDATION_MODAL_ENABLED) {
+        await addBundleAndPickTherapist();
+        return;
+      }
+      setTherapyFlow('plan-cart');
       openTherapistModal();
       return;
     }
@@ -167,7 +206,15 @@ export function useBundleCheckout({
     } finally {
       setAdding(null);
     }
-  }, [showBundle, selectedHasTherapy, addBundleNonTherapyItems, refreshCart, setAdding, openTherapistModal]);
+  }, [
+    showBundle,
+    selectedHasTherapy,
+    addBundleNonTherapyItems,
+    addBundleAndPickTherapist,
+    refreshCart,
+    setAdding,
+    openTherapistModal,
+  ]);
 
   const handleTherapyConfirm = useCallback(
     async (selection: TherapistSelection, action: TherapyAction) => {
@@ -205,6 +252,16 @@ export function useBundleCheckout({
     [therapyFlow, addBundleNonTherapyItems, refreshCart, router, setAdding, closeTherapistModal],
   );
 
+  // Single entry point for the standalone therapy CTAs (highlight card + individual module tile).
+  const startTherapySelection = useCallback(() => {
+    if (!THERAPIST_RECOMMENDATION_MODAL_ENABLED) {
+      router.push(THERAPY_CORNER_PATH);
+      return;
+    }
+    setTherapyFlow('standalone');
+    openTherapistModal();
+  }, [router, openTherapistModal]);
+
   const resetTherapyFlow = useCallback(() => setTherapyFlow('standalone'), []);
 
   return {
@@ -218,6 +275,7 @@ export function useBundleCheckout({
     handleStartPlan,
     handleAddPlanToCart,
     handleTherapyConfirm,
+    startTherapySelection,
     resetTherapyFlow,
   };
 }

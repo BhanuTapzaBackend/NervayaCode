@@ -1,4 +1,5 @@
 import { ICON_CLOCK, ICON_CHECK, ICON_HEADPHONES, ICON_USER, ICON_SPARKLES } from '@/constants/icons';
+import { THERAPIST_RECOMMENDATION_MODAL_ENABLED } from '@/lib/constants/sleepPlan.constants';
 import { IMAGES } from '@/utils/imageConstants';
 import type { Supplement } from '@/types/supplement.types';
 import { IndividualModuleCard } from '../IndividualModuleCard';
@@ -77,7 +78,7 @@ export function IndividualModulesGrid({
             { icon: ICON_SPARKLES, text: 'Personalized for you' },
           ]}
           price={therapyPrice}
-          ctaLabel="Add to Cart"
+          ctaLabel={THERAPIST_RECOMMENDATION_MODAL_ENABLED ? 'Add to Cart' : 'Choose a Therapist'}
           isAdding={adding === 'mod:therapy'}
           onAdd={() => onAdd('therapy')}
         />

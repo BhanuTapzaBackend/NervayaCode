@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar/LazySidebar';
 import { GlobalLoader } from '@/components/common/GlobalLoader';
@@ -40,11 +40,18 @@ export default function DriftOffPaymentPage() {
     isVerifying,
     error,
     showPaymentHandler,
+    bypassSuccess,
     initiatePayment,
     handleVerifyStart,
     handleVerifyComplete,
     handlePaymentError,
   } = useDeepRestPayment();
+
+  // Test customer: the order settled without Razorpay, so show the success
+  // screen the payment handler would normally have triggered.
+  useEffect(() => {
+    if (bypassSuccess) setPaymentSuccess(bypassSuccess);
+  }, [bypassSuccess]);
 
   const {
     isLoading: isChecking,

@@ -2,6 +2,15 @@ import api from '@/lib/axios';
 import type { ApiResponse } from '@/lib/api/types';
 import type { IDeepRestOrder, IDeepRestResponse } from '@/types/deepRest.types';
 
+export interface DeepRestRazorpayOrder {
+  id: string;
+  amount?: number;
+  currency?: string;
+  key_id?: string;
+  /** Set only for the fixed test customer, whose order is already settled. */
+  bypassed?: boolean;
+}
+
 export const deepRestApi = {
   createOrder: (): Promise<ApiResponse<IDeepRestOrder>> =>
     api.post('/deep-rest/orders') as Promise<ApiResponse<IDeepRestOrder>>,
@@ -22,11 +31,9 @@ export const deepRestApi = {
       }>
     >,
 
-  createRazorpayOrder: (
-    deepRestOrderId: string,
-  ): Promise<ApiResponse<{ id: string; amount: number; currency: string; key_id: string }>> =>
+  createRazorpayOrder: (deepRestOrderId: string): Promise<ApiResponse<DeepRestRazorpayOrder>> =>
     api.post('/payments/deep-rest/create-order', { driftOffOrderId: deepRestOrderId }) as Promise<
-      ApiResponse<{ id: string; amount: number; currency: string; key_id: string }>
+      ApiResponse<DeepRestRazorpayOrder>
     >,
 
   verifyPayment: (body: {

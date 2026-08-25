@@ -14,7 +14,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email } = body;
+    const { name, email, phone } = body;
 
     if (!name || typeof name !== 'string') {
       return NextResponse.json(errorResponse('Name is required', null, 400), { status: 400 });
@@ -25,7 +25,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json(errorResponse('Email must be a string', null, 400), { status: 400 });
     }
 
-    const result = await updateProfile(authResult.user.userId, name, email);
+    // Phone is the login credential — omit the key to leave it untouched.
+    if (phone !== undefined && typeof phone !== 'string') {
+      return NextResponse.json(errorResponse('Phone must be a string', null, 400), { status: 400 });
+    }
+
+    const result = await updateProfile(authResult.user.userId, name, email, phone);
 
     return NextResponse.json(successResponse('Profile updated successfully', result));
   } catch (error) {

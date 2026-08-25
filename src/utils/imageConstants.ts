@@ -3,6 +3,8 @@ export const IMAGES = {
 
   CARD_THERAPY_SESSION: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/therapy_session_szvksr.png',
   CARD_DRIFT_OFF: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/drift_off.png',
+  // Single supplement card photo — used on the landing page cards AND the post-assessment
+  // Recommendation cards. Swap this one file to change what the supplement shows app-wide.
   CARD_SLEEP_SUPPLEMENTS: '/card_sleep_supplements.png',
 
   AUTH_HERO_MORNING: '/assets/auth/morning-v2.png',
@@ -19,9 +21,10 @@ export const IMAGES = {
   HERO_MAIN: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/v1771770997/welcome-hero_mygw11.png',
   NOT_FOUND_404: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/v1773381422/404-bg_wz5p2l.png',
 
-  // Product photos used in the post-assessment Recommendation cards.
-  // Files live in /public/images/products/ — swap the files there (keep the
-  // filenames) to change what these cards show app-wide.
-  PRODUCT_SLEEP_SUPPLEMENT: '/card_supplement_v6.png',
+  // Product photos used in the post-assessment Recommendation cards. These frames are
+  // landscape (16/10 and a 130px square), so they need 1600x1000 sources — the portrait
+  // CARD_SLEEP_SUPPLEMENTS gets cropped to a sliver in them. PRODUCT_SLEEP_SUPPLEMENT is
+  // the same photo re-centred on a 1600x1000 white canvas.
+  PRODUCT_SLEEP_SUPPLEMENT: '/card_supplement_wide.png',
   PRODUCT_DEEP_REST: '/card_deeprest.png',
 } as const;

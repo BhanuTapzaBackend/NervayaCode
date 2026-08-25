@@ -66,11 +66,35 @@ export function hasWhatsAppCredentials(): boolean {
  * @param templateLanguage  locale the template was approved under (e.g. en_US).
  * @param bodyParams        values for the body variables, in template order.
  */
+export async function sendDocumentTemplate(
+  toE164: string,
+  templateName: string,
+  templateLanguage: string,
+  bodyParams: string[],
+  document: { link: string; filename: string },
+): Promise<{ messageId: string }> {
+  return sendTemplate(toE164, templateName, templateLanguage, bodyParams, {
+    type: 'header',
+    parameters: [{ type: 'document', document }],
+  });
+}
+
 export async function sendTextTemplate(
   toE164: string,
   templateName: string,
   templateLanguage: string,
   bodyParams: string[],
+): Promise<{ messageId: string }> {
+  return sendTemplate(toE164, templateName, templateLanguage, bodyParams);
+}
+
+/** Shared sender for template messages, with an optional header component. */
+async function sendTemplate(
+  toE164: string,
+  templateName: string,
+  templateLanguage: string,
+  bodyParams: string[],
+  headerComponent?: Record<string, unknown>,
 ): Promise<{ messageId: string }> {
   const base = readBaseConfig();
   if (!base) {
@@ -87,9 +111,13 @@ export async function sendTextTemplate(
     template: {
       name: templateName,
       language: { code: templateLanguage },
-      components: bodyParams.length
-        ? [{ type: 'body', parameters: bodyParams.map((text) => ({ type: 'text', text })) }]
-        : [],
+      // Meta requires the header component before the body.
+      components: [
+        ...(headerComponent ? [headerComponent] : []),
+        ...(bodyParams.length
+          ? [{ type: 'body', parameters: bodyParams.map((text) => ({ type: 'text', text })) }]
+          : []),
+      ],
     },
   };
 

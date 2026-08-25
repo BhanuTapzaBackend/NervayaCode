@@ -15,6 +15,16 @@ export const WHATSAPP_TEMPLATES = {
   SESSION_LINK: { name: 'nervaya_session_link', language: 'en' },
   /** ~1 hour-before reminder carrying the meeting link.  CURRENTLY NOT USED*/
   SESSION_REMINDER: { name: 'nervaya_session_reminder', language: WHATSAPP_TEMPLATE_LANGUAGE },
+  /**
+   * Order confirmation with the invoice PDF as a DOCUMENT header.
+   * Approved under plain "English" (en), matching SESSION_LINK.
+   * Body: "Hi {{1}}, your Nervaya order {{2}} is confirmed. Items: {{3}}.
+   *        Amount paid: {{4}}. Your invoice is attached to this message —
+   *        we'll let you know as soon as it ships!"
+   *   {{1}} first name   {{2}} order number
+   *   {{3}} item summary {{4}} amount paid
+   */
+  ORDER_CONFIRMATION: { name: 'nervaya_order_confirmation', language: 'en' },
 } as const;
 
 export type WhatsAppTemplate = (typeof WHATSAPP_TEMPLATES)[keyof typeof WHATSAPP_TEMPLATES];

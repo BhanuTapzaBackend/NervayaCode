@@ -213,6 +213,13 @@ async function processPaymentSuccess(orderId: string, paymentId: string) {
       await finalizeSessionBooking(t.session, t.date, t.startTime);
     }
 
+    // Invoice + confirmation, also post-commit (PDF upload, WhatsApp, SMTP).
+    // Fire-and-forget: a notification outage must never fail a paid order.
+    const { sendOrderConfirmation } = await import('@/lib/services/order-confirmation.service');
+    sendOrderConfirmation(orderId).catch((error) => {
+      console.error('[payment] order confirmation failed:', error);
+    });
+
     return { success: true };
   } catch (error) {
     // Stock failure: transaction rolled back all changes. Now mark order as refunded and initiate refund.

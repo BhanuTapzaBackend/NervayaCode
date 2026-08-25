@@ -44,7 +44,20 @@ function describeItem(itemType: string, metadata?: Record<string, unknown>): str
 }
 
 /**
- * Builds (and stores) the invoice for a paid order.
+ * True when the order is nothing but therapy sessions.
+ *
+ * Those get no invoice: booking already sends its own confirmation carrying the
+ * meeting link, so an invoice would be a second, duplicate message. A mixed cart
+ * still gets one — the customer bought supplements too — and the therapy line
+ * appears on it so the totals reconcile.
+ */
+function isTherapyOnly(items: { itemType: string }[]): boolean {
+  return items.length > 0 && items.every((item) => item.itemType === ITEM_TYPE.THERAPY);
+}
+
+/**
+ * Builds (and stores) the invoice for a paid order. Returns null when the order
+ * is missing or is therapy-only.
  *
  * Idempotent on the invoice number: an order that already has one keeps it, so
  * a retry never burns a second number or renumbers a document the customer has.
@@ -54,6 +67,10 @@ export async function prepareInvoiceForOrder(orderId: string): Promise<PreparedI
 
   const order = await Order.findById(orderId).lean();
   if (!order) return null;
+
+  // Checked before allocating a number, so skipped orders leave no gap in the
+  // invoice sequence.
+  if (isTherapyOnly(order.items)) return null;
 
   const issuedAt = new Date(order.createdAt ?? Date.now());
   const invoiceNumber = order.invoiceNumber ?? (await allocateInvoiceNumber(issuedAt));

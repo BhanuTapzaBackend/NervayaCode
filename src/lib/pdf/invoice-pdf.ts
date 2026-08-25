@@ -1,6 +1,6 @@
 import path from 'path';
 import PDFDocument from 'pdfkit';
-import { COMPANY, INVOICE_NOTE, INVOICE_TERMS } from '@/lib/constants/company.constants';
+import { COMPANY, INVOICE_NOTE, INVOICE_TERMS, INVOICE_THANK_YOU } from '@/lib/constants/company.constants';
 
 /**
  * Zoho-Invoice-style PDF built with pdfkit.
@@ -85,7 +85,11 @@ function drawHeader(doc: Doc, data: InvoiceData): number {
   doc.fontSize(8.5).fillColor(MUTED);
   doc.text(COMPANY.tagline, PAGE_MARGIN, doc.y + 2);
   doc.text(COMPANY.addressLines.join('\n'), PAGE_MARGIN, doc.y + 6, { lineGap: 1.5 });
-  doc.text(`${COMPANY.email}  ·  ${COMPANY.website}`, PAGE_MARGIN, doc.y + 4);
+  doc.text(`${COMPANY.phone}  ·  ${COMPANY.email}  ·  ${COMPANY.website}`, PAGE_MARGIN, doc.y + 4);
+  // Capture the left column's bottom NOW: every doc.text(x, y) below reassigns
+  // doc.y, so reading it after the meta block would measure the wrong column and
+  // let the divider cut through this address.
+  const leftBottom = doc.y;
 
   // "INVOICE" + meta, right-aligned against the logo block.
   const rightX = PAGE_WIDTH / 2;
@@ -107,7 +111,7 @@ function drawHeader(doc: Doc, data: InvoiceData): number {
     metaY += 14;
   }
 
-  return Math.max(doc.y, metaY) + 14;
+  return Math.max(leftBottom, metaY) + 14;
 }
 
 function drawBillTo(doc: Doc, data: InvoiceData, top: number): number {
@@ -231,7 +235,13 @@ function drawTotals(doc: Doc, data: InvoiceData, top: number): number {
 }
 
 function drawFooter(doc: Doc, top: number): void {
-  const y = Math.min(top + 16, doc.page.height - 96);
+  // Sign-off sits above the rule, left-aligned under the item table — Zoho's
+  // placement for "Thanks for your business."
+  const thanksY = Math.min(top + 6, doc.page.height - 128);
+  doc.font(FONT).fontSize(10).fillColor(INK);
+  bold(doc, INVOICE_THANK_YOU, PAGE_MARGIN, thanksY, { width: CONTENT_WIDTH * 0.6 });
+
+  const y = Math.min(doc.y + 16, doc.page.height - 96);
   doc
     .moveTo(PAGE_MARGIN, y)
     .lineTo(PAGE_WIDTH - PAGE_MARGIN, y)

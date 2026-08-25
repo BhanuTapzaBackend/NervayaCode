@@ -12,14 +12,17 @@
 export const COMPANY = {
   name: 'Nervaya',
   tagline: 'Sleep and mental wellness',
-  addressLines: ['[Street address]', '[City, State PIN]', 'India'],
-  email: 'support@nervaya.com',
-  phone: '[Support phone]',
+  addressLines: ['47 Anuragha Township', 'K R Pura, Kadugodi', 'Bengaluru, Karnataka 560067', 'India'],
+  email: 'nervayaofficial@gmail.com',
+  phone: '+91 82921 97371',
   website: 'nervaya.com',
 } as const;
+
+/** Sign-off under the totals, where Zoho puts "Thanks for your business." */
+export const INVOICE_THANK_YOU = 'Thank you for doing business with us.';
 
 /** Prices already include everything owed, so the invoice says so explicitly. */
 export const INVOICE_NOTE = 'All prices are inclusive. This is a computer-generated invoice and needs no signature.';
 
 export const INVOICE_TERMS =
-  'Thank you for choosing Nervaya. Questions? Reply to this message or email support@nervaya.com.';
+  'Thank you for choosing Nervaya. Questions? Reply to this message or email nervayaofficial@gmail.com.';

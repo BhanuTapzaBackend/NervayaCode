@@ -3,6 +3,8 @@ export const IMAGES = {
 
   CARD_THERAPY_SESSION: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/therapy_session_szvksr.png',
   CARD_DRIFT_OFF: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/drift_off.png',
+  // Single supplement card photo — used on the landing page cards AND the post-assessment
+  // Recommendation cards. Swap this one file to change what the supplement shows app-wide.
   CARD_SLEEP_SUPPLEMENTS: '/card_sleep_supplements.png',
 
   AUTH_HERO_MORNING: '/assets/auth/morning-v2.png',
@@ -19,9 +21,8 @@ export const IMAGES = {
   HERO_MAIN: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/v1771770997/welcome-hero_mygw11.png',
   NOT_FOUND_404: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/v1773381422/404-bg_wz5p2l.png',
 
-  // Product photos used in the post-assessment Recommendation cards.
-  // Files live in /public/images/products/ — swap the files there (keep the
-  // filenames) to change what these cards show app-wide.
-  PRODUCT_SLEEP_SUPPLEMENT: '/card_supplement_v6.png',
+  // Product photo used in the post-assessment Recommendation cards.
+  // The supplement card reuses CARD_SLEEP_SUPPLEMENTS so the landing page and the
+  // recommendation cards always show the same photo.
   PRODUCT_DEEP_REST: '/card_deeprest.png',
 } as const;

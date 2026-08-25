@@ -6,6 +6,7 @@ import { checkLoginRateLimit } from '@/lib/utils/rate-limit.util';
 import { getClientIp } from '@/lib/utils/request.util';
 import { otpSendErrorResponse } from '@/lib/utils/otp-response.util';
 import { normalizePhone } from '@/lib/utils/validation.util';
+import { getTestLogin } from '@/lib/constants/test-logins';
 import { sendOtp } from '@/lib/services/otp';
 import User from '@/lib/models/user.model';
 import connectDB from '@/lib/db/mongodb';
@@ -30,7 +31,11 @@ export async function POST(request: NextRequest) {
     const ip = getClientIp(request);
     const rateLimitKey = `${ip}:${normalizedPhone}`;
 
-    if (!(await checkLoginRateLimit(rateLimitKey))) {
+    // Test accounts are exempt: 5 logins per 15 min makes repeated manual
+    // testing impossible, which defeats the point of the bypass.
+    const isTestAccount = Boolean(getTestLogin(normalizedPhone));
+
+    if (!isTestAccount && !(await checkLoginRateLimit(rateLimitKey))) {
       return NextResponse.json(errorResponse('Too many login attempts. Please try again later.', null, 429), {
         status: 429,
       });

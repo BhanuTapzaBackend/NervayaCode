@@ -4,7 +4,8 @@ import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
-import { ICON_USER, ICON_CHEVRON_LEFT } from '@/constants/icons';
+import { toast } from 'sonner';
+import { ICON_USER, ICON_CHEVRON_LEFT, ICON_SHARE, ICON_ARROW_RIGHT } from '@/constants/icons';
 import Sidebar from '@/components/Sidebar/LazySidebar';
 import { BlogRecommendations } from '@/components/Blog/BlogRecommendations';
 import { GlobalLoader } from '@/components/common/GlobalLoader';
@@ -77,9 +78,17 @@ export default function BlogDetailClient({ params }: BlogDetailClientProps) {
     if (navigator.share && blog) {
       try {
         await navigator.share({ title: blog.title, url: window.location.href });
-      } catch {}
-    } else {
-      navigator.clipboard.writeText(window.location.href);
+        return;
+      } catch {
+        // Dismissed the share sheet, or it failed — fall through to copying.
+      }
+    }
+    // The button is icon-only, so confirm the copy rather than leaving it silent.
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied');
+    } catch {
+      toast.error('Could not copy the link');
     }
   };
 
@@ -150,20 +159,23 @@ export default function BlogDetailClient({ params }: BlogDetailClientProps) {
           </div>
 
           <div className={styles.shareSection}>
-            <button onClick={handleShare} className={styles.shareCta}>
-              Share
+            <button onClick={handleShare} className={styles.shareCta} aria-label="Share this article" title="Share">
+              <Icon icon={ICON_SHARE} width={18} height={18} aria-hidden="true" />
             </button>
           </div>
 
           {blog.ctaText && blog.ctaLink && (
-            <a
-              href={blog.ctaLink}
-              className={styles.blogCta}
-              target={blog.ctaLink.startsWith('http') ? '_blank' : undefined}
-              rel={blog.ctaLink.startsWith('http') ? 'noopener noreferrer' : undefined}
-            >
-              {blog.ctaText}
-            </a>
+            <div className={styles.blogCtaRow}>
+              <a
+                href={blog.ctaLink}
+                className={styles.blogCta}
+                target={blog.ctaLink.startsWith('http') ? '_blank' : undefined}
+                rel={blog.ctaLink.startsWith('http') ? 'noopener noreferrer' : undefined}
+              >
+                <span className={styles.blogCtaLabel}>{blog.ctaText}</span>
+                <Icon icon={ICON_ARROW_RIGHT} width={18} height={18} aria-hidden="true" />
+              </a>
+            </div>
           )}
         </article>
 

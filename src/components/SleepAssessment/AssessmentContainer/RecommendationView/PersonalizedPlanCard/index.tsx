@@ -50,7 +50,7 @@ function getMiniProps(key: ServiceKey, supplementName: string): PlanProductMiniP
       metaText: '30-day supply',
       meta2Icon: ICON_CHECK,
       meta2Text: 'Daily support',
-      imageSrc: IMAGES.CARD_SLEEP_SUPPLEMENTS,
+      imageSrc: IMAGES.PRODUCT_SLEEP_SUPPLEMENT,
     };
   }
   if (key === 'THERAPY') {

@@ -30,7 +30,7 @@ export function IndividualModulesGrid({
       <div className={styles.grid}>
         {supplement && (
           <IndividualModuleCard
-            imageSrc={IMAGES.CARD_SLEEP_SUPPLEMENTS}
+            imageSrc={IMAGES.PRODUCT_SLEEP_SUPPLEMENT}
             name={supplement.name}
             chip="SUPPLEMENT"
             chipTone="amber"

@@ -21,8 +21,10 @@ export const IMAGES = {
   HERO_MAIN: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/v1771770997/welcome-hero_mygw11.png',
   NOT_FOUND_404: 'https://res.cloudinary.com/disrq2eh8/image/upload/f_auto,q_auto/v1773381422/404-bg_wz5p2l.png',
 
-  // Product photo used in the post-assessment Recommendation cards.
-  // The supplement card reuses CARD_SLEEP_SUPPLEMENTS so the landing page and the
-  // recommendation cards always show the same photo.
+  // Product photos used in the post-assessment Recommendation cards. These frames are
+  // landscape (16/10 and a 130px square), so they need 1600x1000 sources — the portrait
+  // CARD_SLEEP_SUPPLEMENTS gets cropped to a sliver in them. PRODUCT_SLEEP_SUPPLEMENT is
+  // the same photo re-centred on a 1600x1000 white canvas.
+  PRODUCT_SLEEP_SUPPLEMENT: '/card_supplement_wide.png',
   PRODUCT_DEEP_REST: '/card_deeprest.png',
 } as const;

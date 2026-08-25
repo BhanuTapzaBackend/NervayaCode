@@ -40,7 +40,7 @@ export const FOOTER_LINK_GROUPS: FooterLinkGroup[] = [
 ];
 
 export const SOCIAL_LINKS = [
-  { name: 'linkedin', icon: '/icons/linked_in.svg', alt: 'LinkedIn', href: 'https://www.linkedin.com' },
+  { name: 'linkedin', icon: '/icons/linked_in.svg', alt: 'LinkedIn', href: 'https://www.linkedin.com/company/nervayaa/' },
   { name: 'facebook', icon: '/icons/facebook.svg', alt: 'Facebook', href: 'https://facebook.com/61568062491083' },
   {
     name: 'instagram',

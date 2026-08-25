@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Icon } from '@iconify/react';
 import { ICON_USER, ICON_SPARKLES, ICON_ARROW_RIGHT, ICON_SHIELD_USER } from '@/constants/icons';
 import { IMAGES } from '@/utils/imageConstants';
+import { THERAPIST_RECOMMENDATION_MODAL_ENABLED } from '@/lib/constants/sleepPlan.constants';
 import { formatCurrency } from '@/utils/currencyConstants';
 import styles from './styles.module.css';
 
@@ -15,6 +16,9 @@ interface TherapyHighlightCardProps {
 }
 
 export function TherapyHighlightCard({ therapyPrice, isAdding, onAddToCart }: Readonly<TherapyHighlightCardProps>) {
+  let ctaLabel = 'Choose a Therapist';
+  if (THERAPIST_RECOMMENDATION_MODAL_ENABLED) ctaLabel = isAdding ? 'Adding...' : 'Add to Cart';
+
   return (
     <section className={styles.card} aria-label="Therapy Corner — additional support">
       <span className={styles.eyebrow}>YOU MAY ALSO BENEFIT FROM</span>
@@ -61,8 +65,13 @@ export function TherapyHighlightCard({ therapyPrice, isAdding, onAddToCart }: Re
         <div className={styles.actions}>
           <div className={styles.priceContainer}>
             <span className={styles.price}>{formatCurrency(therapyPrice)}</span>
-            <button type="button" className={styles.cta} onClick={onAddToCart} disabled={isAdding}>
-              {isAdding ? 'Adding...' : 'Add to Cart'}
+            <button
+              type="button"
+              className={styles.cta}
+              onClick={onAddToCart}
+              disabled={THERAPIST_RECOMMENDATION_MODAL_ENABLED && isAdding}
+            >
+              {ctaLabel}
             </button>
           </div>
           <Link href="/therapy-corner" className={styles.learnMore}>

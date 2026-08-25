@@ -8,6 +8,7 @@ import type { AssessmentResult } from '@/utils/sleepAssessment';
 import { cartApi } from '@/lib/api/cart';
 import { ITEM_TYPE } from '@/lib/constants/enums';
 import { DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
+import { THERAPIST_RECOMMENDATION_MODAL_ENABLED } from '@/lib/constants/sleepPlan.constants';
 import { useCart } from '@/context/CartContext';
 import { HeroHeader } from './HeroHeader';
 import { KeyPatternsCard } from './KeyPatternsCard';
@@ -54,6 +55,10 @@ export function RecommendationView({ result }: Readonly<RecommendationViewProps>
 
   const handleIndividualAdd = useCallback(
     async (id: 'supplement' | 'deep-rest' | 'therapy') => {
+      if (id === 'therapy') {
+        bundle.startTherapySelection();
+        return;
+      }
       setAdding(`mod:${id}`);
       try {
         if (id === 'supplement' && plan.supplement) {
@@ -78,17 +83,14 @@ export function RecommendationView({ result }: Readonly<RecommendationViewProps>
           );
           await refreshCart();
           toast.success('Added to cart');
-        } else if (id === 'therapy') {
-          bundle.resetTherapyFlow();
-          openTherapistModal();
         }
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Could not add to cart');
       } finally {
-        if (id !== 'therapy') setAdding(null);
+        setAdding(null);
       }
     },
-    [plan.supplement, plan.deepRestPrice, refreshCart, bundle, openTherapistModal],
+    [plan.supplement, plan.deepRestPrice, refreshCart, bundle],
   );
 
   return (
@@ -138,10 +140,7 @@ export function RecommendationView({ result }: Readonly<RecommendationViewProps>
               <TherapyHighlightCard
                 therapyPrice={plan.therapyPrice}
                 isAdding={adding === 'therapy'}
-                onAddToCart={() => {
-                  bundle.resetTherapyFlow();
-                  openTherapistModal();
-                }}
+                onAddToCart={bundle.startTherapySelection}
               />
             )}
 
@@ -158,7 +157,7 @@ export function RecommendationView({ result }: Readonly<RecommendationViewProps>
         )}
       </div>
 
-      {therapistModalOpen && (
+      {THERAPIST_RECOMMENDATION_MODAL_ENABLED && therapistModalOpen && (
         <TherapistSelectionModal
           fallbackPrice={plan.therapyPrice}
           result={result}

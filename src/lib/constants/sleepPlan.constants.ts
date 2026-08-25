@@ -12,3 +12,8 @@ export const SLEEP_PLAN_BUNDLE_SOURCE = 'sleep-plan-bundle';
 
 export const SLEEP_BUNDLE_DISCOUNT_MAX = 60;
 export const SLEEP_BUNDLE_DISCOUNT_MIN = 0;
+
+// Paused: the therapist recommendation popup is disabled and users pick a therapist on
+// /therapy-corner instead. Flip to `true` to restore TherapistSelectionModal.
+export const THERAPIST_RECOMMENDATION_MODAL_ENABLED = false;
+export const THERAPY_CORNER_PATH = '/therapy-corner';

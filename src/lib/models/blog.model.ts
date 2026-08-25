@@ -124,6 +124,13 @@ blogSchema.index(
   },
 );
 
+// Force Mongoose to use the updated schema in development. Without this the
+// model compiled before a schema change survives hot-reload, and `strict: true`
+// silently drops the new field on write — the update succeeds but nothing saves.
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.Blog;
+}
+
 const Blog: Model<IBlog> = mongoose.models.Blog || mongoose.model<IBlog>('Blog', blogSchema);
 
 export default Blog;

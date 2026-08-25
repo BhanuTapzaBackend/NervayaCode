@@ -31,7 +31,7 @@ export const blogFaqData: FAQItem[] = [
   },
   {
     id: 5,
-    question: 'Does everyone have sleep issues?',
+    question: 'Are Sleep issues a common occurrence in modern age?',
     answer:
       "While not everyone experiences chronic sleep issues, many people face occasional sleep challenges. Factors like stress, life changes, or environmental disruptions can affect anyone's sleep. Our program is designed to help both those with occasional sleep difficulties and those with more persistent challenges.",
   },

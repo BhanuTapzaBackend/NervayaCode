@@ -28,7 +28,7 @@ const WhatMakesDifferentSection = () => {
     <div className={styles.whatAreCard}>
       <p className={`${styles.whatAreText} ${styles.whatMakesIntro}`}>
         Every session is built around your goals and preferences. We combine evidence-based methods with one-on-one
-        input so you get a rest experience that fits you—not a one-size-fits-all track.
+        input so you get a rest experience that fits you - not a one-size-fits-all track.
       </p>
       <div className={styles.whatMakesGrid}>
         <ul className={styles.whatMakesList} aria-label="Session features">

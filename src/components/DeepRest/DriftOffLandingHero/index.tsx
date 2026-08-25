@@ -82,8 +82,8 @@ const DriftOffLandingHero = () => {
     <section className={styles.hero} aria-label="Deep Rest hero">
       <div className={styles.heroLeft}>
         <p className={styles.description}>
-          No more longing for the right session. You are as unique as your needs and our specialists will curate a 25
-          min Deep Rest Session for you targeting your special mental needs.
+          No more endless browsing for the right guided sleep sessions. You are as unique as your needs and our
+          specialists will curate a 25 min Deep Rest Session for you targeting your special mental needs.
         </p>
         <div className={styles.actions}>
           <Button href="/deep-rest/payment" variant="primary" size="lg" fullWidth={false} className={styles.ctaPrimary}>

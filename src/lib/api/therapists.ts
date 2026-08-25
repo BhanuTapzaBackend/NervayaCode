@@ -34,6 +34,8 @@ export interface CreateTherapistData {
     endTime: string;
     isEnabled: boolean;
   }>;
+  /** Admin display order — 1 shows first; omit to leave unchanged. */
+  priority?: number;
 }
 
 export const therapistsApi = {

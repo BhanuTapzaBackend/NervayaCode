@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
+import { UNPRIORITIZED } from '../constants/priority.constants';
 
 export interface IBlog extends Document {
   title: string;
@@ -16,6 +17,8 @@ export interface IBlog extends Document {
   ctaText: string;
   ctaLink: string;
   isPublished: boolean;
+  /** Admin display order — 1 shows first; UNPRIORITIZED means "not numbered". */
+  priority: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -101,13 +104,18 @@ const blogSchema = new Schema<IBlog>(
       default: false,
       index: true,
     },
+    priority: {
+      type: Number,
+      default: UNPRIORITIZED,
+      min: 1,
+    },
   },
   {
     timestamps: true,
   },
 );
 
-blogSchema.index({ isPublished: 1, createdAt: -1 });
+blogSchema.index({ isPublished: 1, priority: 1, createdAt: -1 });
 blogSchema.index(
   { title: 'text', author: 'text', description: 'text', content: 'text' },
   {

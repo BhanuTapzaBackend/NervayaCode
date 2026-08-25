@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import { ICON_PEN, ICON_TRASH, ICON_EYE, ICON_EYE_SLASH } from '@/constants/icons';
+import { PriorityInput } from '@/components/Admin/common';
 import type { Blog } from '@/types/blog.types';
 import styles from './styles.module.css';
 
@@ -11,9 +12,10 @@ interface BlogListCardProps {
   blog: Blog;
   formatDate: (date: Date) => string;
   onDelete: () => void;
+  onPriorityChange: (priority: number) => Promise<void>;
 }
 
-export default function BlogListCard({ blog, formatDate, onDelete }: BlogListCardProps) {
+export default function BlogListCard({ blog, formatDate, onDelete, onPriorityChange }: BlogListCardProps) {
   return (
     <li key={blog._id} className={styles.card}>
       <div className={styles.imageWrapper}>
@@ -50,6 +52,10 @@ export default function BlogListCard({ blog, formatDate, onDelete }: BlogListCar
         )}
       </div>
       <div className={styles.actions}>
+        <label className={styles.priority}>
+          <span className={styles.priorityLabel}>Order</span>
+          <PriorityInput value={blog.priority} onSave={onPriorityChange} label={`Display order for ${blog.title}`} />
+        </label>
         <Link href={`/admin/blogs/edit/${blog._id}`} className={styles.editButton}>
           <Icon icon={ICON_PEN} width={16} height={16} />
           Edit

@@ -3,6 +3,8 @@ import connectDB from '@/lib/db/mongodb';
 import { PAGE_SIZE_3 } from '@/lib/constants/pagination.constants';
 import { ValidationError, NotFoundError } from '@/lib/utils/error.util';
 import { Types, type SortOrder } from 'mongoose';
+import { normalizePriority } from '@/lib/constants/priority.constants';
+import { prioritySortStages, stripPrioritySortKey } from '@/lib/utils/priority-sort.util';
 
 type BlogSortOption = Record<string, SortOrder | { $meta: 'textScore' }>;
 
@@ -22,6 +24,8 @@ export interface CreateBlogData {
   ctaLink?: string;
   isPublished?: boolean;
   slug?: string;
+  /** Admin display order — see priority.constants.ts. */
+  priority?: number;
 }
 
 export interface UpdateBlogData {
@@ -40,6 +44,8 @@ export interface UpdateBlogData {
   ctaLink?: string;
   isPublished?: boolean;
   slug?: string;
+  /** Admin display order — see priority.constants.ts. */
+  priority?: number;
 }
 
 function generateSlug(title: string): string {
@@ -102,22 +108,45 @@ export async function getAllBlogsPaginated(
   }
 
   const skip = (Math.max(1, page) - 1) * limit;
-  const sortOption: BlogSortOption = search?.trim() ? { score: { $meta: 'textScore' } } : { createdAt: -1 };
-  const [blogs, total] = await Promise.all([
-    Blog.find(filter).sort(sortOption).skip(skip).limit(limit).lean().exec(),
-    Blog.countDocuments(filter),
-  ]);
+  const [blogs, total] = await Promise.all([findBlogsPage(filter, search, skip, limit), Blog.countDocuments(filter)]);
 
   const totalPages = Math.ceil(total / limit) || 1;
   const currentPage = Math.min(Math.max(1, page), totalPages);
 
   return {
-    blogs: blogs as IBlog[],
+    blogs,
     total,
     totalPages,
     page: currentPage,
     limit,
   };
+}
+
+/**
+ * One page of blogs. A text search ranks by relevance — ordering matches by the
+ * admin's display numbers would bury the best hit. Otherwise admin priority
+ * wins, with un-numbered posts last.
+ */
+async function findBlogsPage(
+  filter: Record<string, unknown>,
+  search: string | undefined,
+  skip: number,
+  limit: number,
+): Promise<IBlog[]> {
+  if (search?.trim()) {
+    const sortOption: BlogSortOption = { score: { $meta: 'textScore' } };
+    const results = await Blog.find(filter).sort(sortOption).skip(skip).limit(limit).lean().exec();
+    return results as IBlog[];
+  }
+
+  const results = await Blog.aggregate([
+    { $match: filter },
+    ...prioritySortStages(),
+    { $skip: skip },
+    { $limit: limit },
+    stripPrioritySortKey(),
+  ]);
+  return results as IBlog[];
 }
 
 export interface PaginatedBlogsResult {
@@ -145,11 +174,7 @@ export async function getPublishedBlogsPaginated(
   }
 
   const skip = (Math.max(1, page) - 1) * limit;
-  const sortOption: BlogSortOption = search?.trim() ? { score: { $meta: 'textScore' } } : { createdAt: -1 };
-  const [blogs, total] = await Promise.all([
-    Blog.find(filter).sort(sortOption).skip(skip).limit(limit).lean().exec(),
-    Blog.countDocuments(filter),
-  ]);
+  const [blogs, total] = await Promise.all([findBlogsPage(filter, search, skip, limit), Blog.countDocuments(filter)]);
 
   const totalPages = Math.ceil(total / limit) || 1;
   const currentPage = Math.min(Math.max(1, page), totalPages);
@@ -158,7 +183,7 @@ export async function getPublishedBlogsPaginated(
   const allTags = (allTagsResult as string[]).filter(Boolean).sort((a, b) => a.localeCompare(b));
 
   return {
-    blogs: blogs as IBlog[],
+    blogs,
     total,
     totalPages: totalPages,
     page: currentPage,
@@ -205,6 +230,11 @@ export async function updateBlog(id: string, data: UpdateBlogData): Promise<IBlo
 
   if (data.content && !data.readTime) {
     updateData.readTime = calculateReadTime(data.content);
+  }
+
+  // Clamp admin input: 0, negatives and junk all mean "not prioritized".
+  if ('priority' in data) {
+    updateData.priority = normalizePriority(data.priority);
   }
 
   const blog = await Blog.findByIdAndUpdate(id, updateData, {

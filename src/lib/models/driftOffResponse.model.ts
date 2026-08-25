@@ -63,6 +63,13 @@ const driftOffResponseSchema = new Schema<IDriftOffResponse>(
 driftOffResponseSchema.index({ userId: 1, completedAt: 1 });
 driftOffResponseSchema.index({ userId: 1, createdAt: -1 });
 
+// Force Mongoose to use the updated schema in development. Without this the model
+// compiled before a schema change survives hot-reload, and `strict: true` silently
+// drops the new field on write — the update succeeds having written nothing.
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.DriftOffResponse;
+}
+
 const DriftOffResponse: Model<IDriftOffResponse> =
   mongoose.models.DriftOffResponse || mongoose.model<IDriftOffResponse>('DriftOffResponse', driftOffResponseSchema);
 

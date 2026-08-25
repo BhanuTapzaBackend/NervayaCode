@@ -42,6 +42,13 @@ const feedbackSchema = new Schema<IFeedback>(
 
 feedbackSchema.index({ createdAt: -1 });
 
+// Force Mongoose to use the updated schema in development. Without this the model
+// compiled before a schema change survives hot-reload, and `strict: true` silently
+// drops the new field on write — the update succeeds having written nothing.
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.Feedback;
+}
+
 const Feedback: Model<IFeedback> = mongoose.models.Feedback || mongoose.model<IFeedback>('Feedback', feedbackSchema);
 
 export default Feedback;

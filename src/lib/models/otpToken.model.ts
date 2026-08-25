@@ -30,6 +30,13 @@ const otpTokenSchema = new Schema<IOtpToken>({
 
 otpTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
+// Force Mongoose to use the updated schema in development. Without this the model
+// compiled before a schema change survives hot-reload, and `strict: true` silently
+// drops the new field on write — the update succeeds having written nothing.
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.OtpToken;
+}
+
 const OtpToken: Model<IOtpToken> = mongoose.models.OtpToken || mongoose.model<IOtpToken>('OtpToken', otpTokenSchema);
 
 export default OtpToken;

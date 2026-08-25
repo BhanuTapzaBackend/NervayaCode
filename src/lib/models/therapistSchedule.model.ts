@@ -71,6 +71,13 @@ const therapistScheduleSchema = new Schema<ITherapistSchedule>(
 
 therapistScheduleSchema.index({ therapistId: 1, date: 1 }, { unique: true });
 
+// Force Mongoose to use the updated schema in development. Without this the model
+// compiled before a schema change survives hot-reload, and `strict: true` silently
+// drops the new field on write — the update succeeds having written nothing.
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.TherapistSchedule;
+}
+
 const TherapistSchedule: Model<ITherapistSchedule> =
   mongoose.models.TherapistSchedule || mongoose.model<ITherapistSchedule>('TherapistSchedule', therapistScheduleSchema);
 

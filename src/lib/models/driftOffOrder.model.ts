@@ -39,6 +39,13 @@ const driftOffOrderSchema = new Schema<IDriftOffOrder>(
 
 driftOffOrderSchema.index({ userId: 1, paymentStatus: 1 });
 
+// Force Mongoose to use the updated schema in development. Without this the model
+// compiled before a schema change survives hot-reload, and `strict: true` silently
+// drops the new field on write — the update succeeds having written nothing.
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.DriftOffOrder;
+}
+
 const DriftOffOrder: Model<IDriftOffOrder> =
   mongoose.models.DriftOffOrder || mongoose.model<IDriftOffOrder>('DriftOffOrder', driftOffOrderSchema);
 

@@ -8,7 +8,6 @@ import type { AssessmentResult } from '@/utils/sleepAssessment';
 import { cartApi } from '@/lib/api/cart';
 import { ITEM_TYPE } from '@/lib/constants/enums';
 import { DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
-import { THERAPIST_RECOMMENDATION_MODAL_ENABLED } from '@/lib/constants/sleepPlan.constants';
 import { useCart } from '@/context/CartContext';
 import { HeroHeader } from './HeroHeader';
 import { KeyPatternsCard } from './KeyPatternsCard';
@@ -166,7 +165,13 @@ export function RecommendationView({ result }: Readonly<RecommendationViewProps>
         )}
       </div>
 
-      {THERAPIST_RECOMMENDATION_MODAL_ENABLED && therapistModalOpen && (
+      {/* Rendered on `therapistModalOpen` alone, NOT on
+          THERAPIST_RECOMMENDATION_MODAL_ENABLED. That flag decides whether a CTA
+          *opens* this modal or routes to Therapy Corner, and every caller already
+          checks it — except the package flow, which must open it either way
+          because the slot has to be held before the single payment. Gating the
+          render too left "Start My Sleep Plan" stuck on "Starting..." forever. */}
+      {therapistModalOpen && (
         <TherapistSelectionModal
           fallbackPrice={plan.therapyPrice}
           result={result}

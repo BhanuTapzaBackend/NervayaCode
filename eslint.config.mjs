@@ -88,6 +88,9 @@ const eslintConfig = defineConfig([
     'node_modules/**',
     '*.config.{js,mjs,ts}',
     'scripts/**',
+    // Playwright output: the generated HTML report bundles minified JS, which
+    // otherwise floods `npm run lint` with thousands of errors after any e2e run.
+    'e2e/.artifacts/**',
   ]),
 ]);
 

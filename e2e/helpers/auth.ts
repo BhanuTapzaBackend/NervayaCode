@@ -41,3 +41,30 @@ export async function loginViaOtp(page: Page, phone: string, returnUrl?: string)
 export async function isLoggedIn(page: Page): Promise<boolean> {
   return page.evaluate(() => localStorage.getItem('isLoggedIn') === 'true');
 }
+
+/**
+ * Fixed test accounts (src/lib/constants/test-logins.ts) whose OTP is a constant,
+ * so no dev-server-log read is needed. `paymentBypass` settles orders server-side.
+ */
+export const FIXED_LOGINS = {
+  customerBypass: { phone: '+918888888888', otp: '888888' },
+} as const;
+
+/**
+ * Logs in one of the FIXED_LOGINS accounts through the real login UI.
+ *
+ * Same flow as `loginViaOtp` minus the log-scraping: `sendOtp` still stores the
+ * fixed code through the normal OTP store, so this is the genuine verify path.
+ */
+export async function loginWithFixedOtp(page: Page, phone: string, otp: string): Promise<void> {
+  await page.goto('/login');
+  await page.locator('#login-phone').fill(phone);
+  await page.getByRole('button', { name: 'Send code' }).click();
+  await expect(page.getByRole('heading', { name: 'Enter verification code' })).toBeVisible();
+  await page.getByLabel('Digit 1 of 6').fill(otp);
+  await page.getByRole('button', { name: 'Verify code' }).click();
+  await expect
+    .poll(async () => (await page.context().cookies()).some((c) => c.name === 'auth_token'), { timeout: 15_000 })
+    .toBe(true);
+  await page.waitForFunction(() => localStorage.getItem('isLoggedIn') === 'true', { timeout: 15_000 });
+}

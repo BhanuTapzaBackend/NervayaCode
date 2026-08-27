@@ -187,6 +187,27 @@
   line-height: 1.35;
 }
 
+/* Inline text action — the phone is read-only here because changing it needs
+   an OTP, so the field is paired with a button rather than being editable. */
+.linkBtn {
+  align-self: flex-start;
+  margin-top: var(--spacing-xs);
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-family: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.linkBtn:hover {
+  color: var(--color-accent-hover);
+}
+
 .successMessage {
   color: var(--color-emerald-400);
   font-size: var(--font-size-base);

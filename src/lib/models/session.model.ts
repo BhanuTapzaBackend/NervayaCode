@@ -1,5 +1,12 @@
 import mongoose, { Schema, Model, Document } from 'mongoose';
-import { SESSION_STATUS, SESSION_STATUS_VALUES, SessionStatus } from '@/lib/constants/enums';
+import {
+  SESSION_STATUS,
+  SESSION_STATUS_VALUES,
+  SessionStatus,
+  MEET_STATUS,
+  MEET_STATUS_VALUES,
+  type MeetStatusValue,
+} from '@/lib/constants/enums';
 
 export interface ISession extends Document {
   userId: mongoose.Types.ObjectId;
@@ -11,6 +18,12 @@ export interface ISession extends Document {
   endTime: string;
   status: SessionStatus;
   meetLink?: string;
+  /** Whether meetLink is real yet. See MEET_STATUS. */
+  meetStatus?: MeetStatusValue;
+  /** How many times link generation has been attempted, for the retry sweep. */
+  meetAttempts?: number;
+  /** Earliest time the retry sweep should try again. */
+  meetNextAttemptAt?: Date | null;
   googleEventId?: string;
   /** Set once the ~1h-before WhatsApp reminder has been sent (dedupe guard). */
   reminderSentAt?: Date;
@@ -60,6 +73,26 @@ const sessionSchema = new Schema<ISession>(
       type: String,
       default: '',
     },
+    // PENDING until finalizeSessionBooking actually produces a link. Defaulting
+    // to READY meant a session created but never finalized (process died, or
+    // the persist threw) looked complete forever and no sweep would touch it.
+    //
+    // Rows predating this field read as `undefined` under `.lean()` — which does
+    // NOT apply schema defaults — so treat undefined as ready at the read site
+    // and run scripts/backfill-meet-status.ts once.
+    meetStatus: {
+      type: String,
+      enum: MEET_STATUS_VALUES,
+      default: MEET_STATUS.PENDING,
+    },
+    meetAttempts: {
+      type: Number,
+      default: 0,
+    },
+    meetNextAttemptAt: {
+      type: Date,
+      default: null,
+    },
     googleEventId: {
       type: String,
       default: '',
@@ -74,9 +107,24 @@ const sessionSchema = new Schema<ISession>(
   },
 );
 
+// Stops two customers paying for the same therapist slot.
+//
+// ⚠️ The filter MUST be an `$in` of live statuses, never `$ne: 'cancelled'`.
+// MongoDB does not permit `$ne` in a partialFilterExpression — it normalises to
+// `$not`, which is rejected with CannotCreateIndex (code 67) synchronously,
+// BEFORE any build starts. Mongoose reports that on the model's `index` event,
+// which nothing in this app listens to, so the previous `$ne` version failed
+// SILENTLY and this index simply never existed in any environment. Verified
+// absent in production. Run `scripts/fix-session-slot-index.ts` to create it.
 sessionSchema.index(
   { therapistId: 1, date: 1, startTime: 1 },
-  { unique: true, partialFilterExpression: { status: { $ne: SESSION_STATUS.CANCELLED } } },
+  {
+    unique: true,
+    name: 'therapist_slot_unique',
+    partialFilterExpression: {
+      status: { $in: [SESSION_STATUS.PENDING, SESSION_STATUS.CONFIRMED, SESSION_STATUS.COMPLETED] },
+    },
+  },
 );
 sessionSchema.index({ userId: 1, status: 1 });
 sessionSchema.index({ date: 1, status: 1 });

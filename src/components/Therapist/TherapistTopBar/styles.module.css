@@ -1,0 +1,121 @@
+.topbar {
+  grid-area: top;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: 0 var(--page-gutter);
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.menuBtn {
+  display: none;
+  flex-shrink: 0;
+  padding: var(--space-3);
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--color-text-body);
+  cursor: pointer;
+}
+
+.menuBtn:hover {
+  background: var(--color-background-alt);
+}
+
+.greeting {
+  min-width: 0;
+  flex: 1;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-h4);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-h4);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  /* Flat rgba first so the chip still has a background if color-mix fails to
+     parse — otherwise the whole declaration is dropped and it goes invisible. */
+  background: rgba(83, 34, 213, 0.12);
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  color: var(--color-accent);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.name {
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.role {
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+}
+
+.logoutBtn {
+  padding: var(--space-3);
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  /* --color-text-tertiary is 2.56:1 on white — under the 3:1 UI threshold. */
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.logoutBtn:hover {
+  background: var(--color-background-alt);
+  color: var(--color-error);
+}
+
+@media (max-width: 860px) {
+  .menuBtn {
+    display: block;
+  }
+
+  .subtitle,
+  .identity {
+    display: none;
+  }
+}

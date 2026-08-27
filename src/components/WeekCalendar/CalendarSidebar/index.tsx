@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Icon } from '@iconify/react';
 import { MiniCalendar } from '../MiniCalendar';
-import { convert12To24, convert24To12 } from '@/lib/utils/time.util';
+import { WorkingHoursModal } from '../WorkingHoursModal';
 import { useConsultingHours } from '@/components/Admin/ConsultingHoursManager/useConsultingHours';
 import { therapistsApi } from '@/lib/api/therapists';
 import { toast } from 'sonner';
@@ -38,6 +38,7 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 }) => {
   const [duration, setDuration] = useState(sessionDurationMins);
   const [savingDuration, setSavingDuration] = useState(false);
+  const [isHoursModalOpen, setHoursModalOpen] = useState(false);
 
   const {
     consultingHours,
@@ -73,14 +74,19 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
     await generateSlots(30);
   }, [handleUpdate, generateSlots]);
 
-  // Debounced Auto-Save
+  // Debounced auto-save.
+  //
+  // Suppressed while the editor modal is open: the modal has an explicit
+  // "Save and update slots" button, and auto-saving mid-edit would regenerate
+  // 30 days of slots on every dropdown change — and would persist a
+  // half-finished range (e.g. end still before start) on the way through.
   useEffect(() => {
-    if (!hasUnsavedChanges || !hasEnabledDays) return;
+    if (isHoursModalOpen || !hasUnsavedChanges || !hasEnabledDays) return;
     const timer = setTimeout(() => {
       handleSaveAndGenerate();
     }, 1000);
     return () => clearTimeout(timer);
-  }, [consultingHours, hasUnsavedChanges, hasEnabledDays, handleSaveAndGenerate]);
+  }, [consultingHours, hasUnsavedChanges, hasEnabledDays, handleSaveAndGenerate, isHoursModalOpen]);
 
   return (
     <aside className={`${styles.sidebar} ${role === 'admin' ? styles.adminSidebarMode : styles.therapistSidebarMode}`}>
@@ -129,51 +135,52 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 
       <div className={styles.divider} />
 
-      {/* Working Hours */}
+      {/* Working Hours — summary + editor in a modal.
+          The inline version had to fit a checkbox, a day name and two time
+          fields into a ~240px column, so the times clipped mid-value. */}
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>
           <Icon icon="solar:clock-circle-bold" width={14} height={14} />
           Working Hours
         </h3>
 
-        <div className={styles.daysList}>
+        <ul className={styles.hoursSummary}>
           {consultingHours.map((hour) => (
-            <div key={hour.dayOfWeek} className={`${styles.dayRow} ${hour.isEnabled ? styles.dayEnabled : ''}`}>
-              <label className={styles.dayToggle}>
-                <input
-                  type="checkbox"
-                  checked={hour.isEnabled}
-                  onChange={() => toggleDay(hour.dayOfWeek)}
-                  className={styles.checkbox}
-                />
-                <span className={styles.dayLabel}>{DAY_LABELS[hour.dayOfWeek]}</span>
-              </label>
-              {hour.isEnabled && (
-                <div className={styles.timeInputs}>
-                  <input
-                    type="time"
-                    value={convert12To24(hour.startTime)}
-                    onChange={(e) => updateDayHours(hour.dayOfWeek, { startTime: convert24To12(e.target.value) })}
-                    className={styles.timeInput}
-                  />
-                  <span className={styles.timeDash}>-</span>
-                  <input
-                    type="time"
-                    value={convert12To24(hour.endTime)}
-                    onChange={(e) => updateDayHours(hour.dayOfWeek, { endTime: convert24To12(e.target.value) })}
-                    className={styles.timeInput}
-                  />
-                </div>
-              )}
-              {!hour.isEnabled && <span className={styles.closedLabel}>Closed</span>}
-            </div>
+            <li key={hour.dayOfWeek} className={styles.summaryRow}>
+              <span className={hour.isEnabled ? styles.summaryDayOpen : styles.summaryDay}>
+                {DAY_LABELS[hour.dayOfWeek]}
+              </span>
+              <span className={hour.isEnabled ? styles.summaryTime : styles.closedLabel}>
+                {hour.isEnabled ? `${hour.startTime} – ${hour.endTime}` : 'Closed'}
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
+
+        <button type="button" className={styles.editHoursBtn} onClick={() => setHoursModalOpen(true)}>
+          <Icon icon="solar:clock-circle-bold" width={14} height={14} aria-hidden="true" />
+          Edit working hours
+        </button>
 
         {error && <p className={styles.errorMsg}>{error}</p>}
         {generationStatus && <p className={generating ? styles.infoMsg : styles.successMsg}>{generationStatus}</p>}
         {saving && <p className={styles.infoMsg}>Saving timings...</p>}
       </div>
+
+      <WorkingHoursModal
+        isOpen={isHoursModalOpen}
+        onClose={() => setHoursModalOpen(false)}
+        consultingHours={consultingHours}
+        onToggleDay={toggleDay}
+        onUpdateDay={updateDayHours}
+        onSave={async () => {
+          await handleSaveAndGenerate();
+          setHoursModalOpen(false);
+        }}
+        saving={saving || generating}
+        hasEnabledDays={hasEnabledDays}
+        error={error}
+      />
     </aside>
   );
 };

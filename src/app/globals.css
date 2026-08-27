@@ -73,6 +73,14 @@ body {
   padding-top: var(--navbar-height) !important;
 }
 
+/* The therapist area renders its own top bar inside TherapistShell and does not
+   mount the global fixed navbar, so the space reserved for it above would be a
+   dead band. `!important` only to beat the rule directly above. */
+body.route-therapist {
+  padding-top: 0 !important;
+  background: var(--color-background-page);
+}
+
 body.route-home {
   background: var(--bg-main);
   background-color: var(--color-background-dark);

@@ -12,7 +12,7 @@ import { ICON_USER, ICON_MAIL, ICON_SAVE } from '@/constants/icons';
 import { useAuth } from '@/hooks/useAuth';
 import api from '@/lib/axios';
 import { getApiErrorMessage } from '@/lib/utils/apiError.util';
-import Modal from '@/components/common/Modal';
+import { PhoneCollectionModal } from '@/components/PhoneCollectionModal';
 
 type TabType = 'settings' | 'orders' | 'sessions';
 
@@ -22,7 +22,7 @@ export default function AccountPage() {
   const [profileName, setProfileName] = useState('');
   const [profileEmail, setProfileEmail] = useState('');
   const [profilePhone, setProfilePhone] = useState('');
-  const [phoneConfirmOpen, setPhoneConfirmOpen] = useState(false);
+  const [phoneModalOpen, setPhoneModalOpen] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
@@ -49,26 +49,16 @@ export default function AccountPage() {
       setProfileError('Please enter a valid email address');
       return;
     }
-    if (!/^[6-9]\d{9}$/.test(profilePhone)) {
-      setProfileError('Enter a valid 10-digit Indian mobile number starting with 6, 7, 8 or 9');
-      return;
-    }
-    // Login is passwordless, so this number IS the credential. Confirm before
-    // changing it — a wrong number leaves the user with no way back in.
-    if (`+91${profilePhone}` !== (user.phone ?? '')) {
-      setPhoneConfirmOpen(true);
-      return;
-    }
+    // Phone is not part of this form any more: changing it requires proving
+    // ownership by OTP, which PhoneCollectionModal handles.
     void saveProfile();
   };
 
   const saveProfile = async () => {
     const email = profileEmail.trim();
-    const phone = `+91${profilePhone}`;
-    setPhoneConfirmOpen(false);
     setProfileLoading(true);
     try {
-      const res = (await api.patch('/users/profile', { name: profileName.trim(), email, phone })) as {
+      const res = (await api.patch('/users/profile', { name: profileName.trim(), email })) as {
         success?: boolean;
         data?: { user?: { name: string; email?: string; phone?: string } };
         message?: string;
@@ -168,21 +158,20 @@ export default function AccountPage() {
                   <input
                     id="account-phone"
                     type="tel"
-                    autoComplete="tel-national"
-                    inputMode="numeric"
-                    maxLength={10}
-                    placeholder="98765 43210"
+                    readOnly
                     value={profilePhone}
-                    // Strip everything but digits and cap at 10, so the field can
-                    // only ever hold a national number — no country code, no spaces.
-                    onChange={(e) => setProfilePhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    placeholder="Not added yet"
                     className={`${styles.input} ${styles.phoneInput}`}
                     aria-describedby="account-phone-hint"
                   />
                 </div>
+                <button type="button" className={styles.linkBtn} onClick={() => setPhoneModalOpen(true)}>
+                  {profilePhone ? 'Change WhatsApp number' : 'Add WhatsApp number'}
+                </button>
                 <span id="account-phone-hint" className={styles.hint}>
-                  10-digit Indian mobile, starting 6&ndash;9. This is how you log in and where your OTP is sent &mdash;
-                  if it&apos;s wrong you won&apos;t be able to sign back in.
+                  {profilePhone
+                    ? 'This is how you log in and where session links are sent. Changing it needs a code sent to the new number.'
+                    : 'Optional, but required to book a session or place an order — that is where we send your links and updates.'}
                 </span>
               </div>
 
@@ -207,25 +196,16 @@ export default function AccountPage() {
         {activeTab === 'sessions' && <MySessions />}
       </div>
 
-      <Modal isOpen={phoneConfirmOpen} onClose={() => setPhoneConfirmOpen(false)} title="Change WhatsApp number?">
-        <div className={styles.confirmBody}>
-          <p className={styles.confirmText}>
-            Your number will change to <strong>+91 {profilePhone}</strong>.
-          </p>
-          <p className={styles.confirmText}>
-            You&apos;ll use this number to log in from now on, and your OTP will be sent there. If it&apos;s wrong or
-            not active on WhatsApp, you won&apos;t be able to sign back in.
-          </p>
-          <div className={styles.confirmActions}>
-            <button type="button" className={styles.confirmCancel} onClick={() => setPhoneConfirmOpen(false)}>
-              Cancel
-            </button>
-            <button type="button" className={styles.saveBtn} onClick={() => void saveProfile()}>
-              Yes, change it
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <PhoneCollectionModal
+        isOpen={phoneModalOpen}
+        onClose={() => setPhoneModalOpen(false)}
+        onVerified={() => {
+          setPhoneModalOpen(false);
+          setProfileSuccess('WhatsApp number verified.');
+        }}
+        initialPhone={profilePhone}
+        reason="We'll send a 6-digit code to this number to confirm it's yours."
+      />
     </Sidebar>
   );
 }

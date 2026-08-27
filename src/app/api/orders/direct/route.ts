@@ -3,6 +3,7 @@ import { createDirectOrder } from '@/lib/services/order.service';
 import { successResponse, errorResponse } from '@/lib/utils/response.util';
 import { handleError } from '@/lib/utils/error.util';
 import { requireAuth } from '@/lib/middleware/auth.middleware';
+import { requirePhone } from '@/lib/middleware/phone-gate';
 import { ROLES } from '@/lib/constants/roles';
 import { ITEM_TYPE } from '@/lib/constants/enums';
 import { isSlotInPast } from '@/lib/utils/sessionDateTime.util';
@@ -22,6 +23,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse('Missing REQUIRED fields: itemType, itemId, quantity', null, 400), {
         status: 400,
       });
+    }
+
+    // Therapy sessions deliver their meeting link and reminders over WhatsApp,
+    // so a number is genuinely required here. Supplements are gated separately
+    // at checkout, where the shipping address is collected.
+    if (itemType === ITEM_TYPE.THERAPY) {
+      const phoneGate = await requirePhone(authResult.user.userId);
+      if (phoneGate) return phoneGate;
     }
 
     // Therapy slots can't be booked once their start time has passed (don't take payment for them).

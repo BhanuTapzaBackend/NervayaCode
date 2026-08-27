@@ -7,6 +7,11 @@ export const PUBLIC_ROUTES = [
   '/support',
   '/therapy-corner',
   '/sleep-assessment',
+  // Google OAuth landing page. MUST be public: it runs before the client knows
+  // it is authenticated, and its whole job is to read the session over a
+  // same-site XHR (the auth cookie is SameSite=Strict and is not sent on the
+  // cross-site redirect back from Google).
+  '/auth/callback',
   // Shared meeting room — reachable by both customers and therapists. Listing it here lets the
   // THERAPIST role past the middleware role gate; access is enforced by the jitsi-token API, not the route.
   '/session',

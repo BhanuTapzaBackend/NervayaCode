@@ -3,7 +3,7 @@ import { bookSlot, releaseSlot } from '@/lib/services/therapistSchedule.service'
 import connectDB from '@/lib/db/mongodb';
 import { ValidationError } from '@/lib/utils/error.util';
 import mongoose, { Types } from 'mongoose';
-import { SESSION_STATUS, SessionStatus } from '@/lib/constants/enums';
+import { SESSION_STATUS, SessionStatus, MEET_STATUS } from '@/lib/constants/enums';
 import User from '@/lib/models/user.model';
 import Therapist from '@/lib/models/therapist.model';
 import { getMeetingProvider } from './meeting-provider.service';
@@ -121,21 +121,39 @@ export async function finalizeSessionBooking(session: ISession, date: string, st
   try {
     const [user, therapist] = await Promise.all([
       User.findById(session.userId).select('email name phone'),
-      Therapist.findById(session.therapistId).select('name'),
+      Therapist.findById(session.therapistId).select('name sessionDurationMins'),
     ]);
 
-    const { meetLink, externalEventId } = await getMeetingProvider().createSessionMeeting({
+    const { meetLink, externalEventId, status } = await getMeetingProvider().createSessionMeeting({
       sessionId: session._id.toString(),
+      therapistId: session.therapistId.toString(),
       date,
       startTime,
+      durationMins: therapist?.sessionDurationMins,
       customerName: user?.name,
+      customerEmail: user?.email,
       therapistName: therapist?.name,
     });
-    await Session.findByIdAndUpdate(session._id, { meetLink, googleEventId: externalEventId ?? '' });
+
+    await Session.findByIdAndUpdate(session._id, {
+      meetLink,
+      googleEventId: externalEventId ?? '',
+      meetStatus: status,
+      // Hand a failure to the sweep with a real attempt count — starting it at
+      // 0 would give the retry budget an extra try that already happened here.
+      ...(status === MEET_STATUS.READY
+        ? { meetAttempts: 0, meetNextAttemptAt: null }
+        : { meetAttempts: 1, meetNextAttemptAt: new Date(Date.now() + 60_000) }),
+    });
     session.meetLink = meetLink;
     session.googleEventId = externalEventId;
+    session.meetStatus = status;
 
-    if (user?.email && meetLink) {
+    // Notify EVEN WHEN THE LINK IS MISSING. Previously both sends were gated on
+    // `&& meetLink`, so a calendar failure meant the customer paid and heard
+    // nothing at all — strictly worse than a confirmation saying the link is
+    // on its way.
+    if (user?.email) {
       await sendSessionConfirmationEmail({
         email: user.email,
         name: user.name,
@@ -147,6 +165,8 @@ export async function finalizeSessionBooking(session: ISession, date: string, st
     }
 
     // WhatsApp is the user's primary (verified) identifier — deliver the link there too.
+    // The template requires a link variable, so this one still waits for a real link;
+    // the retry sweep sends it once the link exists.
     if (user?.phone && meetLink) {
       await sendMeetLinkViaWhatsApp({ toE164: user.phone, name: user.name, date, time: startTime, meetLink });
     }
@@ -172,8 +192,14 @@ export async function cancelSession(sessionId: string, userId: string) {
 
   await releaseSlot(session.therapistId.toString(), session.date, session.startTime);
 
-  // Clean up any external meeting event (no-op for Jitsi).
-  if (session.googleEventId) await getMeetingProvider().deleteMeeting(session.googleEventId);
+  // Clean up any external meeting event (no-op for Jitsi). The owner ref is
+  // required: the event lives on whichever mailbox created it, and deleting it
+  // means impersonating that same mailbox.
+  if (session.googleEventId) {
+    await getMeetingProvider().deleteMeeting(session.googleEventId, {
+      therapistId: session.therapistId.toString(),
+    });
+  }
 
   return session;
 }
@@ -230,22 +256,50 @@ export async function rescheduleSession(sessionId: string, userId: string, newDa
   try {
     const [user, therapist] = await Promise.all([
       User.findById(userId).select('email name phone'),
-      Therapist.findById(session.therapistId).select('name'),
+      Therapist.findById(session.therapistId).select('name sessionDurationMins'),
     ]);
 
     const provider = getMeetingProvider();
-    if (session.googleEventId) await provider.deleteMeeting(session.googleEventId);
-
-    const { meetLink, externalEventId } = await provider.createSessionMeeting({
+    const meetingInput = {
       sessionId: session._id.toString(),
+      therapistId: session.therapistId.toString(),
       date: newDate,
       startTime: newStartTime,
+      durationMins: therapist?.sessionDurationMins,
       customerName: user?.name,
+      customerEmail: user?.email,
       therapistName: therapist?.name,
-    });
-    await Session.findByIdAndUpdate(session._id, { meetLink, googleEventId: externalEventId ?? '' });
-    session.meetLink = meetLink;
-    session.googleEventId = externalEventId;
+    };
+
+    // Move the existing event rather than deleting and recreating it. A new
+    // event would mint a NEW Meet URL, silently invalidating the link already
+    // sitting in the customer's inbox and WhatsApp history.
+    const { meetLink, externalEventId, status } = session.googleEventId
+      ? await provider.updateMeeting(session.googleEventId, meetingInput)
+      : await provider.createSessionMeeting(meetingInput);
+
+    // Only overwrite the link when we actually got one. A transient outage
+    // returns `{ meetLink: '', status: 'pending' }`, and blindly persisting that
+    // would erase the customer's working link AND the googleEventId needed to
+    // find the event again — leaving nothing to repair.
+    if (status === MEET_STATUS.READY && meetLink) {
+      await Session.findByIdAndUpdate(session._id, {
+        meetLink,
+        googleEventId: externalEventId ?? '',
+        meetStatus: status,
+        meetNextAttemptAt: null,
+      });
+      session.meetLink = meetLink;
+      session.googleEventId = externalEventId;
+      session.meetStatus = status;
+    } else {
+      // Keep the old link; hand the session to the backfill sweep.
+      await Session.findByIdAndUpdate(session._id, {
+        meetStatus: status,
+        meetNextAttemptAt: new Date(Date.now() + 60_000),
+      });
+      session.meetStatus = status;
+    }
 
     if (user?.email && meetLink) {
       await sendSessionConfirmationEmail({
@@ -296,7 +350,11 @@ export async function updateSessionStatus(sessionId: string, status: SessionStat
 
   if (status === SESSION_STATUS.CANCELLED) {
     await releaseSlot(session.therapistId.toString(), session.date, session.startTime);
-    if (session.googleEventId) await getMeetingProvider().deleteMeeting(session.googleEventId);
+    if (session.googleEventId) {
+      await getMeetingProvider().deleteMeeting(session.googleEventId, {
+        therapistId: session.therapistId.toString(),
+      });
+    }
   }
 
   return session;

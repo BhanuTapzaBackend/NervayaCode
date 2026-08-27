@@ -1,0 +1,51 @@
+/*
+ * Secondary treatment on purpose. The purple gradient (--auth-btn-bg) belongs to
+ * the primary submit inside the form; giving Google the same weight would leave
+ * two competing primary actions on one screen.
+ */
+.button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 0.95rem;
+  background: var(--auth-card-bg);
+  color: var(--auth-text);
+  border: 1px solid var(--auth-input-border);
+  border-radius: var(--radius-lg);
+  font-size: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  font-weight: var(--weight-semibold);
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color var(--transition-slow),
+    transform var(--transition-slow),
+    box-shadow var(--transition-slow);
+}
+
+.button:hover {
+  border-color: var(--auth-input-border-focus, var(--auth-icon));
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--auth-accent-ring);
+}
+
+.button[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}

@@ -7,6 +7,8 @@ import { GENDER, Gender } from '@/lib/constants/enums';
 import { uploadApi } from '@/lib/api/upload';
 import { toast } from 'sonner';
 import { parseCommaSeparated, parseTestimonials } from '@/lib/utils/therapist.utils';
+import { WORKSPACE_DOMAIN, isWorkspaceEmail } from '@/lib/constants/workspace.constants';
+import { validateEmail } from '@/lib/utils/validation.util';
 import type { Therapist } from '@/types/therapist.types';
 import { INITIAL_THERAPIST_FORM_DATA, type TherapistFormChangeEvent, type TherapistFormData } from './formData';
 
@@ -55,8 +57,32 @@ export function useAddTherapistForm(initialData?: Therapist | TherapistFormData 
   const initialSnapshot = useMemo(() => toFormData(initialData), [initialData]);
   const isDirty = JSON.stringify(formData) !== JSON.stringify(initialSnapshot);
 
+  /**
+   * Name and email live on step 1, but used to be validated only at final
+   * submit — three steps later, with no indication of where to go back to.
+   * Email especially: it is the therapist's sign-in identity and the mailbox
+   * their session calendar lives in, so catching it late is expensive.
+   */
+  const validateStep = (step: number): string | null => {
+    if (step !== 1) return null;
+
+    if (!formData.name?.trim()) return 'Therapist name is required';
+
+    const email = formData.email?.trim().toLowerCase() ?? '';
+    if (!email) return 'Email is required';
+    if (!validateEmail(email)) return 'Please enter a valid email address';
+    if (!isWorkspaceEmail(email)) {
+      return `Therapist email must be a @${WORKSPACE_DOMAIN} account — it is used for sign-in and their session calendar`;
+    }
+    return null;
+  };
+
   const nextStep = () => {
-    // Basic validation could happen here if needed
+    const problem = validateStep(currentStep);
+    if (problem) {
+      toast.error(problem);
+      return;
+    }
     setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
   };
 
@@ -137,12 +163,12 @@ export function useAddTherapistForm(initialData?: Therapist | TherapistFormData 
       return;
     }
 
-    if (!formData.name?.trim()) {
-      toast.error('Therapist name is required');
-      return;
-    }
-    if (!formData.email?.trim()) {
-      toast.error('Email is required');
+    // Re-check step 1 here too: editing an existing therapist can reach the
+    // final step without ever passing through nextStep's guard.
+    const stepOneProblem = validateStep(1);
+    if (stepOneProblem) {
+      toast.error(stepOneProblem);
+      setCurrentStep(1);
       return;
     }
     if (!formData.sessionFee || Number(formData.sessionFee) <= 0) {

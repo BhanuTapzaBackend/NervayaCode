@@ -40,3 +40,39 @@ export async function verifyOtp(
     statusCode: res.statusCode,
   };
 }
+
+/**
+ * Sends a code to a number the signed-in user wants to add to their account.
+ * Distinct from `sendOtp`: this endpoint requires a session, because it is
+ * about to write to an existing account.
+ */
+export async function sendLinkPhoneOtp(phone: string): Promise<ApiResponse<{ otpSendCount?: number }>> {
+  const res = (await api.post(AUTH_API.PHONE_START, { phone })) as SendOtpResponse;
+  return {
+    success: res.success,
+    message: res.message,
+    data: res.data ?? undefined,
+    statusCode: res.statusCode,
+  };
+}
+
+/**
+ * Verifies the code and attaches the number.
+ *
+ * Returns only the refreshed user — the session cookie is re-set by the server
+ * as httpOnly, so there is no token for the client to hold.
+ */
+export async function verifyLinkPhoneOtp(phone: string, code: string): Promise<ApiResponse<{ user: unknown }>> {
+  const res = (await api.post(AUTH_API.PHONE_VERIFY, { phone, code })) as {
+    success: boolean;
+    message: string;
+    data?: { user: unknown };
+    statusCode: number;
+  };
+  return {
+    success: res.success,
+    message: res.message,
+    data: res.data,
+    statusCode: res.statusCode,
+  };
+}

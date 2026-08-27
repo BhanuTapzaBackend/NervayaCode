@@ -101,6 +101,13 @@ const Navbar = () => {
 
   // Auth pages (/login, /signup) render a full-bleed split-screen experience with
   // their own branding — no global navbar.
+  // The therapist area ships its own top bar inside TherapistShell. Rendering
+  // the global one too stacks a fixed dark header over the shell's grid, which
+  // is what the current /therapist/schedule page shows.
+  if (pathname.startsWith('/therapist')) {
+    return null;
+  }
+
   if (isAuthPage) {
     return null;
   }

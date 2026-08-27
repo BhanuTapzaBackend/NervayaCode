@@ -3,16 +3,18 @@ import { verifyToken } from '@/lib/utils/jwt.util';
 import { COOKIE_NAMES } from '@/utils/cookieConstants';
 import { Role } from '@/lib/constants/roles';
 
-export interface AuthenticatedRequest extends NextRequest {
-  user?: {
-    userId: string;
-    role: Role;
-  };
+export interface AuthUser {
+  userId: string;
+  role: Role;
+  /** Token expiry (epoch seconds), so routes can slide the session forward. */
+  exp?: number;
 }
 
-export async function authenticateRequest(
-  request: NextRequest,
-): Promise<{ user: { userId: string; role: Role } } | NextResponse> {
+export interface AuthenticatedRequest extends NextRequest {
+  user?: AuthUser;
+}
+
+export async function authenticateRequest(request: NextRequest): Promise<{ user: AuthUser } | NextResponse> {
   const token = request.cookies.get(COOKIE_NAMES.AUTH_TOKEN)?.value;
 
   if (!token) {
@@ -29,13 +31,13 @@ export async function authenticateRequest(
     return response;
   }
 
-  return { user: { userId: decoded.userId, role: decoded.role } };
+  return { user: { userId: decoded.userId, role: decoded.role, exp: decoded.exp } };
 }
 
 export async function requireAuth(
   request: NextRequest,
   allowedRoles?: Role[],
-): Promise<{ user: { userId: string; role: Role } } | NextResponse> {
+): Promise<{ user: AuthUser } | NextResponse> {
   const authResult = await authenticateRequest(request);
 
   if (authResult instanceof NextResponse) {

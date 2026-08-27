@@ -1,0 +1,235 @@
+.sidebar {
+  grid-area: nav;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-5) var(--space-5);
+  /* Solid, local, opaque. No remote background image, no backdrop-filter, no
+     background-attachment: fixed — that combination is what collapses under
+     software compositing in the shared sidebar. */
+  background: var(--t-nav-bg);
+  overflow-y: auto;
+  /* `scrollbar-width` is Firefox-only, and globals.css hides the WebKit
+     scrollbar app-wide, so re-enable it here — the nav can overflow on a short
+     viewport and there would otherwise be no indication. */
+  scrollbar-width: thin;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ── Head: logo + collapse toggle ──────────────────────────── */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 44px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.logo {
+  width: 132px;
+  height: auto;
+  /* The asset is a JPG on a dark ground — it blends because --t-nav-bg is the
+     same dark the navbar uses. Do not lighten the sidebar without swapping in
+     a transparent logo, or a pale rectangle appears around it. */
+  object-fit: contain;
+}
+
+.collapseBtn {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  background: var(--t-nav-hover);
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--t-nav-text-active);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.collapseBtn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* ── Navigation ────────────────────────────────────────────── */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  color: var(--t-nav-text);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.navItem:hover {
+  background: var(--t-nav-hover);
+  color: var(--t-nav-text-active);
+}
+
+.navItem:focus-visible {
+  outline: 2px solid var(--color-accent-soft);
+  outline-offset: -2px;
+}
+
+.navItemActive,
+.navItemActive:hover {
+  background: var(--t-nav-active);
+  color: var(--t-nav-text-active);
+}
+
+.navIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* ── Today's summary ───────────────────────────────────────── */
+.summary {
+  margin-top: auto;
+  padding: var(--space-5);
+  background: var(--t-nav-surface);
+  border-radius: var(--t-card-radius);
+}
+
+.summaryTitle {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  color: var(--t-nav-text-active);
+  white-space: nowrap;
+}
+
+.summaryRow {
+  display: grid;
+  grid-template-columns: 8px auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.dotUpcoming,
+.dotCompleted {
+  background: var(--color-success);
+}
+.dotPending {
+  background: var(--color-warning);
+}
+.dotCancelled {
+  background: var(--color-error);
+}
+
+.summaryCount {
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  color: var(--t-nav-text-active);
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryLabel {
+  font-size: var(--text-label);
+  color: var(--t-nav-text);
+  white-space: nowrap;
+}
+
+/*
+ * ── Collapsed ─────────────────────────────────────────────────
+ * Driven by a CLASS, not a media query. The previous version collapsed at
+ * ≤1180px and expanded again at ≤860px, so both queries matched on a phone and
+ * fought over `display` — the labels vanished in the drawer. A class is
+ * unambiguous at every width and matches how the customer sidebar behaves.
+ */
+.collapsed {
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+  align-items: center;
+}
+
+.collapsed .head {
+  justify-content: center;
+}
+
+.collapsed .brand,
+.collapsed .navLabel,
+.collapsed .summary {
+  display: none;
+}
+
+.collapsed .navItem {
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+/* ── Mobile drawer ─────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    width: 244px;
+    /* transform, never width: animating width forces a layout pass every frame
+       on a composited layer. */
+    transform: translateX(-100%);
+    /* `visibility` pairs with transform so the closed drawer is genuinely
+       hidden, not just parked off-screen where it still takes focus. It is a
+       discrete property, so the delay lets the slide-out finish first. */
+    visibility: hidden;
+    transition:
+      transform var(--transition-slow),
+      visibility 0s linear var(--transition-slow);
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+    visibility: visible;
+    transition:
+      transform var(--transition-slow),
+      visibility 0s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
+  }
+}

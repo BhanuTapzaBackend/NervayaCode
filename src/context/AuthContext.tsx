@@ -11,15 +11,25 @@ import { ROUTES } from '@/utils/routesConstants';
 import { validateReturnUrl } from '@/utils/returnUrl';
 import { AUTH_STORAGE_KEYS, AUTH_FLOW_STORAGE_KEYS, COOKIE_OPTIONS } from '@/utils/cookieConstants';
 import { trackLoggedIn, updateGaUserContext } from '@/utils/analytics';
+import { SIGNUP_METHOD, type SignupMethod, type AuthProvider } from '@/lib/constants/enums';
 import { cartApi } from '@/lib/api/cart';
 import { getGuestCartItems, clearGuestCart } from '@/utils/guestCart';
 
 interface User {
   _id: string;
-  phone: string;
+  /**
+   * Null for accounts created via Google that have not yet supplied a number.
+   * Nullable rather than optional so the UI can distinguish "no number on this
+   * account" from "the server didn't send one".
+   */
+  phone?: string | null;
+  phoneVerified?: boolean;
   name: string;
   role: Role;
   email?: string;
+  avatarUrl?: string;
+  /** Every method this account can sign in with. See AUTH_PROVIDERS. */
+  authProviders?: AuthProvider[];
   /** Present when role is THERAPIST: the linked Therapist profile id. */
   therapistId?: string;
 }
@@ -41,6 +51,7 @@ interface AuthContextType {
   clearError: () => void;
   updateUser: (updates: Partial<User>) => void;
   completeLoginWithOtp: (data: AuthData, isFirstTime?: boolean, returnUrl?: string) => void;
+  completeLoginFromSession: (returnUrl?: string, isFirstTime?: boolean) => Promise<boolean>;
 }
 
 export interface LoginWithOtpData {
@@ -161,7 +172,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const handleAuthSuccess = async (data: AuthData, isFirstTime: boolean = false, returnUrl?: string) => {
+  const handleAuthSuccess = async (
+    data: AuthData,
+    isFirstTime: boolean = false,
+    returnUrl?: string,
+    method: SignupMethod = SIGNUP_METHOD.WHATSAPP,
+  ) => {
     verifyAbortRef.current?.abort();
     setUser(data.user);
     setIsAuthenticated(true);
@@ -186,7 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     trackLoggedIn({
-      signup_method: 'WhatsApp',
+      signup_method: method,
       page_type: window.location.pathname,
       firsttime: isFirstTime ? 1 : 0,
     });
@@ -273,7 +289,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const completeLoginWithOtp = (data: AuthData, isFirstTime: boolean = false, returnUrl?: string) => {
-    handleAuthSuccess(data, isFirstTime, returnUrl);
+    handleAuthSuccess(data, isFirstTime, returnUrl, SIGNUP_METHOD.WHATSAPP);
+  };
+
+  /**
+   * Finishes a sign-in whose cookie is already set but whose user we have not
+   * read yet — the Google OAuth flow.
+   *
+   * The cookie is SameSite=Strict, so it is NOT sent on the cross-site redirect
+   * chain back from Google. This runs from a public page as a same-site XHR,
+   * which does carry it, and then joins the normal success funnel (guest-cart
+   * merge, localStorage, analytics, role routing).
+   */
+  const completeLoginFromSession = async (returnUrl?: string, isFirstTime: boolean = false): Promise<boolean> => {
+    try {
+      const response = (await api.get(AUTH_API.ME)) as ApiResponse<{ user: User }>;
+      if (!response.success || !response.data?.user) return false;
+
+      // The token is already in an httpOnly cookie; the funnel only reads
+      // `data.user`, so an empty token here is correct rather than a placeholder.
+      await handleAuthSuccess({ user: response.data.user, token: '' }, isFirstTime, returnUrl, SIGNUP_METHOD.GOOGLE);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const logout = async () => {
@@ -327,6 +366,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearError,
         updateUser,
         completeLoginWithOtp,
+        completeLoginFromSession,
       }}
     >
       {children}

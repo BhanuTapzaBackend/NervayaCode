@@ -3,7 +3,16 @@ import connectDB from '@/lib/db/mongodb';
 import ConsultationLead from '@/lib/models/consultationLead.model';
 import { ValidationError, ConflictError, NotFoundError } from '@/lib/utils/error.util';
 import { claimSlot, releaseSlot } from '@/lib/services/consultation-schedule.service';
-import { getConsultationRoomUrl } from '@/lib/services/jitsi.service';
+import { getMeetingProvider } from '@/lib/services/meeting-provider.service';
+
+/**
+ * Free consultations are half the length of a paid session.
+ *
+ * Declared once: the iCal builder hardcoded 30 while the calendar service
+ * defaults to 60 for sessions, so passing nothing would have silently created
+ * hour-long consultation events.
+ */
+const CONSULTATION_DURATION_MINS = 30;
 import { sendMeetLinkViaWhatsApp } from '@/lib/services/meet-link-whatsapp.service';
 import type { ConsultationFiltersParams } from '@/types/consultation.types';
 import type { PaginationMeta } from '@/types/pagination.types';
@@ -90,9 +99,13 @@ async function sendCalendarInvite(lead: {
   });
 
   const startTime = new Date(`${lead.date}T${convertTo24Hour(lead.time)}:00`);
-  const endTime = new Date(startTime.getTime() + 30 * 60000); // 30 minutes duration
+  const endTime = new Date(startTime.getTime() + CONSULTATION_DURATION_MINS * 60000);
 
-  const organizerEmail = 'tonystalk@example.com'; // Placeholder as per user request
+  // Defaults to the mailbox that actually sends this message. An ORGANIZER that
+  // does not match the From: address is a leading reason Outlook rejects or
+  // spam-files an iCal invite — and the previous placeholder meant every
+  // phone-only lead had their "confirmation" CC'd to a fake domain.
+  const organizerEmail = process.env.CONSULTATION_ORGANIZER_EMAIL?.trim() || process.env.OTP_EMAIL_USER?.trim() || '';
 
   const joinLine = lead.meetLink ? `\nJoin link: ${lead.meetLink}` : '';
 
@@ -107,12 +120,17 @@ async function sendCalendarInvite(lead: {
 
   const fromName = process.env.OTP_EMAIL_FROM_NAME?.trim() || 'Nervaya';
   const recipientEmail = lead.email || organizerEmail;
+  // Nothing to send to, and no ops mailbox configured — skip rather than mail
+  // a placeholder domain.
+  if (!recipientEmail) return;
 
   try {
     await transporter.sendMail({
       from: `"${fromName}" <${user}>`,
       to: recipientEmail,
-      cc: organizerEmail, // Keep user looped in
+      // Only CC ops when we actually have an ops address, and never CC the
+      // recipient onto their own mail.
+      ...(organizerEmail && organizerEmail !== recipientEmail ? { cc: organizerEmail } : {}),
       subject: `Consultation Booked: ${lead.firstName} ${lead.lastName}`,
       text: `Hello ${lead.firstName},\n\nYour consultation has been scheduled for ${lead.date} at ${lead.time} via ${lead.connectionType}.${
         lead.meetLink ? `\n\nJoin your video call at the scheduled time:\n${lead.meetLink}` : ''
@@ -172,13 +190,27 @@ export async function createConsultationLead(data: {
     throw error;
   }
 
-  // For video consultations, generate the public Jitsi room link and persist it.
+  // Video consultations go through the SAME provider as therapy sessions.
+  // This used to hardcode a Jitsi room URL, so flipping MEETING_PROVIDER=google
+  // moved sessions to Meet while consultations silently stayed on Jitsi — no
+  // error, just a split estate nobody would notice until a customer asked.
   if (lead.connectionType === 'Video Call') {
-    lead.meetLink = getConsultationRoomUrl(lead._id.toString());
+    const meeting = await getMeetingProvider().createConsultationMeeting({
+      leadId: lead._id.toString(),
+      date: lead.date,
+      startTime: lead.time,
+      durationMins: CONSULTATION_DURATION_MINS,
+      leadName: `${lead.firstName} ${lead.lastName}`.trim(),
+      leadEmail: lead.email,
+    });
+
+    lead.meetLink = meeting.meetLink;
+    lead.googleEventId = meeting.externalEventId ?? '';
+    lead.meetStatus = meeting.status;
     await lead.save();
 
     // If the lead also gave a mobile, send the link over WhatsApp (10-digit India numbers → +91).
-    if (lead.mobile) {
+    if (lead.mobile && lead.meetLink) {
       sendMeetLinkViaWhatsApp({
         toE164: `+91${lead.mobile}`,
         name: lead.firstName,
@@ -254,6 +286,12 @@ export async function updateConsultationStatus(id: string, status: 'confirmed' |
 
   if (status === 'cancelled') {
     await releaseSlot(lead.date, lead.time, lead._id);
+
+    // Remove the calendar entry too. Without this every cancelled consultation
+    // leaves a live event — and a live Meet link — on the ops calendar forever.
+    if (lead.googleEventId) {
+      await getMeetingProvider().deleteMeeting(lead.googleEventId, { isConsultation: true });
+    }
   }
 
   return lead;

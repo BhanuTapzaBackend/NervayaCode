@@ -14,7 +14,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email, phone } = body;
+    const { name, email } = body;
 
     if (!name || typeof name !== 'string') {
       return NextResponse.json(errorResponse('Name is required', null, 400), { status: 400 });
@@ -25,12 +25,18 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json(errorResponse('Email must be a string', null, 400), { status: 400 });
     }
 
-    // Phone is the login credential — omit the key to leave it untouched.
-    if (phone !== undefined && typeof phone !== 'string') {
-      return NextResponse.json(errorResponse('Phone must be a string', null, 400), { status: 400 });
+    // Phone is deliberately not accepted here. Setting it without an OTP would
+    // bypass the booking/checkout phone gate and, since auth is passwordless,
+    // a typo would lock the user out. Reject rather than silently ignore, so a
+    // stale client finds out instead of thinking the change stuck.
+    if (body.phone !== undefined) {
+      return NextResponse.json(
+        errorResponse('Use /api/auth/phone/start to add or change your WhatsApp number', null, 400),
+        { status: 400 },
+      );
     }
 
-    const result = await updateProfile(authResult.user.userId, name, email, phone);
+    const result = await updateProfile(authResult.user.userId, name, email);
 
     return NextResponse.json(successResponse('Profile updated successfully', result));
   } catch (error) {

@@ -2,10 +2,33 @@ import Therapist, { ITherapist, IConsultingHour } from '@/lib/models/therapist.m
 import { GENDER } from '../constants/enums';
 import { generateSlotsFromConsultingHours } from '@/lib/services/therapistSchedule.service';
 import connectDB from '@/lib/db/mongodb';
-import { ValidationError } from '@/lib/utils/error.util';
+import { ConflictError, ValidationError } from '@/lib/utils/error.util';
 import { Types } from 'mongoose';
 import { normalizePriority } from '@/lib/constants/priority.constants';
 import { prioritySortStages, stripPrioritySortKey } from '@/lib/utils/priority-sort.util';
+import { validateEmail } from '@/lib/utils/validation.util';
+import { syncTherapistLinkByEmail, demoteTherapistUsers } from '@/lib/services/auth/role-resolution.service';
+
+/**
+ * The unique index is the authority on email collisions, not any pre-check —
+ * two admins saving the same address concurrently both pass a `findOne` and
+ * only the write fails. Translate that failure into a 409 so the admin sees
+ * "already assigned" instead of an opaque 500.
+ */
+function isDuplicateKeyError(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && (error as { code?: number }).code === 11000;
+}
+
+/** Emails are stored lowercase; compare and persist through this to stay consistent. */
+function normalizeEmail(value: unknown): string {
+  return typeof value === 'string' ? value.trim().toLowerCase() : '';
+}
+
+function assertValidTherapistEmail(email: string): void {
+  if (!validateEmail(email)) {
+    throw new ValidationError('A valid therapist email is required');
+  }
+}
 
 function toSlug(value: string) {
   return value
@@ -63,16 +86,31 @@ export async function createTherapist(data: Partial<ITherapist>) {
     },
   ];
 
+  const email = normalizeEmail(data.email);
+  assertValidTherapistEmail(email);
+
   const therapistData = {
     ...data,
+    email,
     slug: data.slug || (data.name ? toSlug(data.name) : ''),
     gender: data.gender || GENDER.OTHER,
     consultingHours: data.consultingHours || defaultConsultingHours,
   };
 
-  const therapist = await Therapist.create(therapistData);
+  let therapist;
+  try {
+    therapist = await Therapist.create(therapistData);
+  } catch (error) {
+    if (isDuplicateKeyError(error)) {
+      throw new ConflictError('That email is already assigned to another therapist');
+    }
+    throw error;
+  }
 
   await generateSlotsFromConsultingHours(therapist._id.toString(), new Date(), 90);
+
+  // Promote a matching account now rather than waiting for their next login.
+  await syncTherapistLinkByEmail(therapist._id.toString(), email);
 
   return therapist;
 }
@@ -118,14 +156,40 @@ export async function updateTherapist(id: string, data: Partial<ITherapist>) {
     updateData.priority = normalizePriority(data.priority);
   }
 
-  const therapist = await Therapist.findByIdAndUpdate(id, updateData, {
-    new: true,
-    runValidators: true,
-  });
+  // Capture the outgoing address before the write: reassigning a therapist's
+  // email must demote whoever held the role under the old one, or a stale
+  // THERAPIST account keeps access to the therapist area.
+  let previousEmail: string | null = null;
+  if ('email' in data) {
+    const email = normalizeEmail(data.email);
+    assertValidTherapistEmail(email);
+    updateData.email = email;
+
+    const current = await Therapist.findById(id).select('email').lean();
+    previousEmail = current?.email ?? null;
+  }
+
+  let therapist;
+  try {
+    therapist = await Therapist.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+  } catch (error) {
+    if (isDuplicateKeyError(error)) {
+      throw new ConflictError('That email is already assigned to another therapist');
+    }
+    throw error;
+  }
 
   if (!therapist) {
     throw new ValidationError('Therapist not found');
   }
+
+  if (updateData.email) {
+    await syncTherapistLinkByEmail(therapist._id.toString(), updateData.email, previousEmail);
+  }
+
   return therapist;
 }
 
@@ -138,6 +202,13 @@ export async function deleteTherapist(id: string) {
   if (!therapist) {
     throw new ValidationError('Therapist not found');
   }
+
+  // Revoke the role. Role resolution only self-heals for a user who signs in,
+  // and sessions now last five days with sliding renewal — a deleted therapist
+  // could otherwise keep therapist-area access, and their client list, for
+  // weeks after the profile is gone.
+  await demoteTherapistUsers(therapist._id.toString());
+
   return { message: 'Therapist deleted successfully' };
 }
 

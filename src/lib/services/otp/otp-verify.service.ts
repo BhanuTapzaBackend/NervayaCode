@@ -1,3 +1,4 @@
+import { OTP_PURPOSE_VALUES } from '@/lib/constants/enums';
 import { normalizePhone, validateOtpCode } from '@/lib/utils/validation.util';
 import { checkOTPVerifyRateLimit } from '@/lib/utils/rate-limit.util';
 import { verifyAndConsumeOtp, type OtpPurpose } from './otp-store';
@@ -24,7 +25,7 @@ export async function verifyOtp(
   if (!validateOtpCode(sanitizedCode)) {
     return { success: false, message: 'Code must be 6 digits', statusCode: 400 };
   }
-  if (purpose !== 'login' && purpose !== 'signup') {
+  if (!OTP_PURPOSE_VALUES.includes(purpose)) {
     return { success: false, message: 'Invalid purpose', statusCode: 400 };
   }
 

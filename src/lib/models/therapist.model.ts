@@ -56,11 +56,15 @@ const therapistSchema = new Schema<ITherapist>(
       default: '',
       index: true,
     },
+    // Load-bearing identity, not a display field: this is the therapist's Google
+    // sign-in address, the value that promotes their User to THERAPIST, and the
+    // mailbox the Calendar service account impersonates for their sessions.
     email: {
       type: String,
+      required: [true, 'Email is required'],
       trim: true,
       lowercase: true,
-      default: '',
+      match: [/^\S{1,64}@\S{1,255}\.\S{1,63}$/, 'Please enter a valid email'],
     },
     qualifications: {
       type: [String],
@@ -193,6 +197,16 @@ const therapistSchema = new Schema<ITherapist>(
 );
 
 therapistSchema.index({ isAvailable: 1, priority: 1, createdAt: -1 });
+
+// A plain unique index, deliberately NOT partial: email is required, so there is
+// no legitimate null to exclude. A partial index would silently permit several
+// therapists sharing '', breaking the 1:1 email <-> therapist invariant that both
+// role resolution and calendar impersonation depend on.
+//
+// Mongoose cannot apply this to a collection that still holds duplicate ''
+// values, and autoIndex failures surface on an event nobody listens to. Run
+// `npx tsx --env-file=.env scripts/migrate-therapist-email-index.ts` first.
+therapistSchema.index({ email: 1 }, { unique: true, name: 'email_1' });
 
 // Force Mongoose to use the updated schema in development. Without this the
 // model compiled before a schema change survives hot-reload, and `strict: true`

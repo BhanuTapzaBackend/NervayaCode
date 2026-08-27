@@ -3,6 +3,7 @@ import { createSession, getUserSessions, getAllSessions } from '@/lib/services/s
 import { successResponse, errorResponse } from '@/lib/utils/response.util';
 import { handleError } from '@/lib/utils/error.util';
 import { requireAuth } from '@/lib/middleware/auth.middleware';
+import { requirePhone } from '@/lib/middleware/phone-gate';
 import { ROLES } from '@/lib/constants/roles';
 
 const DEFAULT_PAGE = 1;
@@ -63,6 +64,11 @@ export async function POST(req: NextRequest) {
     if (authResult instanceof NextResponse) {
       return authResult;
     }
+
+    // Session links and ~1h reminders go out over WhatsApp; without a number
+    // the booking would silently never reach the customer.
+    const phoneGate = await requirePhone(authResult.user.userId);
+    if (phoneGate) return phoneGate;
 
     const body = await req.json();
 

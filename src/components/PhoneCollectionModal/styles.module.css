@@ -1,0 +1,63 @@
+/*
+ * The modal renders outside the auth page, so the --auth-* variables the shared
+ * AuthField and OTP step depend on are not in scope. Redeclare the ones they
+ * read, mapped onto the global tokens.
+ */
+.body {
+  --auth-card-bg: var(--color-background);
+  --auth-text: var(--color-text-primary);
+  --auth-text-muted: var(--color-text-secondary);
+  --auth-accent: var(--color-accent);
+  --auth-accent-ring: rgba(var(--color-accent-rgb), 0.13);
+  --auth-input-bg: var(--color-background-page);
+  --auth-input-bg-focus: var(--color-background);
+  --auth-input-border: var(--color-border-light);
+  --auth-icon: var(--color-text-tertiary);
+  --auth-btn-bg: var(--color-accent);
+  --auth-btn-bg-hover: var(--color-accent-hover);
+  --auth-btn-text: var(--color-text-on-dark);
+
+  display: flex;
+  flex-direction: column;
+  min-width: min(24rem, 80vw);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.reason {
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+.button {
+  width: 100%;
+  padding: 0.875rem;
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background var(--transition-base),
+    transform var(--transition-base);
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}

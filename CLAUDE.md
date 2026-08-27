@@ -43,7 +43,8 @@ Auth is **passwordless**: the WhatsApp phone number (stored E.164, e.g. `+919876
 
 - **Edge middleware** (`src/middleware.ts`): reads `auth_token` httpOnly cookie, verifies JWT, enforces role-based redirects. Next.js requires this exact filename — renaming it will silently disable all edge-level route protection.
 - **API auth** (`src/lib/middleware/auth.middleware.ts`): `requireAuth(request, [ROLES.X])` on protected routes
-- **Client auth** (`src/context/AuthContext.tsx`): hydrates from localStorage with 7-day expiry; custom `auth-state-changed` DOM event syncs state across contexts
+- **Client auth** (`src/context/AuthContext.tsx`): hydrates from localStorage; custom `auth-state-changed` DOM event syncs state across contexts
+- **Session duration**: 5 days, defined ONCE as `COOKIE_OPTIONS.AUTH_TOKEN_MAX_AGE` in `src/utils/cookieConstants.ts`. The JWT's expiry and the localStorage expiry are both derived from it — do not hardcode a duration anywhere else. `GET /api/auth/me` slides the session forward once a token is past halfway, so the window is "5 days since last use", and re-mints the token when the DB role differs from the token's role (there is no revocation path, so this is what makes a promotion to THERAPIST take effect)
 
 ### Route Groups
 
@@ -98,9 +99,9 @@ Signup is two-stage: `pendingSignup` (phone-keyed, TTL 10 min) holds the name un
 
 ## Environment Variables
 
-**Required:** `MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `CLOUDINARY_CLOUD_NAME`/`API_KEY`/`API_SECRET`, `RAZORPAY_KEY_ID`/`KEY_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_OTP_TEMPLATE_NAME`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET`
+**Required:** `MONGODB_URI`, `JWT_SECRET`, `CLOUDINARY_CLOUD_NAME`/`API_KEY`/`API_SECRET`, `RAZORPAY_KEY_ID`/`KEY_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_OTP_TEMPLATE_NAME`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET`
 
-**Optional:** `WHATSAPP_BUSINESS_ACCOUNT_ID`, `WHATSAPP_API_VERSION` (default `v21.0`), `OTP_EMAIL_USER`/`OTP_EMAIL_APP_PASSWORD`/`OTP_EMAIL_FROM_NAME` (email receipts only), `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_GTM_ID`, `ZOHO_CLIENT_ID`/`ZOHO_CLIENT_SECRET`/`ZOHO_REFRESH_TOKEN`, `NEXT_PUBLIC_APP_URL` (absolute site origin used in meeting links/emails)
+**Optional:** `JWT_EXPIRES_IN` (overrides the derived session length; leave unset so the token and cookie stay in sync), `WHATSAPP_BUSINESS_ACCOUNT_ID`, `WHATSAPP_API_VERSION` (default `v21.0`), `OTP_EMAIL_USER`/`OTP_EMAIL_APP_PASSWORD`/`OTP_EMAIL_FROM_NAME` (email receipts only), `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_GTM_ID`, `ZOHO_CLIENT_ID`/`ZOHO_CLIENT_SECRET`/`ZOHO_REFRESH_TOKEN`, `NEXT_PUBLIC_APP_URL` (absolute site origin used in meeting links/emails)
 
 ### Therapy Session Video (Jitsi / JaaS)
 

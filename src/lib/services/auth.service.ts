@@ -1,19 +1,20 @@
 import User from '@/lib/models/user.model';
 import { generateToken } from '@/lib/utils/jwt.util';
-import {
-  validatePhone,
-  validateName,
-  validateEmail,
-  normalizePhone,
-  validateIndianMobile,
-} from '@/lib/utils/validation.util';
+import { validatePhone, validateName, validateEmail } from '@/lib/utils/validation.util';
 import { ValidationError, AuthenticationError } from '@/lib/utils/error.util';
 import connectDB from '@/lib/db/mongodb';
 import { ROLES, Role } from '@/lib/constants/roles';
+import { AUTH_PROVIDERS } from '@/lib/constants/enums';
+import { applyTherapistRoleFromEmail } from '@/lib/services/auth/role-resolution.service';
 
 type SessionUser = {
   _id: string;
-  phone: string;
+  /**
+   * Explicitly nullable rather than optional: a Google-only user genuinely has
+   * no phone, and the UI must be able to tell "this account has no number" from
+   * "the server didn't send one". Omitting the key would conflate the two.
+   */
+  phone: string | null;
   name: string;
   role: Role;
   email?: string;
@@ -25,13 +26,30 @@ type SessionUser = {
 function toSessionUser(user: InstanceType<typeof User>): SessionUser {
   return {
     _id: user._id.toString(),
-    phone: user.phone,
+    phone: user.phone ?? null,
     name: user.name,
     role: user.role,
     ...(user.email && { email: user.email }),
     ...(user.therapistId && { therapistId: user.therapistId.toString() }),
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+  };
+}
+
+/**
+ * The single place a session is minted, for every authentication method.
+ *
+ * Role resolution runs here rather than in each caller, so a therapist is
+ * recognised identically whether they signed in with Google or with a WhatsApp
+ * OTP — and so the token is issued AFTER any promotion, never before it.
+ */
+export async function createSessionForUser(user: InstanceType<typeof User>) {
+  const resolved = await applyTherapistRoleFromEmail(user);
+  const token = await generateToken(resolved._id.toString(), resolved.role);
+
+  return {
+    user: toSessionUser(resolved),
+    token,
   };
 }
 
@@ -60,14 +78,10 @@ export async function createUserAfterOtpVerification(phone: string, name: string
     name,
     role,
     phoneVerified: true,
+    authProviders: [AUTH_PROVIDERS.WHATSAPP],
   });
 
-  const token = await generateToken(user._id.toString(), user.role);
-
-  return {
-    user: toSessionUser(user),
-    token,
-  };
+  return createSessionForUser(user);
 }
 
 export async function createSessionAfterOtp(phone: string) {
@@ -82,55 +96,34 @@ export async function createSessionAfterOtp(phone: string) {
     throw new AuthenticationError('User not found');
   }
 
-  const token = await generateToken(user._id.toString(), user.role);
+  // Backfill for accounts created before providers were tracked.
+  if (!user.authProviders?.includes(AUTH_PROVIDERS.WHATSAPP)) {
+    user.authProviders = [...(user.authProviders ?? []), AUTH_PROVIDERS.WHATSAPP];
+  }
 
-  return {
-    user: toSessionUser(user),
-    token,
-  };
+  return createSessionForUser(user);
 }
 
 /**
- * Updates the profile. `email` and `phone` are both optional: omit a key to
- * leave that field untouched.
+ * Updates the profile. `email` is optional: omit the key to leave it untouched,
+ * send an empty string to clear it.
  *
- * ⚠️ Changing `phone` changes the login credential. Auth is passwordless, so the
- * new number IS how this account signs in from now on, and it is accepted here
- * WITHOUT an OTP to the new number — a valid-but-wrong number locks the user out
- * with no self-service recovery. Deliberate product decision; if that becomes a
- * support burden, the fix is to verify the new number before switching.
+ * ⚠️ Phone is deliberately NOT settable here. It used to be, without an OTP to
+ * the new number — which both let a typo lock the user out of a passwordless
+ * account, and (once signup stopped requiring a phone) offered a way straight
+ * past the booking/checkout phone gate. All phone writes now go through
+ * /api/auth/phone/verify, which proves ownership first.
  */
-export async function updateProfile(userId: string, name: string, email?: string | null, phone?: string) {
+export async function updateProfile(userId: string, name: string, email?: string | null) {
   await connectDB();
 
   if (!validateName(name)) {
     throw new ValidationError('Name must be at least 2 characters long');
   }
 
-  const update: { name: string; email?: string | null; phone?: string; phoneVerified?: boolean } = {
+  const update: { name: string; email?: string | null } = {
     name: name.trim(),
   };
-
-  if (phone !== undefined) {
-    // Must be a real Indian mobile: 10 digits starting 6-9. Anything else
-    // cannot receive a WhatsApp OTP, so it would be an unreachable login.
-    const normalized = normalizePhone(phone);
-    const national = normalized?.slice(-10);
-    if (!normalized || !national || !validateIndianMobile(national)) {
-      throw new ValidationError('Enter a valid 10-digit Indian mobile number starting with 6, 7, 8 or 9');
-    }
-
-    const current = await User.findById(userId).select('phone').lean();
-    if (current && current.phone !== normalized) {
-      const taken = await User.findOne({ phone: normalized }).select('_id').lean();
-      if (taken) {
-        throw new ValidationError('That WhatsApp number is already linked to another account');
-      }
-      update.phone = normalized;
-      // The new number hasn't received an OTP, so it isn't a verified number.
-      update.phoneVerified = false;
-    }
-  }
 
   // Email is optional (phone is the identifier). `undefined` means "not
   // submitted, leave alone"; an empty string means the user cleared it, which

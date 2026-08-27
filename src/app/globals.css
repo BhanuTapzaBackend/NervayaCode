@@ -2,7 +2,18 @@
 @import '../styles/spacing.css';
 @import '../styles/animations.css';
 
+/* Stacking scale.
+ *
+ * These exist because a floating layer had no way to say "above the modal". The
+ * shared Select hardcoded `z-index: 60` against the modal overlay's 5000, so
+ * every dropdown opened inside a dialog rendered BEHIND the dark blurred
+ * backdrop — still clickable, but invisible, which made the working-hours time
+ * pickers impossible to use. Anything that floats belongs on this scale. */
 :root {
+  --z-modal-overlay: 5000;
+  /* Popovers, selects and menus that can be opened FROM inside a modal, so they
+     must sit above its overlay. */
+  --z-floating: 5100;
   --background: var(--color-background);
   --foreground: var(--color-foreground);
   --navbar-safe-gap: var(--space-6);

@@ -169,3 +169,49 @@
     width: 100%;
   }
 }
+
+/* Shown over the form when a dismissal is attempted with unsaved edits. The
+   form underneath stays mounted — unmounting it would destroy the very draft
+   this is protecting. */
+.discardBar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-background);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+}
+
+.discardText {
+  font-size: var(--text-caption);
+  color: var(--color-text-body);
+}
+
+.discardActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-left: auto;
+}
+
+.discardConfirm {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--color-error, #c0392b);
+  color: #fff;
+  font-family: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.discardConfirm:hover {
+  opacity: 0.9;
+}

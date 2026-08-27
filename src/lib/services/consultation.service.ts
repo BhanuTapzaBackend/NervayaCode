@@ -14,27 +14,10 @@ import { getMeetingProvider } from '@/lib/services/meeting-provider.service';
  */
 const CONSULTATION_DURATION_MINS = 30;
 import { sendMeetLinkViaWhatsApp } from '@/lib/services/meet-link-whatsapp.service';
+import { getSlotInstant } from '@/lib/utils/sessionDateTime.util';
 import type { ConsultationFiltersParams } from '@/types/consultation.types';
 import type { PaginationMeta } from '@/types/pagination.types';
 import nodemailer from 'nodemailer';
-
-/**
- * Converts a time string like "10:30 AM" to "10:30" or "02:45 PM" to "14:45"
- */
-function convertTo24Hour(timeStr: string) {
-  if (!timeStr) return '00:00';
-  const parts = timeStr.split(' ');
-  if (parts.length < 2) return timeStr; // Already in 24h or invalid
-
-  const [time, modifier] = parts;
-  const [hours, minutes] = time.split(':');
-
-  let h = parseInt(hours, 10);
-  if (modifier === 'PM' && h < 12) h += 12;
-  if (modifier === 'AM' && h === 12) h = 0;
-
-  return `${h.toString().padStart(2, '0')}:${minutes || '00'}`;
-}
 
 /**
  * Generates iCalendar content for an event
@@ -98,7 +81,19 @@ async function sendCalendarInvite(lead: {
     },
   });
 
-  const startTime = new Date(`${lead.date}T${convertTo24Hour(lead.time)}:00`);
+  // Anchored to IST, NOT parsed as a bare local datetime.
+  //
+  // `new Date("2026-09-01T17:00:00")` with no offset is interpreted in the
+  // SERVER's timezone — UTC on Vercel — and `formatDate` then emits it as a
+  // UTC `DTSTART`. A 5:00 PM IST consultation therefore arrived in the invite
+  // as 5:00 PM UTC, i.e. 10:30 PM IST: every consultation invite was 5h30m
+  // late in production while looking correct on an IST developer's machine.
+  // This is the same defect already fixed for therapy sessions.
+  const startTime = getSlotInstant(lead.date, lead.time);
+  if (!startTime) {
+    console.error(`[consultation] unparseable slot "${lead.date} ${lead.time}"; skipping calendar invite`);
+    return;
+  }
   const endTime = new Date(startTime.getTime() + CONSULTATION_DURATION_MINS * 60000);
 
   // Defaults to the mailbox that actually sends this message. An ORGANIZER that

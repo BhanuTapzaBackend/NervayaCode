@@ -110,6 +110,17 @@ async function findNewClientIds(therapistId: string): Promise<Set<string>> {
   return new Set(rows.map((r) => String(r._id)));
 }
 
+/** How many rows each dashboard panel shows. */
+const PANEL_SIZE = 5;
+
+/**
+ * How many rows to pull before sorting them properly in `build`.
+ *
+ * Wide enough that the correct top-5 is always inside it unless a single day
+ * holds more than this many sessions, which no real schedule does.
+ */
+const CANDIDATE_LIMIT = 60;
+
 export async function getTherapistDashboard(
   therapistId: string,
   range: { start: Date; end: Date },
@@ -143,6 +154,13 @@ export async function getTherapistDashboard(
       .sort({ date: 1, startTime: 1 })
       .lean(),
 
+    // NOTE the limit is PANEL_SIZE * a wide margin, not PANEL_SIZE. Mongo cannot
+    // order these correctly (see `build`), so trimming to 5 in the database
+    // picked an arbitrary 5 of the earliest day's sessions — and the index this
+    // sort uses is `{ therapistId, date, startTime }`, whose lexicographic
+    // startTime puts "9:00 AM" AFTER "1:00 PM". A therapist with 6+ sessions
+    // today would find the next one missing from "Upcoming" precisely because
+    // it was the earliest. The real trim happens after the chronological sort.
     Session.find({
       therapistId,
       date: { $gte: todayKey },
@@ -151,21 +169,21 @@ export async function getTherapistDashboard(
       .select(select)
       .populate(populate)
       .sort({ date: 1 })
-      .limit(5)
+      .limit(CANDIDATE_LIMIT)
       .lean(),
 
     Session.find({ therapistId, date: { $gte: todayKey }, status: SESSION_STATUS.PENDING })
       .select(select)
       .populate(populate)
       .sort({ date: 1 })
-      .limit(5)
+      .limit(CANDIDATE_LIMIT)
       .lean(),
 
     Session.find({ therapistId, status: SESSION_STATUS.COMPLETED })
       .select(select)
       .populate(populate)
       .sort({ date: -1 })
-      .limit(5)
+      .limit(CANDIDATE_LIMIT)
       .lean(),
 
     findNewClientIds(therapistId),
@@ -189,8 +207,10 @@ export async function getTherapistDashboard(
       cancelledToday: countFor(SESSION_STATUS.CANCELLED),
     },
     sessions: build(rangeSessions),
-    upcoming: build(upcoming),
-    pendingRequests: build(pendingRequests),
-    recentCompleted: build(recentCompleted).reverse(),
+    // Trim AFTER sorting chronologically, so these really are the next / most
+    // recent ones rather than whatever the database happened to return first.
+    upcoming: build(upcoming).slice(0, PANEL_SIZE),
+    pendingRequests: build(pendingRequests).slice(0, PANEL_SIZE),
+    recentCompleted: build(recentCompleted).slice(-PANEL_SIZE).reverse(),
   };
 }

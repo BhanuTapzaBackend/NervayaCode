@@ -7,7 +7,7 @@ import { SESSION_STATUS, SessionStatus, MEET_STATUS } from '@/lib/constants/enum
 import User from '@/lib/models/user.model';
 import Therapist from '@/lib/models/therapist.model';
 import { getMeetingProvider } from './meeting-provider.service';
-import { isSlotInPast } from '@/lib/utils/sessionDateTime.util';
+import { isSlotInPast, computeSessionEndTime } from '@/lib/utils/sessionDateTime.util';
 import { sendMeetLinkViaWhatsApp } from './meet-link-whatsapp.service';
 import { sendSessionConfirmationEmail } from './email/session-confirmation.service';
 import { toObjectId } from '@/lib/utils/objectId.util';
@@ -33,12 +33,11 @@ export async function createSession(
     throw new ValidationError('This time slot has already passed. Please choose a later slot.');
   }
 
-  const startHour = parseInt(startTime.split(':')[0]);
-  const isPM = startTime.includes('PM');
-  const hour24 = isPM && startHour !== 12 ? startHour + 12 : !isPM && startHour === 12 ? 0 : startHour;
-  const nextHour24 = (hour24 + 1) % 24;
-  const displayHour = nextHour24 === 0 ? 12 : nextHour24 > 12 ? nextHour24 - 12 : nextHour24;
-  const endTime = `${displayHour}:00 ${nextHour24 >= 12 ? 'PM' : 'AM'}`;
+  // Sized from the therapist's own duration, so the Session row and the
+  // calendar event agree. See computeSessionEndTime for the midnight-wrap bug
+  // the previous hand-rolled arithmetic produced.
+  const bookedTherapist = await Therapist.findById(therapistId).select('sessionDurationMins').lean();
+  const endTime = computeSessionEndTime(date, startTime, bookedTherapist?.sessionDurationMins);
 
   // When called from payment.service (with mongooseSession), run inside the existing transaction.
   // When called standalone, create our own transaction for atomicity.
@@ -222,13 +221,9 @@ export async function rescheduleSession(sessionId: string, userId: string, newDa
   const oldDate = session.date;
   const oldStartTime = session.startTime;
 
-  // 1. Compute new end time
-  const startHour = parseInt(newStartTime.split(':')[0]);
-  const isPM = newStartTime.includes('PM');
-  const hour24 = isPM && startHour !== 12 ? startHour + 12 : !isPM && startHour === 12 ? 0 : startHour;
-  const newNextHour24 = (hour24 + 1) % 24;
-  const newDisplayHour = newNextHour24 === 0 ? 12 : newNextHour24 > 12 ? newNextHour24 - 12 : newNextHour24;
-  const newEndTime = `${newDisplayHour}:00 ${newNextHour24 >= 12 ? 'PM' : 'AM'}`;
+  // 1. Compute the new end time from the therapist's configured duration.
+  const bookedTherapist = await Therapist.findById(session.therapistId).select('sessionDurationMins').lean();
+  const newEndTime = computeSessionEndTime(newDate, newStartTime, bookedTherapist?.sessionDurationMins);
 
   // 2. Atomically update the session and re-mark slots in a transaction
   const txnSession = await mongoose.startSession();
@@ -287,6 +282,7 @@ export async function rescheduleSession(sessionId: string, userId: string, newDa
         meetLink,
         googleEventId: externalEventId ?? '',
         meetStatus: status,
+        meetAttempts: 0,
         meetNextAttemptAt: null,
       });
       session.meetLink = meetLink;
@@ -294,8 +290,14 @@ export async function rescheduleSession(sessionId: string, userId: string, newDa
       session.meetStatus = status;
     } else {
       // Keep the old link; hand the session to the backfill sweep.
+      //
+      // Reset the attempt budget: this is a NEW incident. Carrying over the
+      // count from an earlier repair meant a session that once took five tries
+      // got a single retry here before silently exceeding MAX_ATTEMPTS and
+      // dropping out of the sweep for good.
       await Session.findByIdAndUpdate(session._id, {
         meetStatus: status,
+        meetAttempts: 0,
         meetNextAttemptAt: new Date(Date.now() + 60_000),
       });
       session.meetStatus = status;

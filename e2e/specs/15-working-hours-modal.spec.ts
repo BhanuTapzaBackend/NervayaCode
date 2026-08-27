@@ -108,3 +108,43 @@ test('backdrop click still dismisses when nothing was edited', async ({ page }) 
   await page.mouse.click(box.x / 2, box.y + box.height / 2);
   await expect(dialog).toBeHidden();
 });
+
+test('the editor traps focus and hands it back on close', async ({ page }) => {
+  await loginWithFixedOtp(page, THERAPIST.phone, THERAPIST.otp);
+  await page.goto('/therapist/schedule');
+
+  const editButton = page.getByRole('button', { name: /edit working hours/i });
+  await expect(editButton).toBeEnabled({ timeout: 30_000 });
+  await editButton.focus();
+  await editButton.click();
+
+  const dialog = page.getByRole('dialog', { name: 'Working hours' });
+  await expect(dialog).toBeVisible();
+
+  // Focus moved INTO the dialog rather than staying on the trigger behind it.
+  const insideAfterOpen = await dialog.evaluate((node) => node.contains(document.activeElement));
+  expect(insideAfterOpen).toBe(true);
+
+  // Tab must not walk out into the page behind an aria-modal dialog. Enough
+  // presses to pass the last control several times over if it were leaking.
+  for (let i = 0; i < 40; i += 1) await page.keyboard.press('Tab');
+  expect(await dialog.evaluate((node) => node.contains(document.activeElement))).toBe(true);
+
+  // Shift+Tab off the front wraps rather than escaping backwards.
+  for (let i = 0; i < 45; i += 1) await page.keyboard.press('Shift+Tab');
+  expect(await dialog.evaluate((node) => node.contains(document.activeElement))).toBe(true);
+
+  // The trap must NOT fight Radix: a dropdown moves focus into a portal outside
+  // the dialog, and forcing it back would break every select in a modal.
+  const startSelect = dialog.getByRole('combobox', { name: 'Monday start time' });
+  await startSelect.click();
+  await expect(page.getByRole('option', { name: '10:00 AM', exact: true })).toBeVisible();
+  await page.getByRole('option', { name: '10:00 AM', exact: true }).click();
+  await expect(startSelect).toHaveText('10:00 AM');
+
+  // Escape closes, and focus returns to the control that opened it.
+  await page.keyboard.press('Escape');
+  await dialog.getByRole('button', { name: 'Discard' }).click();
+  await expect(dialog).toBeHidden();
+  await expect(editButton).toBeFocused();
+});

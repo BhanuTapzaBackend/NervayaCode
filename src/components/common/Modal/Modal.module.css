@@ -39,6 +39,12 @@
   }
 }
 
+/* The dialog takes focus on open so the trap has an anchor. It is announced by
+   role + aria-label, so a ring around the whole panel adds nothing. */
+.modal:focus {
+  outline: none;
+}
+
 .header {
   display: flex;
   justify-content: space-between;

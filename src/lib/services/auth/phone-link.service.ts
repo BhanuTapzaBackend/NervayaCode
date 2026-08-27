@@ -58,6 +58,17 @@ export async function attachPhoneToUser(userId: string, phone: string) {
   const user = await User.findById(userId);
   if (!user) throw new NotFoundError('User not found');
 
+  // Only ever ADD a number, never replace one.
+  //
+  // Auth is passwordless, so `phone` IS the credential. This flow proves
+  // ownership of the NEW number but nothing authorises detaching the OLD one —
+  // so anyone with a session (a shared device, a stolen cookie) could point the
+  // account at their own phone and lock the owner out silently. Changing a
+  // number needs its own flow that verifies both.
+  if (user.phone && user.phone !== phone) {
+    throw new ConflictError('This account already has a WhatsApp number. Contact support to change it.');
+  }
+
   user.phone = phone;
   user.phoneVerified = true;
   if (!user.authProviders?.includes(AUTH_PROVIDERS.WHATSAPP)) {

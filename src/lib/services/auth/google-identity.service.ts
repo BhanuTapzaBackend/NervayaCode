@@ -59,26 +59,45 @@ export async function resolveGoogleIdentity(profile: GoogleProfile): Promise<Res
 
   const byEmail = await User.findOne({ email: profile.email });
   if (byEmail) {
-    // ⚠️ Only link when WE already proved this address belongs to that account.
-    //
-    // Google proving the address belongs to the person signing in is only half
-    // the question. `updateProfile` lets any authenticated user write any email
-    // onto their own account unverified — so an attacker could register by
-    // phone, claim victim@example.com, and wait. Linking on the strength of
-    // Google's assertion alone would drop the victim straight into the
-    // attacker's account, which the attacker still holds OTP access to.
-    if (!byEmail.emailVerified) {
-      throw new GoogleEmailConflictError();
-    }
-    // A different Google account already owns this user — do not rebind.
+    // A different Google account already holds this user. `sub` is the stable
+    // identity; rebinding would hand the account to whoever re-registered the
+    // address. This one genuinely is a conflict.
     if (byEmail.googleId && byEmail.googleId !== profile.sub) {
       throw new GoogleEmailConflictError();
     }
 
-    byEmail.googleId = profile.sub;
-    backfillProfile(byEmail, profile);
+    if (byEmail.emailVerified) {
+      byEmail.googleId = profile.sub;
+      backfillProfile(byEmail, profile);
+      await byEmail.save();
+      return { user: byEmail, isFirstTime: false };
+    }
+
+    // The existing account holds this address but never PROVED it —
+    // `updateProfile` accepts any email without a verification round trip, so
+    // an attacker could claim victim@example.com and wait. Linking on Google's
+    // assertion alone would drop the victim into the attacker's account.
+    //
+    // Google has proof and that account does not, so the address moves. The old
+    // account keeps its phone login and all its data; it only loses a claim it
+    // never substantiated. Refusing outright was the previous behaviour and it
+    // locked every phone-signup user out of Google permanently — including
+    // therapists, for whom a verified email is now the only route to the role.
+    console.warn(`[google-identity] releasing unverified email ${profile.email} from user ${byEmail._id.toString()}`);
+    byEmail.email = null;
+
+    // If that account held the therapist role on the strength of this address,
+    // it must lose it too. Nothing else can take it back: the role heals only
+    // via a VERIFIED email match, `syncTherapistLinkByEmail` demotes by email,
+    // and the email is now null — so the account would keep therapist access to
+    // a profile it can no longer prove any connection to, indefinitely, while a
+    // second account gets promoted for the same profile.
+    if (byEmail.role === ROLES.THERAPIST) {
+      byEmail.role = ROLES.CUSTOMER;
+      byEmail.therapistId = null;
+    }
+
     await byEmail.save();
-    return { user: byEmail, isFirstTime: false };
   }
 
   try {

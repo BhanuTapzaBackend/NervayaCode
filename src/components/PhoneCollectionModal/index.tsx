@@ -31,6 +31,15 @@ export interface PhoneCollectionModalProps {
  *
  * Convenience only — the real enforcement is the 428 gate on the server. A
  * client that never opens this modal simply cannot complete the action.
+ *
+ * `Modal` renders nothing while closed, so the flow below mounts fresh on every
+ * opening. That is deliberate, and it fixes two bugs at once: the step used to
+ * persist, so dismissing the modal on the code screen and reopening it dropped
+ * you straight back on that screen — still waiting for a code sent to a number
+ * you might now want to change, with no way back to the phone field. And
+ * `initialPhone` was read only at first mount, so a prefill that arrived later
+ * (the saved shipping address loading after the modal had rendered) never
+ * appeared and the user retyped a number we already had.
  */
 export function PhoneCollectionModal({
   isOpen,
@@ -39,7 +48,17 @@ export function PhoneCollectionModal({
   initialPhone = '',
   reason,
 }: PhoneCollectionModalProps) {
-  const { completeLoginFromSession } = useAuthContext();
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Add your WhatsApp number">
+      <PhoneCollectionFlow initialPhone={initialPhone} onVerified={onVerified} reason={reason} />
+    </Modal>
+  );
+}
+
+type PhoneCollectionFlowProps = Pick<PhoneCollectionModalProps, 'onVerified' | 'initialPhone' | 'reason'>;
+
+function PhoneCollectionFlow({ onVerified, initialPhone = '', reason }: PhoneCollectionFlowProps) {
+  const { refreshUser } = useAuthContext();
   const [phone, setPhone] = useState(initialPhone.replace(/\D/g, '').slice(-10));
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [error, setError] = useState<string | null>(null);
@@ -79,53 +98,54 @@ export function PhoneCollectionModal({
   );
 
   const handleVerified = useCallback(async () => {
-    // The account now has a phone and the server re-issued the cookie; refresh
-    // the client's copy so gated UI stops asking.
-    await completeLoginFromSession();
+    // Refresh the cached user so gated UI stops asking — but do NOT go through
+    // the login funnel. `completeLoginFromSession` ends in a role-based
+    // `router.push`, so verifying a number from checkout threw the customer out
+    // to /dashboard mid-order: the gate resolved true, the caller resumed
+    // placing the order, and the page navigated away underneath it.
+    await refreshUser();
     onVerified();
-  }, [completeLoginFromSession, onVerified]);
+  }, [refreshUser, onVerified]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add your WhatsApp number">
-      <div className={styles.body}>
-        {step === 'phone' ? (
-          <form onSubmit={handleSubmitPhone} className={styles.form}>
-            <p className={styles.reason}>
-              {reason ??
-                'We send your session link and reminders over WhatsApp, so we need a number we can reach you on.'}
-            </p>
+    <div className={styles.body}>
+      {step === 'phone' ? (
+        <form onSubmit={handleSubmitPhone} className={styles.form}>
+          <p className={styles.reason}>
+            {reason ??
+              'We send your session link and reminders over WhatsApp, so we need a number we can reach you on.'}
+          </p>
 
-            <AuthField
-              id="link-phone"
-              type="tel"
-              value={phone}
-              placeholder="WhatsApp number"
-              icon={ICON_WHATSAPP}
-              label="WhatsApp number"
-              suffix="+91"
-              inputMode="numeric"
-              autoComplete="tel-national"
-              error={error ?? undefined}
-              onChange={(value) => setPhone(value.replace(/\D/g, '').slice(0, 10))}
-            />
-
-            <button type="submit" className={styles.button} disabled={loading || phone.length !== 10}>
-              {loading ? 'Sending code...' : 'Send verification code'}
-            </button>
-          </form>
-        ) : (
-          <OTPVerificationStep
-            phone={e164}
-            purpose={OTP_PURPOSE.LINK_PHONE}
-            onSuccess={handleVerified}
-            onBack={() => setStep('phone')}
-            // The code was already sent when the number was submitted.
-            autoSend={false}
-            storageKey={AUTH_FLOW_STORAGE_KEYS.LINK_PHONE_OTP_EXPIRES_AT}
+          <AuthField
+            id="link-phone"
+            type="tel"
+            value={phone}
+            placeholder="WhatsApp number"
+            icon={ICON_WHATSAPP}
+            label="WhatsApp number"
+            suffix="+91"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            error={error ?? undefined}
+            onChange={(value) => setPhone(value.replace(/\D/g, '').slice(0, 10))}
           />
-        )}
-      </div>
-    </Modal>
+
+          <button type="submit" className={styles.button} disabled={loading || phone.length !== 10}>
+            {loading ? 'Sending code...' : 'Send verification code'}
+          </button>
+        </form>
+      ) : (
+        <OTPVerificationStep
+          phone={e164}
+          purpose={OTP_PURPOSE.LINK_PHONE}
+          onSuccess={handleVerified}
+          onBack={() => setStep('phone')}
+          // The code was already sent when the number was submitted.
+          autoSend={false}
+          storageKey={AUTH_FLOW_STORAGE_KEYS.LINK_PHONE_OTP_EXPIRES_AT}
+        />
+      )}
+    </div>
   );
 }
 

@@ -52,6 +52,13 @@ interface AuthContextType {
   updateUser: (updates: Partial<User>) => void;
   completeLoginWithOtp: (data: AuthData, isFirstTime?: boolean, returnUrl?: string) => void;
   completeLoginFromSession: (returnUrl?: string, isFirstTime?: boolean) => Promise<boolean>;
+  /**
+   * Re-reads the session and updates the cached user IN PLACE — no redirect, no
+   * cart merge, no login analytics. For when an already-authenticated user's
+   * record changed server-side (linking a WhatsApp number, say) and the client
+   * copy needs to catch up without being treated as a fresh sign-in.
+   */
+  refreshUser: () => Promise<void>;
 }
 
 export interface LoginWithOtpData {
@@ -143,6 +150,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem(AUTH_STORAGE_KEYS.AUTH_USER, JSON.stringify(fresh));
           localStorage.setItem(AUTH_STORAGE_KEYS.AUTH_EXPIRES_AT, String(expiresAt));
           localStorage.setItem(AUTH_STORAGE_KEYS.IS_LOGGED_IN, 'true');
+          // Let the other contexts re-hydrate too. `source` keeps this context's
+          // own listener from looping back on itself.
+          window.dispatchEvent(new CustomEvent('auth-state-changed', { detail: { source: 'AuthContext' } }));
         }
       } else {
         setUser(null);
@@ -367,6 +377,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updateUser,
         completeLoginWithOtp,
         completeLoginFromSession,
+        refreshUser: verifySessionWithServer,
       }}
     >
       {children}

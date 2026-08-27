@@ -4,12 +4,19 @@ import { successResponse, errorResponse } from '@/lib/utils/response.util';
 import { handleError } from '@/lib/utils/error.util';
 import { requireAuth } from '@/lib/middleware/auth.middleware';
 import { ROLES } from '@/lib/constants/roles';
+import { isAdminRequest, stripPrivateTherapistFields } from '@/lib/utils/therapist-visibility.util';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const therapist = await getTherapistById(id);
-    return NextResponse.json(successResponse('Therapist fetched successfully', therapist));
+
+    // Public route (the booking directory needs it), so the therapist's email —
+    // now a role-granting credential — is only returned to an admin.
+    const visible = (await isAdminRequest(req))
+      ? therapist
+      : stripPrivateTherapistFields(therapist as unknown as Record<string, unknown>);
+    return NextResponse.json(successResponse('Therapist fetched successfully', visible));
   } catch (error) {
     const { message, statusCode, error: errData } = handleError(error);
     return NextResponse.json(errorResponse(message, errData, statusCode), {

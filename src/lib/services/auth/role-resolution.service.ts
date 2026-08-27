@@ -33,25 +33,18 @@ export async function applyTherapistRoleFromEmail(user: UserDoc): Promise<UserDo
   // phone-only login carries no email to compare.
   if (!email) return user;
 
-  // ⚠️ PRIVILEGE BOUNDARY. The email must be PROVEN to belong to this person.
+  // ⚠️ PRIVILEGE BOUNDARY: an email only grants the role once PROVEN.
   //
-  // `updateProfile` lets any authenticated user write any email onto their own
-  // account without a verification round trip. Without this check, signing up
-  // by WhatsApp OTP, setting `email` to a therapist's address, and logging back
-  // in granted that therapist's role — their client list, their sessions and
-  // their Google Calendar. Only Google sign-in sets `emailVerified`, and it
-  // only does so after Google itself asserts `email_verified`.
+  // `updateProfile` lets any authenticated user write any address onto their own
+  // account, so an unproven match must not promote — otherwise signing up by
+  // OTP, setting `email` to a therapist's address and logging back in would
+  // hand over that therapist's client list, sessions and calendar.
   //
-  // Promotion requires proof; demotion below deliberately does not, so removing
-  // a therapist still takes effect for an unverified account.
-  if (!user.emailVerified) {
-    if (user.role === ROLES.THERAPIST) {
-      user.role = ROLES.CUSTOMER;
-      user.therapistId = null;
-      await user.save();
-    }
-    return user;
-  }
+  // It must NOT demote either, which an earlier version did. `emailVerified` is
+  // set only by Google sign-in, so demoting on it stripped the role from every
+  // therapist who had ever signed up by phone — on each login, permanently, and
+  // invisibly in tests because the seeds set the flag true.
+  if (!user.emailVerified) return user;
 
   try {
     const therapist = await Therapist.findOne({ email }).select('_id').lean();
@@ -131,8 +124,20 @@ export async function syncTherapistLinkByEmail(
       );
     }
 
+    // Promote — but ONLY an account that has proven this address.
+    //
+    // `updateProfile` accepts an unverified email, so matching on the address
+    // alone would let an attacker claim a therapist's email and be granted the
+    // role the moment an admin created that therapist. `emailVerified` is set
+    // only by Google sign-in, so requiring it closes that path.
+    //
+    // Dropping the promotion entirely (the previous attempt) over-corrected:
+    // `applyTherapistRoleFromEmail` runs only when a session is CREATED, and
+    // sessions slide for five days, so a therapist who had already signed in
+    // before their profile existed stayed locked out of /therapist for up to
+    // that long with nothing in the UI explaining why.
     await User.updateOne(
-      { email: nextEmail, role: { $ne: ROLES.ADMIN } },
+      { email: nextEmail, emailVerified: true, role: { $ne: ROLES.ADMIN } },
       { $set: { role: ROLES.THERAPIST, therapistId } },
     );
   } catch (error) {

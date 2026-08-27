@@ -121,7 +121,7 @@ export async function updateProfile(userId: string, name: string, email?: string
     throw new ValidationError('Name must be at least 2 characters long');
   }
 
-  const update: { name: string; email?: string | null } = {
+  const update: { name: string; email?: string | null; emailVerified?: boolean } = {
     name: name.trim(),
   };
 
@@ -134,7 +134,19 @@ export async function updateProfile(userId: string, name: string, email?: string
     if (trimmed && !validateEmail(trimmed)) {
       throw new ValidationError('Please enter a valid email address');
     }
-    update.email = trimmed ? trimmed.toLowerCase() : null;
+    const nextEmail = trimmed ? trimmed.toLowerCase() : null;
+
+    // Changing the address invalidates the proof attached to the previous one.
+    // Without this, a Google user (emailVerified: true) could repoint `email`
+    // at a therapist's address and keep the flag — walking straight through the
+    // privilege boundary in applyTherapistRoleFromEmail. The phone branch used
+    // to do exactly this before it was removed; the same rule has to hold here.
+    const current = await User.findById(userId).select('email').lean();
+    if ((current?.email ?? null) !== nextEmail) {
+      update.emailVerified = false;
+    }
+
+    update.email = nextEmail;
   }
 
   const user = await User.findByIdAndUpdate(userId, update, { new: true, runValidators: true }).catch((error) => {

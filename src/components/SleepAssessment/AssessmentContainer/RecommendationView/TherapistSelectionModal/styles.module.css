@@ -34,7 +34,7 @@
   background: var(--color-background);
   border-radius: var(--radius-2xl);
   width: 100%;
-  max-width: min(880px, calc(100vw - 2rem));
+  max-width: min(1040px, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);
   overflow: hidden;
   box-shadow: var(--shadow-xl);
@@ -71,19 +71,6 @@
   letter-spacing: var(--tracking-h4);
 }
 
-.back {
-  background: transparent;
-  border: none;
-  color: var(--color-accent);
-  font-size: var(--text-body);
-  font-weight: var(--weight-semibold);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0;
-}
-
 .close {
   background: transparent;
   border: none;
@@ -92,6 +79,19 @@
   font-size: 22px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  /* The icon is 22px; the TARGET must not be. Anything under ~44px is hard to
+     hit reliably with a thumb, and this is the only way out of the dialog on a
+     phone once the list is scrolled. */
+  min-width: 44px;
+  min-height: 44px;
+  margin-right: -10px;
+  border-radius: var(--radius-full);
+}
+
+.close:hover {
+  color: var(--color-text-primary);
+  background: var(--color-accent-surface-soft);
 }
 
 .body {
@@ -161,7 +161,7 @@
 .therapistCard {
   width: 100%;
   display: grid;
-  grid-template-columns: 56px 1fr auto;
+  grid-template-columns: 56px 1fr auto auto;
   gap: var(--space-4);
   align-items: center;
   padding: 10px 14px;
@@ -175,9 +175,11 @@
     background var(--transition-base);
 }
 
-.therapistCard:hover {
+/* Hover moves the border only. It used to also fill the background, which is
+   what the SELECTED state does — so the card under the cursor was
+   indistinguishable from the one actually chosen. */
+.therapistCard:hover:not(.therapistCardSelected) {
   border-color: var(--color-accent);
-  background: var(--color-accent-surface-soft);
 }
 
 .avatarWrap {
@@ -249,10 +251,26 @@
   color: var(--color-accent);
 }
 
+/* Calendar beside the slots, not above them.
+   The shared DatePicker sizes its day cells with `aspect-ratio: 1`, so its
+   HEIGHT follows its WIDTH: given the full width of this pane each cell grew to
+   ~140px and six rows ran to ~840px, burying the time slots below the fold.
+   Capping the column caps the cells, and the reclaimed width goes to the slots.
+   Scoped to this modal — BookingStep uses this stylesheet, so the DatePicker
+   used elsewhere in booking is untouched. */
 .bookingGrid {
   display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: var(--space-6);
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.dateSection {
+  min-width: 0;
+}
+
+.slotsSection {
+  min-width: 0;
 }
 
 .sectionTitle {
@@ -312,171 +330,110 @@
   cursor: not-allowed;
 }
 
-/* ─── Recommended therapist card ─── */
-.recCard {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  align-items: center;
-  text-align: center;
-  padding: var(--space-3) 0;
+/* ---- Single-screen picker: therapists beside their availability ---- */
+
+.pickerGrid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--space-6);
+  align-items: start;
 }
 
-.recBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--text-caption);
-  font-weight: var(--weight-semibold);
-  color: var(--color-accent);
-  background: var(--color-accent-surface-soft);
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
+/* Sticky so the chosen therapist stays visible while scanning a long slot
+   list, and independently scrollable when there are many therapists. */
+.therapistPane {
+  position: sticky;
+  top: 0;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
-.recHero {
-  display: flex;
-  align-items: center;
-  gap: var(--space-5);
-  text-align: left;
-}
-
-.recAvatarWrap {
-  position: relative;
-  width: 96px;
-  height: 96px;
-  flex-shrink: 0;
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.recAvatarIcon {
-  width: 58%;
-  height: 58%;
-}
-
-.recHeadInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.schedulePane {
   min-width: 0;
 }
 
-.recName {
-  margin: 0;
-  font-size: var(--text-h4);
-  font-weight: var(--weight-semibold);
-  color: var(--color-text-primary);
-}
-
-.recMeta {
-  margin: 0;
-  font-size: var(--text-caption);
-  color: var(--color-text-secondary);
-}
-
-.recFee {
-  margin: 4px 0 0 0;
-  font-size: var(--text-h4);
-  font-weight: var(--weight-bold);
-  color: var(--color-accent);
-}
-
-.recFeeUnit {
-  font-size: var(--text-caption);
-  font-weight: var(--weight-normal);
-  color: var(--color-text-secondary);
-}
-
-.recBlurb {
-  margin: 0;
-  font-size: var(--text-body);
-  font-style: italic;
-  color: var(--color-text-body);
-  line-height: var(--leading-relaxed);
-  max-width: 460px;
-}
-
-.recActions {
-  display: flex;
-  gap: var(--space-3);
-  width: 100%;
-  max-width: 460px;
-}
-
-.recBookBtn,
-.recCartBtn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 18px;
-  border-radius: var(--radius-lg);
-  font-size: var(--text-body);
-  font-weight: var(--weight-semibold);
-  cursor: pointer;
-  transition:
-    transform var(--transition-base),
-    box-shadow var(--transition-base);
-}
-
-.recBookBtn {
-  background: var(--gradient-accent);
-  color: var(--color-text-on-dark);
-  border: none;
-  box-shadow: var(--shadow-btn-primary);
-}
-
-.recBookBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-btn-primary-hover);
-}
-
-.recCartBtn {
-  background: var(--color-background);
-  color: var(--color-accent);
-  border: 1px solid var(--color-accent);
-}
-
-.recCartBtn:hover {
+.therapistCardSelected,
+.therapistCardSelected:hover {
+  border-color: var(--color-accent);
   background: var(--color-accent-surface-soft);
+  box-shadow: 0 0 0 1px var(--color-accent);
 }
 
-.recViewOthers {
-  background: transparent;
-  border: none;
-  color: var(--color-text-secondary);
-  font-size: var(--text-caption);
-  font-weight: var(--weight-semibold);
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 0;
-}
-
-.recViewOthers:hover {
+.tSelectedMark {
+  width: 20px;
+  height: 20px;
   color: var(--color-accent);
+}
+
+.slotsPrompt {
+  margin: 0;
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--text-body);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+/* Restored picks are re-checked against live availability; this explains why a
+   selection the user made earlier is no longer showing as chosen. */
+.staleNotice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 var(--space-6);
+  padding: 10px var(--space-4);
+  border-radius: var(--radius);
+  background: var(--color-warning-surface, #fff6e5);
+  color: var(--color-warning-text, #8a5a00);
+  font-size: var(--text-caption);
+}
+
+@media (max-width: 1000px) {
+  /* Not enough room for three columns; the calendar goes back above the slots
+     but stays width-capped so it cannot balloon again. */
+  .bookingGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dateSection {
+    max-width: 340px;
+  }
+}
+
+@media (max-width: 900px) {
+  .pickerGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+  /* Released from the sticky column so the page scrolls as one list. */
+  .therapistPane {
+    position: static;
+    max-height: none;
+  }
+  /* Full width on a phone; the desktop cap only exists to stop the day cells
+     growing with the column. */
+  .dateSection {
+    max-width: none;
+  }
+  /* Compact cards: five of these at desktop height filled the screen twice
+     over before the calendar came into view. */
+  .therapistCard {
+    grid-template-columns: 44px 1fr auto auto;
+    gap: var(--space-3);
+    padding: 8px 12px;
+  }
+  .avatarWrap {
+    width: 44px;
+    height: 44px;
+  }
 }
 
 @media (max-width: 768px) {
-  .bookingGrid {
-    grid-template-columns: 1fr;
-  }
   .header,
   .body,
   .footer {
     padding-left: var(--space-5);
     padding-right: var(--space-5);
-  }
-  .recHero {
-    flex-direction: column;
-    text-align: center;
-  }
-  .recActions {
-    flex-direction: column;
   }
   .footer {
     flex-direction: column;
@@ -485,4 +442,64 @@
   .confirm {
     width: 100%;
   }
+}
+
+/* ---- Mobile: the chosen therapist, collapsed ---- */
+
+.chosenBar {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 8px 12px;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  background: var(--color-accent-surface-soft);
+}
+
+.chosenAvatar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent-surface);
+  color: var(--color-accent);
+}
+
+.chosenInfo {
+  min-width: 0;
+}
+
+.chosenName {
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chosenMeta {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+}
+
+.chosenChange {
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  color: var(--color-accent);
+  font-family: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  padding: 8px 14px;
+  cursor: pointer;
+  /* Comfortable thumb target. */
+  min-height: 44px;
 }

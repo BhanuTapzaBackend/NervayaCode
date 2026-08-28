@@ -2,9 +2,16 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import type { Therapist } from '@/types/therapist.types';
+import { loadPlanTherapySelection } from './planTherapySelection';
 
-export type TherapyAction = 'cart' | 'book';
-
+/**
+ * Selection state for the plan's therapist popup.
+ *
+ * There are no steps any more. The popup used to walk recommended-therapist →
+ * booking → (optionally) other-therapists, which is why this once carried
+ * `showList`, `action` and `backToProfile`. Everything is on one screen now, so
+ * the state is just "which therapist, which date, which slot".
+ */
 export function useTherapistSelection() {
   const today = useMemo(() => {
     const d = new Date();
@@ -19,30 +26,29 @@ export function useTherapistSelection() {
     return d;
   }, []);
 
-  // `selectedTherapist` is an override: null means "use the recommended one".
-  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
-  const [showList, setShowList] = useState(false);
-  const [action, setAction] = useState<TherapyAction | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date>(today);
-  const [visibleMonth, setVisibleMonth] = useState<Date>(() => new Date(today.getFullYear(), today.getMonth(), 1));
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  // Seeded from the previous visit's pick, so reopening the popup resumes where
+  // the user left off. Only ids/strings are restored — the Therapist object is
+  // matched from the live directory once it loads, so a therapist who has since
+  // been removed simply does not come back.
+  const [restored] = useState(() => loadPlanTherapySelection());
+
+  const [selectedTherapistId, setSelectedTherapistId] = useState<string | null>(restored?.therapistId ?? null);
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    if (!restored?.date) return today;
+    const parsed = new Date(`${restored.date}T00:00:00`);
+    // A stored date in the past would open the calendar on a month with nothing
+    // bookable in it.
+    return Number.isNaN(parsed.getTime()) || parsed < today ? today : parsed;
+  });
+  const [visibleMonth, setVisibleMonth] = useState<Date>(
+    () => new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+  );
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(restored?.slot ?? null);
 
   const pickTherapist = useCallback((t: Therapist) => {
-    setSelectedTherapist(t);
-    setShowList(false);
-    setSelectedSlot(null);
-  }, []);
-
-  const showOtherTherapists = useCallback(() => setShowList(true), []);
-  const hideOtherTherapists = useCallback(() => setShowList(false), []);
-
-  const startBooking = useCallback((a: TherapyAction) => {
-    setAction(a);
-    setSelectedSlot(null);
-  }, []);
-
-  const backToProfile = useCallback(() => {
-    setAction(null);
+    setSelectedTherapistId(t._id);
+    // Slots belong to a therapist; keeping the old one would show a time this
+    // therapist may not offer and submit an unbookable slot.
     setSelectedSlot(null);
   }, []);
 
@@ -52,30 +58,21 @@ export function useTherapistSelection() {
     setSelectedSlot(null);
   }, []);
 
-  const reset = useCallback(() => {
-    setSelectedTherapist(null);
-    setShowList(false);
-    setAction(null);
-    setSelectedSlot(null);
-  }, []);
+  /** Drops a restored slot that turned out to be unavailable, keeping the therapist. */
+  const clearSlot = useCallback(() => setSelectedSlot(null), []);
 
   return {
     today,
     maxDate,
-    selectedTherapist,
-    showList,
-    action,
+    restored,
+    selectedTherapistId,
     selectedDate,
     visibleMonth,
     selectedSlot,
     setSelectedSlot,
     setVisibleMonth,
     pickTherapist,
-    showOtherTherapists,
-    hideOtherTherapists,
-    startBooking,
-    backToProfile,
     pickDate,
-    reset,
+    clearSlot,
   };
 }

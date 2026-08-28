@@ -48,12 +48,11 @@ export function RecommendationView({ result }: Readonly<RecommendationViewProps>
 
   const handleModalClose = useCallback(() => {
     setTherapistModalOpen(false);
-    bundle.resetTherapyFlow();
     // Without this, dismissing the modal leaves the originating CTA stuck in "Adding..." forever.
     setAdding((prev) =>
       prev === 'mod:therapy' || prev === 'therapy' || prev === 'plan' || prev === 'cart' ? null : prev,
     );
-  }, [bundle]);
+  }, []);
 
   const handleIndividualAdd = useCallback(
     async (id: 'supplement' | 'deep-rest' | 'therapy') => {
@@ -131,6 +130,7 @@ export function RecommendationView({ result }: Readonly<RecommendationViewProps>
                 discountPct={plan.discountPct}
                 onStartPlan={bundle.handleStartPlan}
                 onAddPlanToCart={bundle.handleAddPlanToCart}
+                hasTherapy={bundle.selectedHasTherapy}
                 adding={adding}
                 selectedItems={bundle.selectedItems}
                 selectedCount={bundle.selectedCount}
@@ -165,16 +165,12 @@ export function RecommendationView({ result }: Readonly<RecommendationViewProps>
         )}
       </div>
 
-      {/* Rendered on `therapistModalOpen` alone, NOT on
-          THERAPIST_RECOMMENDATION_MODAL_ENABLED. That flag decides whether a CTA
-          *opens* this modal or routes to Therapy Corner, and every caller already
-          checks it — except the package flow, which must open it either way
-          because the slot has to be held before the single payment. Gating the
-          render too left "Start My Sleep Plan" stuck on "Starting..." forever. */}
+      {/* Bundle-only. The plan is a single server-priced order and the slot has
+          to be held before that one payment, so this opens for the plan CTAs and
+          nothing else; standalone therapy goes to Therapy Corner. */}
       {therapistModalOpen && (
         <TherapistSelectionModal
           fallbackPrice={plan.therapyPrice}
-          result={result}
           onConfirm={bundle.handleTherapyConfirm}
           onClose={handleModalClose}
         />

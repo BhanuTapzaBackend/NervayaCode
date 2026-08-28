@@ -52,6 +52,8 @@ interface PlanPricingActionsProps {
   isStarting: boolean;
   isAdding: boolean;
   disabled: boolean;
+  /** When the plan includes a therapy session, the cart route is not offered. */
+  hasTherapy: boolean;
 }
 
 export function PlanPricingActions({
@@ -60,15 +62,26 @@ export function PlanPricingActions({
   isStarting,
   isAdding,
   disabled,
+  hasTherapy,
 }: Readonly<PlanPricingActionsProps>) {
   return (
     <div className={styles.actions}>
       <button type="button" className={styles.primary} onClick={onStartPlan} disabled={disabled || isStarting}>
         {isStarting ? 'Starting...' : 'Start My Sleep Plan'}
       </button>
-      <button type="button" className={styles.secondary} onClick={onAddPlanToCart} disabled={disabled || isAdding}>
-        {isAdding ? 'Adding...' : 'Add Plan to Cart'}
-      </button>
+
+      {/* No cart route for a plan containing therapy.
+          Two reasons, both real. The session needs a therapist and a held slot,
+          which a cart line cannot express; and cart orders are priced per item
+          — `createOrder` receives `promoDiscount` from its caller and cannot
+          derive the bundle discount — so this button charged MORE than the plan
+          price while looking like the cheaper, more casual option, and settled
+          the session in a second payment. */}
+      {!hasTherapy && (
+        <button type="button" className={styles.secondary} onClick={onAddPlanToCart} disabled={disabled || isAdding}>
+          {isAdding ? 'Adding...' : 'Add Plan to Cart'}
+        </button>
+      )}
     </div>
   );
 }

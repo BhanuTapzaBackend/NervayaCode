@@ -9,16 +9,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { sleepPlanApi, type PlanPricing, type PlanServiceKey } from '@/lib/api/sleepPlan';
 import { ITEM_TYPE } from '@/lib/constants/enums';
 import { DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
-import {
-  SLEEP_PLAN_BUNDLE_SOURCE,
-  THERAPIST_RECOMMENDATION_MODAL_ENABLED,
-  THERAPY_CORNER_PATH,
-} from '@/lib/constants/sleepPlan.constants';
+import { SLEEP_PLAN_BUNDLE_SOURCE, THERAPY_CORNER_PATH } from '@/lib/constants/sleepPlan.constants';
 import type { SleepPlanData } from './useSleepPlanData';
-import type { TherapistSelection, TherapyAction } from './TherapistSelectionModal';
+import type { TherapistSelection } from './TherapistSelectionModal';
+import { clearPlanTherapySelection } from './TherapistSelectionModal/planTherapySelection';
 
 export type AddingState = 'plan' | 'cart' | 'therapy' | `mod:${string}` | null;
-type TherapyFlow = 'standalone' | 'plan-start' | 'plan-cart';
 
 interface UseBundleCheckoutArgs {
   result: AssessmentResult;
@@ -39,9 +35,10 @@ export interface UseBundleCheckoutReturn {
   pricing: { originalPrice: number; discountedPrice: number; savingsAmount: number };
   handleStartPlan: () => Promise<void>;
   handleAddPlanToCart: () => Promise<void>;
-  handleTherapyConfirm: (selection: TherapistSelection, action: TherapyAction) => Promise<void>;
+  handleTherapyConfirm: (selection: TherapistSelection) => Promise<void>;
   startTherapySelection: () => void;
-  resetTherapyFlow: () => void;
+  /** True when the plan includes therapy, which forces the single-order route. */
+  selectedHasTherapy: boolean;
 }
 
 export function useBundleCheckout({
@@ -54,7 +51,6 @@ export function useBundleCheckout({
 }: UseBundleCheckoutArgs): UseBundleCheckoutReturn {
   const router = useRouter();
   const { user } = useAuth();
-  const [therapyFlow, setTherapyFlow] = useState<TherapyFlow>('standalone');
 
   const bundleItems = useMemo(() => getBundleItems(result.services), [result.services]);
   const [excludedItems, setExcludedItems] = useState<Set<ServiceKey>>(() => new Set());
@@ -154,6 +150,7 @@ export function useBundleCheckout({
       if (!rzpRes.ok || !rzpData.success) throw new Error(rzpData.message || 'Failed to initialize payment');
 
       if (rzpData.data?.bypassed) {
+        clearPlanTherapySelection();
         router.push(`/order-success/${orderId}`);
         return;
       }
@@ -180,6 +177,9 @@ export function useBundleCheckout({
           });
           const verifyData = await verifyRes.json();
           if (verifyRes.ok && verifyData.success) {
+            // Cleared on PAYMENT, not on order creation: an abandoned checkout
+            // should still find its therapist and slot waiting on return.
+            clearPlanTherapySelection();
             router.push(`/order-success/${orderId}`);
           } else {
             toast.error(verifyData.message || 'Payment verification failed');
@@ -241,22 +241,11 @@ export function useBundleCheckout({
     }
   }, [selectedItems, plan.supplement, plan.deepRestPrice]);
 
-  // Modal paused: park the rest of the plan in the cart, then let the user pick a therapist
-  // on /therapy-corner and book the session from there.
-  const addBundleAndPickTherapist = useCallback(async () => {
-    const hasOtherItems = selectedItems.some((key) => key !== 'THERAPY');
-    try {
-      await addBundleNonTherapyItems();
-      if (hasOtherItems) {
-        await refreshCart();
-        toast.success('Your plan is in the cart — now pick the therapist for your session.');
-      }
-      router.push(THERAPY_CORNER_PATH);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not add plan to cart');
-      setAdding(null);
-    }
-  }, [selectedItems, addBundleNonTherapyItems, refreshCart, router, setAdding]);
+  // `addBundleAndPickTherapist` used to live here: it parked the supplement and
+  // Deep Rest in the cart, then sent the user to Therapy Corner to book and pay
+  // for the session separately. That is precisely the two-payment split this
+  // flow now avoids, and the cart half was charged without the bundle discount.
+  // The plan is one order; there is no partial route.
 
   const handleStartPlan = useCallback(async () => {
     if (!showBundle) return;
@@ -266,7 +255,6 @@ export function useBundleCheckout({
       // BEFORE paying — hence the modal here regardless of
       // THERAPIST_RECOMMENDATION_MODAL_ENABLED, which governs the standalone
       // therapy CTAs that deliberately send people to Therapy Corner.
-      setTherapyFlow('plan-start');
       openTherapistModal();
       return;
     }
@@ -275,13 +263,14 @@ export function useBundleCheckout({
 
   const handleAddPlanToCart = useCallback(async () => {
     if (!showBundle) return;
+    // Defensive: the plan card hides this button when therapy is in the bundle,
+    // because the cart cannot carry the plan's discount — `createOrder` takes
+    // `promoDiscount` as a parameter and never derives it from item metadata, so
+    // a therapy plan routed through the cart is charged the UNDISCOUNTED total
+    // and paid for in a second transaction. If it is reached anyway, fall back
+    // to the single-order route rather than the old split one.
     if (selectedHasTherapy) {
-      setAdding('cart');
-      if (!THERAPIST_RECOMMENDATION_MODAL_ENABLED) {
-        await addBundleAndPickTherapist();
-        return;
-      }
-      setTherapyFlow('plan-cart');
+      setAdding('plan');
       openTherapistModal();
       return;
     }
@@ -295,65 +284,35 @@ export function useBundleCheckout({
     } finally {
       setAdding(null);
     }
-  }, [
-    showBundle,
-    selectedHasTherapy,
-    addBundleNonTherapyItems,
-    addBundleAndPickTherapist,
-    refreshCart,
-    setAdding,
-    openTherapistModal,
-  ]);
+  }, [showBundle, selectedHasTherapy, addBundleNonTherapyItems, refreshCart, setAdding, openTherapistModal]);
 
+  /**
+   * The popup's only outcome: buy the whole plan as ONE order.
+   *
+   * There used to be a second branch here that added the therapy session to the
+   * cart on its own. That is what made the plan cost two payments — the session
+   * settled separately from the supplement and Deep Rest — and it also lost the
+   * bundle discount, since cart orders are priced per item. The popup is now
+   * reachable only from the bundle CTAs, so there is one route out of it.
+   */
   const handleTherapyConfirm = useCallback(
-    async (selection: TherapistSelection, action: TherapyAction) => {
+    async (selection: TherapistSelection) => {
       closeTherapistModal();
-      const flow = therapyFlow;
-      setTherapyFlow('standalone');
-      const fromBundle = flow === 'plan-start' || flow === 'plan-cart';
-      if (fromBundle) {
-        // One server-priced order for the whole plan, therapy included.
-        await purchasePlan({ therapistId: selection.therapistId, date: selection.date, slot: selection.slot });
-        return;
-      }
-      setAdding('therapy');
-      try {
-        await cartApi.add(
-          selection.therapistId,
-          1,
-          ITEM_TYPE.THERAPY,
-          selection.therapistName,
-          selection.sessionFee,
-          selection.therapistImage,
-          { date: selection.date, slot: selection.slot },
-        );
-        await refreshCart();
-        // Only the standalone flow reaches here; the package returned above.
-        if (action === 'book') {
-          router.push('/checkout');
-          return;
-        }
-        toast.success('Therapy session added to cart');
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Could not add to cart');
-      } finally {
-        setAdding(null);
-      }
+      await purchasePlan({ therapistId: selection.therapistId, date: selection.date, slot: selection.slot });
     },
-    [therapyFlow, purchasePlan, refreshCart, router, setAdding, closeTherapistModal],
+    [purchasePlan, closeTherapistModal],
   );
 
-  // Single entry point for the standalone therapy CTAs (highlight card + individual module tile).
+  /**
+   * Standalone therapy CTAs (highlight card + individual module tile).
+   *
+   * Always Therapy Corner. The selection popup is now bundle-only — its single
+   * action buys the whole plan — so sending a standalone "just therapy" user
+   * into it would offer them a plan they did not ask for.
+   */
   const startTherapySelection = useCallback(() => {
-    if (!THERAPIST_RECOMMENDATION_MODAL_ENABLED) {
-      router.push(THERAPY_CORNER_PATH);
-      return;
-    }
-    setTherapyFlow('standalone');
-    openTherapistModal();
-  }, [router, openTherapistModal]);
-
-  const resetTherapyFlow = useCallback(() => setTherapyFlow('standalone'), []);
+    router.push(THERAPY_CORNER_PATH);
+  }, [router]);
 
   return {
     bundleItems,
@@ -367,6 +326,6 @@ export function useBundleCheckout({
     handleAddPlanToCart,
     handleTherapyConfirm,
     startTherapySelection,
-    resetTherapyFlow,
+    selectedHasTherapy,
   };
 }

@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 
 import { FIXED_LOGINS, loginWithFixedOtp } from '../helpers/auth';
 import { recordActual } from '../helpers/record';
@@ -28,17 +28,53 @@ async function selectFirstBookableSlot(page: Page): Promise<string> {
   //  2. getByRole matches DISABLED buttons too. Every past date is disabled, so
   //     indexing over all of them walks Aug 1..14 and never reaches the first
   //     bookable day. Filter in the selector, not in the loop.
+  //  3. The month view is not the whole picker. This spec books a real session
+  //     on a shared test therapist, so running it repeatedly fills up the near
+  //     dates; once the visible month is fully booked EVERY date in it is
+  //     disabled and this locator matches nothing. That surfaced as an
+  //     "intermittent" timeout waiting for a date, which it never was — the
+  //     data had simply run out. Advance the month before giving up.
   const enabledDays = page.locator('button[aria-label^="Select "]:not([disabled]):not([aria-label*=" to "])');
 
-  const dayCount = await enabledDays.count();
-  for (let dayIndex = 0; dayIndex < Math.min(dayCount, 14); dayIndex += 1) {
-    const day = enabledDays.nth(dayIndex);
+  for (let month = 0; month < 2; month += 1) {
+    const found = await pickFromVisibleMonth(page, enabledDays);
+    if (found) return found;
+
+    const nextMonth = page.getByRole('button', { name: 'Next month' });
+    if (!(await nextMonth.count()) || !(await nextMonth.isEnabled().catch(() => false))) break;
+    await nextMonth.click();
+    await page.waitForTimeout(1_000);
+  }
+  throw new Error('No bookable slot found in the next two months — the test therapist may be fully booked');
+}
+
+/** Walks the dates currently rendered, returning the chosen slot label or null. */
+async function pickFromVisibleMonth(page: Page, enabledDays: Locator): Promise<string | null> {
+  // Snapshot the labels rather than holding a live nth() handle.
+  //
+  // A date renders enabled until its availability arrives, then flips to
+  // disabled if it turns out to be fully booked. An `nth()` locator resolved
+  // during that window keeps pointing at the element it first matched, so
+  // Playwright retried the click for the full 20s timeout against a button that
+  // had since become disabled — and threw, instead of simply trying the next
+  // date or the next month.
+  const labels = (await enabledDays.evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')))).filter(
+    (label): label is string => !!label,
+  );
+
+  for (const label of labels.slice(0, 14)) {
+    const day = page.getByRole('button', { name: label, exact: true });
+    if (!(await day.isEnabled().catch(() => false))) continue;
 
     // No isVisible() guard: the modal body scrolls, so future dates sit below
     // the fold and report not-visible even though they are perfectly clickable.
     // Skipping on that silently walked past every bookable day.
     await day.scrollIntoViewIfNeeded().catch(() => undefined);
-    await day.click();
+    const clicked = await day
+      .click({ timeout: 5_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!clicked) continue; // became unavailable under us
     await page.waitForTimeout(600); // slots refetch on date change
 
     for (let band = 0; band < 3; band += 1) {
@@ -60,7 +96,7 @@ async function selectFirstBookableSlot(page: Page): Promise<string> {
       }
     }
   }
-  throw new Error('No bookable slot found in the next 14 available days');
+  return null;
 }
 
 test.describe('Google Meet booking', () => {

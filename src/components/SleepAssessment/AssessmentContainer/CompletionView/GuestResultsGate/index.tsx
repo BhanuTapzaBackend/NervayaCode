@@ -82,7 +82,7 @@ export function GuestResultsGate({ returnUrl = '/sleep-assessment' }: GuestResul
           <span className={styles.reassuranceIcon} aria-hidden>
             ✓
           </span>
-          Your answers are saved — registering just unlocks your plan.
+          Your answers are saved - registering just unlocks your plan.
         </p>
       </article>
     </section>

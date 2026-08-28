@@ -16,6 +16,8 @@ import { ITEM_TYPE } from '@/lib/constants/enums';
 import { trackTherapySlotSelected, trackTherapyBooked } from '@/utils/analytics';
 import { RazorpayCheckoutScript } from '@/components/common';
 import { useAuth } from '@/hooks/useAuth';
+import { usePhoneGate } from '@/hooks/usePhoneGate';
+import { PhoneCollectionModal } from '@/components/PhoneCollectionModal';
 import { useModalDismiss } from '@/hooks/useModalDismiss';
 import { toast } from 'sonner';
 import styles from './styles.module.css';
@@ -60,6 +62,7 @@ export default function BookingModal({
 
   const { data: therapist } = useTherapist(therapistId);
   const { user } = useAuth();
+  const phoneGate = usePhoneGate();
 
   const {
     schedule,
@@ -170,6 +173,12 @@ export default function BookingModal({
     if (!slot || !slot.isAvailable) return;
 
     setShowConfirm(false);
+
+    // Session links and reminders go out over WhatsApp, so a verified number is
+    // required. Signup no longer collects one, so ask here. The server enforces
+    // this independently with a 428 — this is just the friendlier path to it.
+    if (!(await phoneGate.ensurePhone())) return;
+
     setBooking(true);
     setError(null);
     try {
@@ -430,6 +439,13 @@ export default function BookingModal({
           therapistName={therapist?.name}
           selectedDate={schedule?.date}
           isRescheduling={!!rescheduleSessionId}
+        />
+
+        <PhoneCollectionModal
+          isOpen={phoneGate.isOpen}
+          onClose={phoneGate.close}
+          onVerified={phoneGate.onVerified}
+          reason="We send your session link and a reminder over WhatsApp, so we need a number we can reach you on."
         />
       </div>
     </div>

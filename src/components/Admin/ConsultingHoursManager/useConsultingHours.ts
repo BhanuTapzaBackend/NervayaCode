@@ -11,7 +11,9 @@ interface UseConsultingHoursOptions {
 export function useConsultingHours({ therapistId, onUpdate }: UseConsultingHoursOptions) {
   const [consultingHours, setConsultingHours] = useState<ConsultingHour[]>([]);
   const [savedHours, setSavedHours] = useState<ConsultingHour[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Starts true: the hours are fetched on mount, and starting false gave one
+  // frame where the editor looked ready against an empty list.
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +26,12 @@ export function useConsultingHours({ therapistId, onUpdate }: UseConsultingHours
     setError(null);
     try {
       const result = await consultingHoursApi.get(therapistId);
-      if (!result.success) return;
+      if (!result.success) {
+        // Was a bare `return`, which left the caller with no hours AND no error
+        // — an editor that could never be opened and never said why.
+        setError(result.message ?? 'Failed to load consulting hours');
+        return;
+      }
       if (!result.data || result.data.length === 0) {
         const defaultHours: ConsultingHour[] = DAYS_OF_WEEK.map((day) => ({
           dayOfWeek: day.value,
@@ -66,29 +73,50 @@ export function useConsultingHours({ therapistId, onUpdate }: UseConsultingHours
     setConsultingHours((prev) => prev.map((hour) => (hour.dayOfWeek === dayOfWeek ? { ...hour, ...updates } : hour)));
   }, []);
 
-  const handleUpdate = useCallback(async () => {
-    setSaving(true);
-    setError(null);
-    setSuccess(null);
-    setGenerationStatus(null);
-    try {
-      const validHours = consultingHours.map((hour) => ({
-        dayOfWeek: hour.dayOfWeek,
-        startTime: hour.isEnabled ? hour.startTime : '09:00 AM',
-        endTime: hour.isEnabled ? hour.endTime : '05:00 PM',
-        isEnabled: hour.isEnabled,
-      }));
-      await consultingHoursApi.update(therapistId, validHours);
-      setSuccess('Consulting hours saved successfully!');
-      setSavedHours(validHours);
-      await fetchConsultingHours();
-      onUpdate?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update consulting hours');
-    } finally {
-      setSaving(false);
-    }
-  }, [therapistId, consultingHours, fetchConsultingHours, onUpdate]);
+  /**
+   * Persists the hours.
+   *
+   * `override` lets a caller save a draft it holds locally. Without it the
+   * only way to save an edit was to write it into shared state first, which
+   * meant a modal could not offer a working Cancel — the edits were already
+   * live, and the debounced auto-save would flush them on close.
+   */
+  const handleUpdate = useCallback(
+    async (override?: ConsultingHour[]): Promise<boolean> => {
+      const source = override ?? consultingHours;
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
+      setGenerationStatus(null);
+      try {
+        const validHours = source.map((hour) => ({
+          dayOfWeek: hour.dayOfWeek,
+          startTime: hour.isEnabled ? hour.startTime : '09:00 AM',
+          endTime: hour.isEnabled ? hour.endTime : '05:00 PM',
+          isEnabled: hour.isEnabled,
+        }));
+        await consultingHoursApi.update(therapistId, validHours);
+        // Only AFTER the server accepted it. Committing the draft up front made
+        // a failed save look successful: the sidebar summary showed hours that
+        // were never persisted.
+        if (override) setConsultingHours(override);
+        setSuccess('Consulting hours saved successfully!');
+        setSavedHours(validHours);
+        await fetchConsultingHours();
+        onUpdate?.();
+        return true;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to update consulting hours');
+        // Reported, not swallowed. Callers chain slot generation off this, and
+        // resolving on failure meant 30 days of slots were rebuilt from the OLD
+        // hours and the editor closed on a draft it had just lost.
+        return false;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [therapistId, consultingHours, fetchConsultingHours, onUpdate],
+  );
 
   const generateSlots = useCallback(
     async (days: number = 30) => {

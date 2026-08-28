@@ -1,0 +1,399 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--t-card-radius);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Toolbar ───────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.navGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.todayBtn {
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-background);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius);
+  color: var(--color-text-body);
+  font-family: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.todayBtn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.iconBtn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius);
+  color: var(--color-text-body);
+  cursor: pointer;
+}
+
+.iconBtn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.rangeTitle {
+  margin: 0 0 0 var(--space-2);
+  font-family: var(--font-heading);
+  font-size: var(--text-h4);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.segmented {
+  display: flex;
+  padding: 3px;
+  background: var(--color-background-alt);
+  border-radius: var(--radius);
+}
+
+.segment {
+  padding: var(--space-2) var(--space-5);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.segmentActive {
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+}
+
+.filterWrap {
+  position: relative;
+}
+
+.filterBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-background);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius);
+  color: var(--color-text-body);
+  font-family: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.filterBtnActive {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.filterMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 20;
+  min-width: 148px;
+  padding: var(--space-2);
+  background: var(--color-background);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+
+.filterOption {
+  display: block;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--color-text-body);
+  font-family: inherit;
+  font-size: var(--text-caption);
+  text-align: left;
+  cursor: pointer;
+}
+
+.filterOption:hover {
+  background: var(--color-background-alt);
+}
+
+.filterOptionActive {
+  color: var(--color-accent);
+  font-weight: var(--weight-semibold);
+}
+
+/* ── Grid ──────────────────────────────────────────────────── */
+.gridScroll {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* globals.css hides scrollbars app-wide via `*::-webkit-scrollbar`, and
+     `scrollbar-width` only reaches Firefox — so this region has to re-enable
+     the WebKit one explicitly or the horizontal scroll is undiscoverable on
+     Safari and Chrome, which is exactly where a 7-day week overflows. */
+  scrollbar-width: thin;
+}
+
+.gridScroll::-webkit-scrollbar {
+  display: block;
+  height: 8px;
+}
+
+.gridScroll::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-full);
+  background: var(--color-border-subtle);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 64px repeat(var(--day-count), minmax(112px, 1fr));
+  min-width: 100%;
+}
+
+.gutterHead,
+.dayHead {
+  padding: var(--space-4) var(--space-2);
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  text-align: center;
+}
+
+/* The scroll axis here is HORIZONTAL (`overflow-x: auto`), so the time column
+   pins to the left. A vertical `top: 0` did nothing — scrollTop is always 0 in
+   this container — while scrolling right slid the hour labels away and left
+   every event without a time reference. */
+.gutterHead,
+.gutter {
+  position: sticky;
+  left: 0;
+  z-index: 6;
+  background: var(--color-background);
+}
+
+.gutterHead {
+  font-size: var(--text-label);
+  /* --color-text-tertiary is 2.56:1 on white — below the 4.5:1 AA threshold. */
+  color: var(--color-text-secondary);
+}
+
+.dayHead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border-left: 1px solid var(--color-border);
+}
+
+.dayName {
+  font-size: var(--text-label);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-text-secondary);
+}
+
+.dayNumber {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.dayNumberToday {
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+}
+
+.gutter {
+  position: relative;
+}
+
+.hourLabel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-right: var(--space-3);
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  /* Nudge up so the label aligns with its gridline rather than the row below. */
+  transform: translateY(-0.5em);
+}
+
+.dayColumn {
+  position: relative;
+  border-left: 1px solid var(--color-border);
+}
+
+.hourCell {
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* ── Events ────────────────────────────────────────────────── */
+.event {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 5px 7px;
+  border-radius: 6px;
+  border-left: 3px solid var(--color-text-tertiary);
+  background: var(--color-background-alt);
+  overflow: hidden;
+  cursor: default;
+}
+
+.eventConfirmed {
+  background: var(--color-success-dim);
+  border-left-color: var(--color-success);
+}
+
+.eventPending {
+  background: var(--color-warning-dim);
+  border-left-color: var(--color-warning);
+}
+
+.eventCompleted {
+  background: var(--color-background-alt);
+  border-left-color: var(--color-text-tertiary);
+}
+
+.eventCancelled {
+  background: var(--color-error-dim);
+  border-left-color: var(--color-error);
+  opacity: 0.75;
+}
+
+.eventName {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eventTime,
+.eventMeta {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Now line ──────────────────────────────────────────────── */
+.nowLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  height: 2px;
+  background: var(--color-error);
+  pointer-events: none;
+}
+
+.nowDot {
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-error);
+}
+
+.loadingVeil {
+  /* sticky, not absolute: `inset: 0` inside a horizontally-scrolling box only
+     covers the scrollport at scrollLeft 0, so scrolling right revealed
+     uncovered grid beside it. */
+  position: sticky;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  margin-top: -100%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
+  font-size: var(--text-caption);
+}
+
+@media (max-width: 860px) {
+  .toolbar {
+    padding: var(--space-4);
+  }
+
+  .navGroup {
+    /* Without this the title's `width: 100%` is just a shrinkable flex-basis
+       and it stays an ellipsised sliver beside the three buttons. */
+    flex-wrap: wrap;
+  }
+
+  .rangeTitle {
+    font-size: var(--text-body-lg);
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Week stays 7 columns but scrolls horizontally, the way Google Calendar
+     handles it — squeezing 7 days into 375px makes every block unreadable. */
+  .grid {
+    grid-template-columns: 52px repeat(var(--day-count), minmax(96px, 1fr));
+  }
+}

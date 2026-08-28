@@ -1,0 +1,106 @@
+/*
+ * Therapist-area tokens.
+ *
+ * Scoped to .shell, never :root. Custom properties inherit only down the
+ * subtree, so these physically cannot leak into customer or admin pages — which
+ * is what lets the therapist area carry its own darker, bluer palette without
+ * touching the brand tokens everything else depends on.
+ */
+.shell {
+  --t-sidebar-w: 244px;
+  --t-rail-w: 232px;
+  --t-topbar-h: 76px;
+  --t-bottomnav-h: 64px;
+
+  /* Same dark the global navbar uses, so the JPG logo (which has no alpha
+     channel) blends instead of showing a pale rectangle around itself. */
+  --t-nav-bg: var(--color-background-dark);
+  --t-nav-surface: #211a4d;
+  --t-nav-hover: rgba(255, 255, 255, 0.07);
+  --t-nav-active: var(--color-accent);
+  --t-nav-text: rgba(255, 255, 255, 0.62);
+  --t-nav-text-active: #ffffff;
+
+  --t-card-radius: var(--radius-lg);
+  --t-gap: var(--space-6);
+  --t-focus-ring: 0 0 0 3px var(--color-accent-highlight);
+
+  display: grid;
+  grid-template-columns: var(--t-sidebar-w) 1fr;
+  grid-template-areas: 'nav content';
+  min-height: 100dvh;
+  background: var(--color-background-page);
+}
+
+/* One visible focus treatment for everything in the therapist area. The UA
+   default survives (nothing resets `outline`), but it is nearly invisible on
+   the accent-filled controls. */
+.shell :focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.content {
+  grid-area: content;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* lets the column shrink instead of forcing overflow */
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: var(--t-gap) var(--page-gutter) var(--space-8);
+}
+
+.scrim {
+  display: none;
+}
+
+/* Collapsed rail. A class, not a breakpoint — the therapist chooses this, and
+   it persists via the same SidebarContext the customer sidebar uses. */
+.shellCollapsed {
+  --t-sidebar-w: 76px;
+}
+
+/* ── Mobile: drawer + bottom tabs ──────────────────────────── */
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'content';
+    /* Room for the fixed tab bar, plus the iOS home indicator. */
+    padding-bottom: calc(var(--t-bottomnav-h) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .main {
+    padding: var(--space-5) var(--page-gutter) var(--space-7);
+  }
+
+  .scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    border: none;
+    padding: 0;
+    background: var(--color-overlay);
+    cursor: pointer;
+    animation: scrimIn var(--transition-base);
+  }
+}
+
+@keyframes scrimIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim {
+    animation: none;
+  }
+}

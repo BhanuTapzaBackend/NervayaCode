@@ -1,0 +1,217 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  /* Wide enough that a day name plus two time selects never wrap — the whole
+     reason this moved out of the sidebar. Capped so it stays readable and
+     collapses cleanly on a phone. */
+  width: min(34rem, 86vw);
+}
+
+.intro {
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+.days {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  transition: background var(--transition-fast);
+}
+
+.rowOpen {
+  background: var(--color-accent-surface);
+  border-color: var(--color-accent-surface-border);
+}
+
+.dayToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.dayName {
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-primary);
+}
+
+.times {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.timeSelect {
+  flex: 1;
+  min-width: 0;
+}
+
+.dash {
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+}
+
+.closed {
+  font-size: var(--text-caption);
+  font-style: italic;
+  color: var(--color-text-tertiary);
+}
+
+.warning,
+.error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  font-size: var(--text-caption);
+}
+
+.warning {
+  background: var(--color-warning-dim);
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning-text);
+}
+
+.error {
+  background: var(--color-error-dim);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.cancel,
+.save {
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base);
+}
+
+.cancel {
+  background: var(--color-background);
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-body);
+}
+
+.cancel:hover:not(:disabled) {
+  border-color: var(--color-text-tertiary);
+}
+
+.save {
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  color: var(--color-text-on-dark);
+}
+
+.save:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.cancel:disabled,
+.save:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+  .row {
+    /* Stack rather than shrink: two selects side by side below ~560px is what
+       produced the clipped "05:00" in the first place. */
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .cancel,
+  .save {
+    width: 100%;
+  }
+}
+
+/* Shown over the form when a dismissal is attempted with unsaved edits. The
+   form underneath stays mounted — unmounting it would destroy the very draft
+   this is protecting. */
+.discardBar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-background);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+}
+
+.discardText {
+  font-size: var(--text-caption);
+  color: var(--color-text-body);
+}
+
+.discardActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-left: auto;
+}
+
+.discardConfirm {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--color-error, #c0392b);
+  color: #fff;
+  font-family: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.discardConfirm:hover {
+  opacity: 0.9;
+}

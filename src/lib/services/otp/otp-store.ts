@@ -1,9 +1,12 @@
+import type { OtpPurpose } from '@/lib/constants/enums';
 import { createHash, randomInt } from 'crypto';
 import { OTP_TTL_MS, OTP_LENGTH } from '@/lib/constants/otp.constants';
 import OtpToken from '@/lib/models/otpToken.model';
 import connectDB from '@/lib/db/mongodb';
 
-export type OtpPurpose = 'login' | 'signup';
+// Re-exported from the shared enum rather than redeclared: the two drifted
+// apart once 'link_phone' was added, and a local union would silently reject it.
+export type { OtpPurpose };
 
 function key(phone: string, purpose: OtpPurpose): string {
   return `${phone.trim()}:${purpose}`;

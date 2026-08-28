@@ -1,3 +1,4 @@
+import { OTP_PURPOSE_VALUES } from '@/lib/constants/enums';
 import { normalizePhone } from '@/lib/utils/validation.util';
 import { checkOTPSendLimit } from '@/lib/utils/rate-limit.util';
 import { getTestLogin } from '@/lib/constants/test-logins';
@@ -37,7 +38,7 @@ export async function sendOtp(
       statusCode: 400,
     };
   }
-  if (purpose !== 'login' && purpose !== 'signup') {
+  if (!OTP_PURPOSE_VALUES.includes(purpose)) {
     return {
       success: false,
       message: 'Invalid purpose',

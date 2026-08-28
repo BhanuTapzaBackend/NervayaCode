@@ -1,3 +1,4 @@
+import { isPublicOtpPurpose } from '@/lib/constants/enums';
 import { NextRequest, NextResponse } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/utils/response.util';
 import { getClientIp } from '@/lib/utils/request.util';
@@ -18,7 +19,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(errorResponse('Invalid input format', null, 400), { status: 400 });
   }
 
-  if (purpose !== 'login' && purpose !== 'signup') {
+  // Explicitly narrow to the PUBLIC purposes. 'link_phone' attaches a number
+  // to an existing account and must only ever be reachable through the
+  // requireAuth'd /api/auth/phone/* routes — this endpoint has no session.
+  if (!isPublicOtpPurpose(purpose)) {
     return NextResponse.json(errorResponse('Purpose must be login or signup', null, 400), { status: 400 });
   }
 

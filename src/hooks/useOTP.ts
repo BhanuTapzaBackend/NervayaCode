@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { sendOtp as sendOtpApi, verifyOtp as verifyOtpApi } from '@/lib/api/auth';
+import { sendOtp as sendOtpApi, verifyOtp as verifyOtpApi, sendLinkPhoneOtp, verifyLinkPhoneOtp } from '@/lib/api/auth';
+import { OTP_PURPOSE } from '@/lib/constants/enums';
 import { getApiErrorMessage } from '@/lib/utils/apiError.util';
 import type { OtpPurpose } from '@/types/auth.types';
 
@@ -26,7 +27,9 @@ export function useOTP(): UseOTPReturn {
     setError(null);
     setSendCount(null);
     try {
-      const res = await sendOtpApi(phone, purpose);
+      // link_phone writes to an existing account, so it goes through the
+      // authenticated endpoint rather than the public OTP one.
+      const res = purpose === OTP_PURPOSE.LINK_PHONE ? await sendLinkPhoneOtp(phone) : await sendOtpApi(phone, purpose);
       if (res.success) return true;
       setError(res.message ?? 'Failed to send OTP');
       if (res.data?.otpSendCount !== undefined) {
@@ -51,6 +54,17 @@ export function useOTP(): UseOTPReturn {
       setLoading(true);
       setError(null);
       try {
+        if (purpose === OTP_PURPOSE.LINK_PHONE) {
+          const linked = await verifyLinkPhoneOtp(phone, code);
+          if (linked.success && linked.data?.user) {
+            // The refreshed session cookie is httpOnly; there is no token to
+            // hand back, and callers of this branch do not use one.
+            return { user: linked.data.user, token: '' };
+          }
+          setError(linked.message ?? 'Verification failed');
+          return null;
+        }
+
         const res = await verifyOtpApi(phone, code, purpose);
         if (res.success && res.data?.user && res.data?.token) {
           return {

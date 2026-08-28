@@ -18,6 +18,7 @@ import { Icon } from '@iconify/react';
 import { ICON_CHEVRON_LEFT } from '@/constants/icons';
 import { DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
 import { GlobalLoader, Modal } from '@/components/common';
+import { PhoneCollectionModal } from '@/components/PhoneCollectionModal';
 import styles from './styles.module.css';
 
 export default function CheckoutPage() {
@@ -50,6 +51,7 @@ export default function CheckoutPage() {
     razorpayOrderId,
     razorpayKeyId,
     isDigitalOnly,
+    phoneGate,
   } = useCheckout();
 
   if (loading) {
@@ -201,6 +203,16 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+
+      <PhoneCollectionModal
+        isOpen={phoneGate.isOpen}
+        onClose={phoneGate.close}
+        onVerified={phoneGate.onVerified}
+        // Most shoppers already typed a number into the shipping address, so
+        // prefill it — they only have to confirm the code.
+        initialPhone={selectedAddress?.phone ?? ''}
+        reason="We send order and delivery updates over WhatsApp, so we need a number we can reach you on."
+      />
     </Sidebar>
   );
 }

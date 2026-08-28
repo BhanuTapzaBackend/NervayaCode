@@ -98,7 +98,9 @@ export async function prepareInvoiceForOrder(orderId: string): Promise<PreparedI
     paymentReference: order.paymentId,
     customer: {
       name: address?.name || user?.name || 'Customer',
-      phone: address?.phone || user?.phone,
+      // The shipping address carries its own phone, so an account without one
+      // still invoices correctly. `|| undefined` collapses the null case.
+      phone: address?.phone || user?.phone || undefined,
       email: user?.email ?? undefined,
       addressLines: address
         ? [

@@ -16,9 +16,24 @@ export interface OTPVerificationStepProps {
   onSuccess: (session?: AuthData) => void;
   onBack?: () => void;
   autoSend?: boolean;
+  /**
+   * sessionStorage key holding the resend cooldown.
+   *
+   * Defaults to the login/signup key. Any OTHER flow using this component must
+   * pass its own: two flows sharing one key clobber each other's countdowns —
+   * a phone-link cooldown would suppress the resend button on a fresh login.
+   */
+  storageKey?: string;
 }
 
-export function OTPVerificationStep({ phone, purpose, onSuccess, onBack, autoSend = true }: OTPVerificationStepProps) {
+export function OTPVerificationStep({
+  phone,
+  purpose,
+  onSuccess,
+  onBack,
+  autoSend = true,
+  storageKey = AUTH_FLOW_STORAGE_KEYS.OTP_EXPIRES_AT,
+}: OTPVerificationStepProps) {
   const { sendOtp, verifyOtp, loading, error, sendCount, clearError } = useOTP();
   const [code, setCode] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [cooldown, setCooldown] = useState(0);
@@ -28,12 +43,12 @@ export function OTPVerificationStep({ phone, purpose, onSuccess, onBack, autoSen
     clearError();
     sendOtp(phone, purpose);
     setCooldown(RESEND_COOLDOWN_SEC);
-    sessionStorage.setItem(AUTH_FLOW_STORAGE_KEYS.OTP_EXPIRES_AT, String(Date.now() + RESEND_COOLDOWN_SEC * 1000));
-  }, [phone, purpose, sendOtp, clearError]);
+    sessionStorage.setItem(storageKey, String(Date.now() + RESEND_COOLDOWN_SEC * 1000));
+  }, [phone, purpose, sendOtp, clearError, storageKey]);
 
   useEffect(() => {
     if (autoSend) {
-      const expiresAt = sessionStorage.getItem(AUTH_FLOW_STORAGE_KEYS.OTP_EXPIRES_AT);
+      const expiresAt = sessionStorage.getItem(storageKey);
       const remaining = expiresAt ? Math.floor((parseInt(expiresAt, 10) - Date.now()) / 1000) : 0;
 
       if (remaining > 0) {
@@ -45,13 +60,13 @@ export function OTPVerificationStep({ phone, purpose, onSuccess, onBack, autoSen
       const id = setTimeout(() => sendOtpOnce(), 0);
       return () => clearTimeout(id);
     } else {
-      const expiresAt = sessionStorage.getItem(AUTH_FLOW_STORAGE_KEYS.OTP_EXPIRES_AT);
+      const expiresAt = sessionStorage.getItem(storageKey);
       const remaining = expiresAt ? Math.floor((parseInt(expiresAt, 10) - Date.now()) / 1000) : 0;
       if (remaining > 0) {
         setCooldown(remaining);
       }
     }
-  }, [sendOtpOnce, autoSend]);
+  }, [sendOtpOnce, autoSend, storageKey]);
 
   useEffect(() => {
     if (error && error.includes('Signup session expired')) {

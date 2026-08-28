@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Icon } from '@iconify/react';
 import { MiniCalendar } from '../MiniCalendar';
-import { convert12To24, convert24To12 } from '@/lib/utils/time.util';
+import { WorkingHoursModal } from '../WorkingHoursModal';
 import { useConsultingHours } from '@/components/Admin/ConsultingHoursManager/useConsultingHours';
 import { therapistsApi } from '@/lib/api/therapists';
+import type { ConsultingHour } from '@/types/therapist.types';
 import { toast } from 'sonner';
 import styles from './styles.module.css';
 
@@ -38,19 +39,18 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 }) => {
   const [duration, setDuration] = useState(sessionDurationMins);
   const [savingDuration, setSavingDuration] = useState(false);
+  const [isHoursModalOpen, setHoursModalOpen] = useState(false);
 
   const {
     consultingHours,
+    loading,
     saving,
     generating,
     error,
     generationStatus,
-    hasEnabledDays,
-    hasUnsavedChanges,
     handleUpdate,
     generateSlots,
-    updateDayHours,
-    toggleDay,
+    fetchConsultingHours,
   } = useConsultingHours({ therapistId, onUpdate: onSlotsGenerated });
 
   const handleDurationChange = async (newDuration: number) => {
@@ -68,19 +68,24 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
     }
   };
 
-  const handleSaveAndGenerate = useCallback(async () => {
-    await handleUpdate();
-    await generateSlots(30);
-  }, [handleUpdate, generateSlots]);
-
-  // Debounced Auto-Save
-  useEffect(() => {
-    if (!hasUnsavedChanges || !hasEnabledDays) return;
-    const timer = setTimeout(() => {
-      handleSaveAndGenerate();
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [consultingHours, hasUnsavedChanges, hasEnabledDays, handleSaveAndGenerate]);
+  // No debounced auto-save.
+  //
+  // The modal is now the only editor of these hours and it saves explicitly, so
+  // a background timer had nothing left to catch — but it did actively cause
+  // harm: it fired on whatever landed in shared state, which meant Cancel
+  // persisted the abandoned edits a second after closing, and an explicit Save
+  // was chased by a redundant second save that regenerated 30 days of slots
+  // all over again.
+  const handleSaveAndGenerate = useCallback(
+    async (hours: ConsultingHour[]): Promise<boolean> => {
+      // Generate only if the save actually landed, otherwise we would rebuild 30
+      // days of slots from the hours still on the server.
+      if (!(await handleUpdate(hours))) return false;
+      await generateSlots(30);
+      return true;
+    },
+    [handleUpdate, generateSlots],
+  );
 
   return (
     <aside className={`${styles.sidebar} ${role === 'admin' ? styles.adminSidebarMode : styles.therapistSidebarMode}`}>
@@ -129,51 +134,70 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 
       <div className={styles.divider} />
 
-      {/* Working Hours */}
+      {/* Working Hours — summary + editor in a modal.
+          The inline version had to fit a checkbox, a day name and two time
+          fields into a ~240px column, so the times clipped mid-value. */}
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>
           <Icon icon="solar:clock-circle-bold" width={14} height={14} />
           Working Hours
         </h3>
 
-        <div className={styles.daysList}>
+        <ul className={styles.hoursSummary}>
           {consultingHours.map((hour) => (
-            <div key={hour.dayOfWeek} className={`${styles.dayRow} ${hour.isEnabled ? styles.dayEnabled : ''}`}>
-              <label className={styles.dayToggle}>
-                <input
-                  type="checkbox"
-                  checked={hour.isEnabled}
-                  onChange={() => toggleDay(hour.dayOfWeek)}
-                  className={styles.checkbox}
-                />
-                <span className={styles.dayLabel}>{DAY_LABELS[hour.dayOfWeek]}</span>
-              </label>
-              {hour.isEnabled && (
-                <div className={styles.timeInputs}>
-                  <input
-                    type="time"
-                    value={convert12To24(hour.startTime)}
-                    onChange={(e) => updateDayHours(hour.dayOfWeek, { startTime: convert24To12(e.target.value) })}
-                    className={styles.timeInput}
-                  />
-                  <span className={styles.timeDash}>-</span>
-                  <input
-                    type="time"
-                    value={convert12To24(hour.endTime)}
-                    onChange={(e) => updateDayHours(hour.dayOfWeek, { endTime: convert24To12(e.target.value) })}
-                    className={styles.timeInput}
-                  />
-                </div>
-              )}
-              {!hour.isEnabled && <span className={styles.closedLabel}>Closed</span>}
-            </div>
+            <li key={hour.dayOfWeek} className={styles.summaryRow}>
+              <span className={hour.isEnabled ? styles.summaryDayOpen : styles.summaryDay}>
+                {DAY_LABELS[hour.dayOfWeek]}
+              </span>
+              <span className={hour.isEnabled ? styles.summaryTime : styles.closedLabel}>
+                {hour.isEnabled ? `${hour.startTime} – ${hour.endTime}` : 'Closed'}
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
+
+        {/* Disabled until the hours have loaded. The editor seeds its draft once,
+            when it mounts, so opening it against an empty list would leave it
+            blank with nothing to re-seed it. */}
+        <button
+          type="button"
+          className={styles.editHoursBtn}
+          onClick={() => setHoursModalOpen(true)}
+          disabled={loading || consultingHours.length === 0}
+        >
+          <Icon icon="solar:clock-circle-bold" width={14} height={14} aria-hidden="true" />
+          {loading ? 'Loading hours…' : 'Edit working hours'}
+        </button>
 
         {error && <p className={styles.errorMsg}>{error}</p>}
+
+        {/* A failed load leaves no hours, which keeps the editor disabled. Give
+            it a way back — otherwise the button stays dead for the whole session
+            with nothing the therapist can do about it. Deliberately NOT falling
+            back to the default "all closed" set: that would invite saving it
+            over real hours we simply could not read. */}
+        {!loading && consultingHours.length === 0 && (
+          <button type="button" className={styles.editHoursBtn} onClick={() => fetchConsultingHours()}>
+            <Icon icon="solar:refresh-bold" width={14} height={14} aria-hidden="true" />
+            Retry loading hours
+          </button>
+        )}
         {generationStatus && <p className={generating ? styles.infoMsg : styles.successMsg}>{generationStatus}</p>}
         {saving && <p className={styles.infoMsg}>Saving timings...</p>}
       </div>
+
+      <WorkingHoursModal
+        isOpen={isHoursModalOpen}
+        onClose={() => setHoursModalOpen(false)}
+        consultingHours={consultingHours}
+        onSave={async (hours) => {
+          // Stay open on failure so the draft survives and the error is visible
+          // — the modal renders `error`, and closing made that unreachable.
+          if (await handleSaveAndGenerate(hours)) setHoursModalOpen(false);
+        }}
+        saving={saving || generating}
+        error={error}
+      />
     </aside>
   );
 };

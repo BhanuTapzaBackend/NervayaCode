@@ -4,6 +4,7 @@ import { successResponse, errorResponse } from '@/lib/utils/response.util';
 import { handleError } from '@/lib/utils/error.util';
 import { requireAuth } from '@/lib/middleware/auth.middleware';
 import { ROLES } from '@/lib/constants/roles';
+import { isAdminRequest, stripPrivateTherapistFieldsFromList } from '@/lib/utils/therapist-visibility.util';
 
 export async function GET(req: NextRequest) {
   try {
@@ -41,7 +42,13 @@ export async function GET(req: NextRequest) {
     }
 
     const therapists = await getAllTherapists(filter);
-    return NextResponse.json(successResponse('Therapists fetched successfully', therapists));
+
+    // Public route, so the therapist's email — now a role-granting credential
+    // and a Calendar impersonation subject — is only returned to an admin.
+    const visible = (await isAdminRequest(req))
+      ? therapists
+      : stripPrivateTherapistFieldsFromList(therapists as unknown as Array<Record<string, unknown>>);
+    return NextResponse.json(successResponse('Therapists fetched successfully', visible));
   } catch (error) {
     const { message, statusCode, error: errData } = handleError(error);
     return NextResponse.json(errorResponse(message, errData, statusCode), {

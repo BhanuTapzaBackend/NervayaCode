@@ -1,4 +1,5 @@
 import { GENDER_OPTIONS } from '@/lib/constants/enums';
+import { WORKSPACE_DOMAIN } from '@/lib/constants/workspace.constants';
 import { FormSection } from '../FormSection';
 import { Dropdown, type DropdownOption } from '@/components/common';
 import fieldStyles from '../../fieldStyles.module.css';
@@ -26,7 +27,7 @@ export function BasicInformationSection({ formData, onChange }: TherapistFormFie
           </div>
           <div className={fieldStyles.formGroup}>
             <label className={fieldStyles.label} htmlFor="email">
-              Email Address
+              Email Address <span className={fieldStyles.required}>*</span>
             </label>
             <input
               id="email"
@@ -34,9 +35,14 @@ export function BasicInformationSection({ formData, onChange }: TherapistFormFie
               type="email"
               value={formData.email}
               onChange={onChange}
+              required
               className={fieldStyles.input}
-              placeholder="john.smith@example.com"
+              placeholder={`john.smith@${WORKSPACE_DOMAIN}`}
             />
+            <p className={fieldStyles.hint}>
+              Their @{WORKSPACE_DOMAIN} Google account. Used for sign-in and for their session calendar — a typo here
+              means they log in as a customer and their Meet links fail.
+            </p>
           </div>
         </div>
 

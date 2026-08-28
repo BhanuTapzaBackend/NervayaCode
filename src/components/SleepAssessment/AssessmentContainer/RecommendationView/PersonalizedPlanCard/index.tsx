@@ -21,6 +21,8 @@ interface PersonalizedPlanCardProps {
   onStartPlan: () => void;
   onAddPlanToCart: () => void;
   adding: 'plan' | 'cart' | 'therapy' | `mod:${string}` | null;
+  /** Plan includes a therapy session, so only the single-order route is offered. */
+  hasTherapy: boolean;
 }
 
 function getMiniProps(key: ServiceKey, supplementName: string): PlanProductMiniProps | null {
@@ -85,6 +87,7 @@ export function PersonalizedPlanCard({
   onStartPlan,
   onAddPlanToCart,
   adding,
+  hasTherapy,
 }: Readonly<PersonalizedPlanCardProps>) {
   const itemCount = selectedCount;
   const recommendedCount = bundleItems.length;
@@ -143,6 +146,7 @@ export function PersonalizedPlanCard({
         <PlanPricingActions
           onStartPlan={onStartPlan}
           onAddPlanToCart={onAddPlanToCart}
+          hasTherapy={hasTherapy}
           isStarting={adding === 'plan'}
           isAdding={adding === 'cart'}
           disabled={disabled}

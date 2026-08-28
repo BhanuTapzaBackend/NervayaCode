@@ -11,6 +11,9 @@ export interface IConsultationLead extends Document {
   status: 'pending' | 'confirmed' | 'cancelled';
   /** Public Jitsi room URL — set for 'Video Call' consultations. */
   meetLink?: string;
+  /** External calendar event id, so cancelling can clean it up. */
+  googleEventId?: string;
+  meetStatus?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,6 +57,14 @@ const consultationLeadSchema = new Schema<IConsultationLead>(
       type: String,
       enum: ['pending', 'confirmed', 'cancelled'],
       default: 'pending',
+    },
+    googleEventId: {
+      type: String,
+      default: '',
+    },
+    meetStatus: {
+      type: String,
+      default: '',
     },
     meetLink: {
       type: String,

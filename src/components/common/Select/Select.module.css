@@ -47,7 +47,8 @@
 }
 
 .content {
-  z-index: 60;
+  /* Above the modal overlay: this Select is opened from inside dialogs. */
+  z-index: var(--z-floating, 5100);
   min-width: var(--radix-select-trigger-width);
   max-height: var(--radix-select-content-available-height);
   overflow: hidden;

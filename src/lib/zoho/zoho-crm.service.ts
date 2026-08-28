@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Zoho CRM – Service Helpers
 //
-// Uses the UPSERT endpoint (/crm/v3/Leads/upsert) with duplicate_check_fields
-// ["Phone"] (falling back to ["Email"] when no phone is present) so that:
+// Uses the UPSERT endpoint (/crm/v3/Leads/upsert), matching on every identifier
+// the payload carries (Phone and/or Email) so that:
 //   • New contact   → Zoho CREATES a new Lead record
 //   • Known contact → Zoho UPDATES the existing Lead record (no duplicate)
 //
@@ -33,9 +33,13 @@ export async function pushLeadToZoho(payload: ZohoLeadPayload): Promise<void> {
 
   const accessToken = await getZohoAccessToken();
 
-  // Phone is the primary identifier (WhatsApp auth), so deduplicate on Phone
-  // when present and fall back to Email otherwise.
-  const duplicateCheckFields = payload.Phone ? ['Phone'] : ['Email'];
+  // Match on EVERY identifier we hold, not just the preferred one.
+  //
+  // Signup no longer requires a phone, so a Google user is first upserted with
+  // only an Email. Checking Phone alone once they later add a number would miss
+  // that existing lead and create a duplicate for the same person. Passing both
+  // lets Zoho match the earlier Email-keyed record and merge the phone into it.
+  const duplicateCheckFields = [...(payload.Phone ? ['Phone'] : []), ...(payload.Email ? ['Email'] : [])];
 
   const body: ZohoUpsertBody = {
     data: [payload],

@@ -5,6 +5,7 @@ import { ITEM_TYPE, type ItemType } from '@/lib/constants/enums';
 import { promoApi } from '@/lib/api/promo';
 import { cartApi } from '@/lib/api/cart';
 import { useCart } from '@/context/CartContext';
+import { usePhoneGate } from '@/hooks/usePhoneGate';
 import type { ApiResponse } from '@/lib/api/types';
 import type { Cart, Order, ShippingAddress, SavedAddress, Supplement } from '@/types/supplement.types';
 import {
@@ -58,6 +59,7 @@ export function useCheckout() {
   const [razorpayKeyId, setRazorpayKeyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [creatingOrder, setCreatingOrder] = useState(false);
+  const phoneGate = usePhoneGate();
   const [error, setError] = useState<string | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<ShippingAddress | undefined>(undefined);
   const [editingAddress, setEditingAddress] = useState(false);
@@ -264,6 +266,12 @@ export function useCheckout() {
       setError('Please enter your shipping address');
       return;
     }
+
+    // Order updates go out over WhatsApp, and signup no longer collects a
+    // number. Prefill from the shipping address so most users just confirm it.
+    // The server enforces this independently with a 428.
+    if (!(await phoneGate.ensurePhone())) return;
+
     setCreatingOrder(true);
     setError(null);
     try {
@@ -323,7 +331,7 @@ export function useCheckout() {
     } finally {
       setCreatingOrder(false);
     }
-  }, [cart, selectedAddress, appliedPromoCode, promoDiscount, isDigitalOnly, refreshCart, router]);
+  }, [cart, selectedAddress, appliedPromoCode, promoDiscount, isDigitalOnly, refreshCart, router, phoneGate]);
 
   return {
     cart,
@@ -356,5 +364,6 @@ export function useCheckout() {
     razorpayOrderId,
     razorpayKeyId,
     isDigitalOnly,
+    phoneGate,
   };
 }

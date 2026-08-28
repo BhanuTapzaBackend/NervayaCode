@@ -67,6 +67,8 @@ export const ICON_INFINITY = 'solar:infinity-bold';
 export const ICON_GRID = 'solar:widget-2-bold';
 export const ICON_LIST = 'solar:list-bold';
 export const ICON_FILTER = 'solar:filter-bold';
+/** Multicolour Google mark for the "Continue with Google" button. */
+export const ICON_GOOGLE = 'logos:google-icon';
 export const ICON_WHATSAPP = 'mdi:whatsapp';
 export const ICON_WHATSAPP_SOLID = 'ic:baseline-whatsapp';
 export const ICON_MAGNIFYING_GLASS = 'lucide:search';

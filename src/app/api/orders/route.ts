@@ -3,6 +3,7 @@ import { createOrder, getUserOrders, getAllOrders } from '@/lib/services/order.s
 import { successResponse, errorResponse } from '@/lib/utils/response.util';
 import { handleError } from '@/lib/utils/error.util';
 import { requireAuth } from '@/lib/middleware/auth.middleware';
+import { requirePhone } from '@/lib/middleware/phone-gate';
 import { ROLES } from '@/lib/constants/roles';
 
 const DEFAULT_PAGE = 1;
@@ -73,6 +74,10 @@ export async function POST(request: NextRequest) {
     if (authResult instanceof NextResponse) {
       return authResult;
     }
+
+    // Order updates are delivered over WhatsApp.
+    const phoneGate = await requirePhone(authResult.user.userId);
+    if (phoneGate) return phoneGate;
 
     const body = await request.json();
     const { shippingAddress, promoCode, promoDiscount } = body;

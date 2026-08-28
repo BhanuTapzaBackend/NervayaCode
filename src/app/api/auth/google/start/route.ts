@@ -26,9 +26,16 @@ export async function GET(request: NextRequest) {
     response.cookies.set(COOKIE_NAMES.OAUTH_STATE, nonce, getOAuthStateCookieOptions());
 
     return response;
-  } catch {
+  } catch (error) {
     // Almost always missing GOOGLE_CLIENT_ID / redirect URI configuration.
-    // Never surface the reason — it would advertise the deployment's config.
+    //
+    // The reason is LOGGED but never returned: naming the unset variable in the
+    // response would advertise the deployment's configuration. Swallowing it
+    // entirely, as this used to, was the worse half of that trade — a
+    // misconfigured production deploy told users "Google sign-in is
+    // unavailable" and left nothing whatsoever in the server logs to say why,
+    // so the only way to find the cause was to read this file.
+    console.error('[auth/google/start] could not build the authorize URL:', error);
     return NextResponse.redirect(new URL('/login?error=google_unavailable', request.url));
   }
 }

@@ -44,6 +44,13 @@ function toSessionUser(user: InstanceType<typeof User>): SessionUser {
  * OTP — and so the token is issued AFTER any promotion, never before it.
  */
 export async function createSessionForUser(user: InstanceType<typeof User>) {
+  // An absorbed account must never receive a session again. Guarding here
+  // rather than at each caller covers phone login, Google sign-in and the
+  // phone-link flow at once, because this is the only place a token is minted.
+  if (user.mergedIntoUserId) {
+    throw new AuthenticationError('This account has been merged. Please sign in with your WhatsApp number.');
+  }
+
   const resolved = await applyTherapistRoleFromEmail(user);
   const token = await generateToken(resolved._id.toString(), resolved.role);
 

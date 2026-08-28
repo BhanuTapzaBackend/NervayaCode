@@ -1,9 +1,18 @@
 import mongoose, { Schema, Model, Document } from 'mongoose';
+import { OTP_PURPOSE_VALUES, type OtpPurpose } from '@/lib/constants/enums';
 
 export interface IOtpToken extends Document {
   key: string;
   hashedOtp: string;
-  purpose: 'login' | 'signup';
+  /**
+   * Derived from the shared enum rather than re-declared.
+   *
+   * This union and the schema `enum` below both said `'login' | 'signup'` while
+   * `link_phone` was already in active use — it only survived because `saveOtp`
+   * writes with `findOneAndUpdate`, which skips validators. One `.create()` or
+   * `runValidators: true` anywhere would have silently killed phone linking.
+   */
+  purpose: OtpPurpose;
   expiresAt: Date;
 }
 
@@ -19,7 +28,7 @@ const otpTokenSchema = new Schema<IOtpToken>({
   },
   purpose: {
     type: String,
-    enum: ['login', 'signup'],
+    enum: OTP_PURPOSE_VALUES,
     required: true,
   },
   expiresAt: {

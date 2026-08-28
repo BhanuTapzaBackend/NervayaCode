@@ -17,8 +17,22 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB();
     const user = await User.findById(authResult.user.userId);
-    if (!user) {
-      return NextResponse.json(errorResponse('User not found', null, 401), { status: 401 });
+
+    // An absorbed account is treated exactly like a deleted one.
+    //
+    // This is the chokepoint that ends a merged account's live session.
+    // `requireAuth` only verifies a signed JWT and never touches the database,
+    // so a token minted before the merge stays cryptographically valid for the
+    // rest of its 5 days. AuthContext calls this route on every mount, so the
+    // session dies on the next page load.
+    //
+    // The cookie is CLEARED here too: returning 401 while leaving it in place
+    // is what makes a dead `_id` an un-healable silent logout — the client
+    // keeps resending a token the server will never accept.
+    if (!user || user.mergedIntoUserId) {
+      const gone = NextResponse.json(errorResponse('User not found', null, 401), { status: 401 });
+      gone.cookies.delete(COOKIE_NAMES.AUTH_TOKEN);
+      return gone;
     }
 
     const response = NextResponse.json(

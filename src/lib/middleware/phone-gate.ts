@@ -30,8 +30,13 @@ const PHONE_REQUIRED_MESSAGE = 'A verified WhatsApp number is required to contin
 export async function requirePhone(userId: string): Promise<NextResponse | null> {
   await connectDB();
 
-  const user = await User.findById(userId).select('phone phoneVerified').lean();
-  if (!user?.phone) {
+  const user = await User.findById(userId).select('phone phoneVerified mergedIntoUserId').lean();
+
+  // An absorbed account has surrendered its number, so it fails the `!phone`
+  // check below anyway — but check explicitly so the intent survives any future
+  // change to that condition. This blocks orders and session bookings from a
+  // token issued before the merge.
+  if (user?.mergedIntoUserId || !user?.phone) {
     return NextResponse.json(errorResponse(PHONE_REQUIRED_MESSAGE, null, PHONE_REQUIRED_STATUS), {
       status: PHONE_REQUIRED_STATUS,
     });

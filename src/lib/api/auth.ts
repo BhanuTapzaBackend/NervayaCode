@@ -6,7 +6,9 @@ import type { ApiResponse } from '@/lib/utils/response.util';
 interface SendOtpResponse {
   success: boolean;
   message: string;
-  data?: { otpSendCount?: number };
+  /** `merge` is set only by the phone-link route; see its comment on why it
+   *  rides the success body rather than an error one. */
+  data?: { otpSendCount?: number; merge?: boolean };
   statusCode: number;
 }
 
@@ -46,7 +48,9 @@ export async function verifyOtp(
  * Distinct from `sendOtp`: this endpoint requires a session, because it is
  * about to write to an existing account.
  */
-export async function sendLinkPhoneOtp(phone: string): Promise<ApiResponse<{ otpSendCount?: number }>> {
+export async function sendLinkPhoneOtp(
+  phone: string,
+): Promise<ApiResponse<{ otpSendCount?: number; merge?: boolean }>> {
   const res = (await api.post(AUTH_API.PHONE_START, { phone })) as SendOtpResponse;
   return {
     success: res.success,

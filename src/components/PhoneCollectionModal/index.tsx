@@ -61,6 +61,10 @@ function PhoneCollectionFlow({ onVerified, initialPhone = '', reason }: PhoneCol
   const { refreshUser } = useAuthContext();
   const [phone, setPhone] = useState(initialPhone.replace(/\D/g, '').slice(-10));
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
+  // Set when the number turns out to belong to another account this user can
+  // prove they own. Changes only the copy on the OTP step — the merge itself is
+  // decided server-side after verification, never from this flag.
+  const [isMerge, setIsMerge] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -85,6 +89,7 @@ function PhoneCollectionFlow({ onVerified, initialPhone = '', reason }: PhoneCol
         }
         // The code has just been sent, so the OTP step must not send another.
         sessionStorage.setItem(AUTH_FLOW_STORAGE_KEYS.LINK_PHONE_OTP_EXPIRES_AT, String(Date.now() + 600 * 1000));
+        setIsMerge(res.data?.merge === true);
         setStep('otp');
       } catch (err) {
         // A 409 here means the number belongs to someone else — that message is
@@ -135,15 +140,26 @@ function PhoneCollectionFlow({ onVerified, initialPhone = '', reason }: PhoneCol
           </button>
         </form>
       ) : (
-        <OTPVerificationStep
-          phone={e164}
-          purpose={OTP_PURPOSE.LINK_PHONE}
-          onSuccess={handleVerified}
-          onBack={() => setStep('phone')}
-          // The code was already sent when the number was submitted.
-          autoSend={false}
-          storageKey={AUTH_FLOW_STORAGE_KEYS.LINK_PHONE_OTP_EXPIRES_AT}
-        />
+        <>
+          {/* Deliberately no detail about the other account — not its name, not
+              a masked email. Anything shown here would be disclosed on nothing
+              more than typing a number, before the code has been verified. */}
+          {isMerge && (
+            <p className={styles.mergeNotice} role="status">
+              That number is already registered to another Nervaya account. Enter the code we just sent to it and
+              we&apos;ll combine the two, bringing your orders and sessions across.
+            </p>
+          )}
+          <OTPVerificationStep
+            phone={e164}
+            purpose={OTP_PURPOSE.LINK_PHONE}
+            onSuccess={handleVerified}
+            onBack={() => setStep('phone')}
+            // The code was already sent when the number was submitted.
+            autoSend={false}
+            storageKey={AUTH_FLOW_STORAGE_KEYS.LINK_PHONE_OTP_EXPIRES_AT}
+          />
+        </>
       )}
     </div>
   );

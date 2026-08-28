@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { requireAuth } from '@/lib/middleware/auth.middleware';
 import { successResponse, errorResponse } from '@/lib/utils/response.util';
-import { handleError } from '@/lib/utils/error.util';
+import { ConflictError, handleError } from '@/lib/utils/error.util';
 import { sendOtp } from '@/lib/services/otp';
 import { OTP_PURPOSE } from '@/lib/constants/enums';
-import { assertUsablePhone, assertPhoneAvailable } from '@/lib/services/auth/phone-link.service';
+import { assertUsablePhone } from '@/lib/services/auth/phone-link.service';
+import { resolvePhoneClaim } from '@/lib/services/auth/account-merge.service';
 import { checkLoginRateLimit } from '@/lib/utils/rate-limit.util';
 import { getClientIp } from '@/lib/utils/request.util';
 
@@ -36,8 +37,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse('Too many attempts. Please try again later.', null, 429), { status: 429 });
     }
 
-    // Fail before spending a message if the number belongs to someone else.
-    await assertPhoneAvailable(normalized, authResult.user.userId);
+    // A number owned by someone else is no longer a flat refusal. If that
+    // account is one this user can prove they own, offer to combine them
+    // instead of dead-ending them mid-checkout.
+    const claim = await resolvePhoneClaim(normalized, authResult.user.userId);
+    if (claim.status === 'blocked') {
+      throw new ConflictError(claim.reason ?? 'That number cannot be linked to this account.');
+    }
 
     const result = await sendOtp(normalized, OTP_PURPOSE.LINK_PHONE, ip);
     if (!result.success) {
@@ -47,7 +53,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(successResponse('Verification code sent', { phone: normalized }), { status: 200 });
+    // `merge` rides the SUCCESS body deliberately: `errorResponse` hard-codes
+    // `data: null` and discards its second argument, so a flag on an error
+    // response would never reach the client (the same constraint that made the
+    // phone gate signal by status code alone).
+    return NextResponse.json(
+      successResponse('Verification code sent', { phone: normalized, merge: claim.status === 'mergeable' }),
+      { status: 200 },
+    );
   } catch (error) {
     const { message, statusCode, error: errData } = handleError(error);
     return NextResponse.json(errorResponse(message, errData, statusCode), { status: statusCode });

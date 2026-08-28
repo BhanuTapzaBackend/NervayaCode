@@ -42,6 +42,15 @@ export interface IUser extends Document {
   therapistId?: mongoose.Types.ObjectId | null;
   emailVerified?: boolean;
   phoneVerified?: boolean;
+  /**
+   * Set when this account was absorbed into another by an account merge.
+   *
+   * A tombstone: its identifiers have been surrendered to the winner and it can
+   * no longer authenticate. Kept rather than deleted so support can answer
+   * "where did my order go", and so a wrongful merge is reversible.
+   */
+  mergedIntoUserId?: mongoose.Types.ObjectId | null;
+  mergedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
   addresses: IAddress[];
@@ -116,6 +125,15 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    mergedIntoUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    mergedAt: {
+      type: Date,
+      default: null,
+    },
     addresses: [
       {
         name: { type: String, required: true },
@@ -153,6 +171,11 @@ const userSchema = new Schema<IUser>(
 // `npx tsx --env-file=.env scripts/fix-user-identity-indexes.ts` before
 // deploying this schema.
 const presentString = { $type: 'string' as const, $gt: '' };
+
+// Sparse, NOT partial-unique: this is a plain lookup for "has this account been
+// absorbed", never a constraint. Adding another partial unique index here is
+// what made scripts/fix-user-identity-indexes.ts necessary last time.
+userSchema.index({ mergedIntoUserId: 1 }, { sparse: true });
 
 userSchema.index({ phone: 1 }, { unique: true, partialFilterExpression: { phone: presentString }, name: 'phone_1' });
 userSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: presentString }, name: 'email_1' });

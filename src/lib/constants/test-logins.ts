@@ -96,3 +96,17 @@ export function getTestLogin(normalizedPhone: string): TestLogin | null {
 export function hasPaymentBypass(normalizedPhone: string): boolean {
   return getTestLogin(normalizedPhone)?.bypassPayment === true;
 }
+
+/**
+ * The customer and therapist test accounts are live in production (see the
+ * warning above) and place real orders/bookings, but nobody reads their
+ * inbox — transactional email to them is just noise. `test-admin@` is
+ * excluded on purpose: an admin may actually want to see what a real send
+ * looks like.
+ */
+const TEST_EMAILS_NO_SEND: ReadonlySet<string> = new Set(['test-customer@nervaya.com', 'test-therapist@nervaya.com']);
+
+/** True when transactional email sends should be skipped for this address. */
+export function isNoSendTestEmail(email: string | null | undefined): boolean {
+  return !!email && TEST_EMAILS_NO_SEND.has(email.trim().toLowerCase());
+}

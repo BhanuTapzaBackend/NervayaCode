@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { isNoSendTestEmail } from '@/lib/constants/test-logins';
 
 interface RefundEmailProps {
   email: string;
@@ -9,6 +10,8 @@ interface RefundEmailProps {
 }
 
 export async function sendRefundNotificationEmail(props: RefundEmailProps): Promise<void> {
+  if (isNoSendTestEmail(props.email)) return;
+
   const user = process.env.OTP_EMAIL_USER;
   const appPassword = process.env.OTP_EMAIL_APP_PASSWORD;
 

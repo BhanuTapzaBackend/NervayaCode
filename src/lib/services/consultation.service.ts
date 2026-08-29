@@ -4,6 +4,7 @@ import ConsultationLead from '@/lib/models/consultationLead.model';
 import { ValidationError, ConflictError, NotFoundError } from '@/lib/utils/error.util';
 import { claimSlot, releaseSlot } from '@/lib/services/consultation-schedule.service';
 import { getMeetingProvider } from '@/lib/services/meeting-provider.service';
+import { isNoSendTestEmail } from '@/lib/constants/test-logins';
 
 /**
  * Free consultations are half the length of a paid session.
@@ -117,7 +118,7 @@ async function sendCalendarInvite(lead: {
   const recipientEmail = lead.email || organizerEmail;
   // Nothing to send to, and no ops mailbox configured — skip rather than mail
   // a placeholder domain.
-  if (!recipientEmail) return;
+  if (!recipientEmail || isNoSendTestEmail(recipientEmail)) return;
 
   try {
     await transporter.sendMail({

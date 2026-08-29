@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { getSessionConfirmationEmailContent } from '@/lib/email';
+import { isNoSendTestEmail } from '@/lib/constants/test-logins';
 
 interface SessionEmailProps {
   email: string;
@@ -11,6 +12,8 @@ interface SessionEmailProps {
 }
 
 export async function sendSessionConfirmationEmail(props: SessionEmailProps): Promise<void> {
+  if (isNoSendTestEmail(props.email)) return;
+
   const user = process.env.OTP_EMAIL_USER;
   const appPassword = process.env.OTP_EMAIL_APP_PASSWORD;
 

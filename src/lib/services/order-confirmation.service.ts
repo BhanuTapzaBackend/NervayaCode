@@ -3,6 +3,7 @@ import { prepareInvoiceForOrder } from '@/lib/services/invoice.service';
 import { sendDocumentTemplate } from '@/lib/whatsapp/whatsapp-client';
 import { WHATSAPP_TEMPLATES } from '@/lib/constants/whatsapp-templates';
 import { orderConfirmationEmail } from '@/lib/email/templates/order-confirmation';
+import { isNoSendTestEmail } from '@/lib/constants/test-logins';
 import type { InvoiceData } from '@/lib/pdf/invoice-pdf';
 
 /** `₹1,887` — no decimals; the PDF carries the exact figures. */
@@ -41,7 +42,7 @@ async function sendWhatsApp(data: InvoiceData, invoiceUrl: string): Promise<void
 
 async function sendEmail(data: InvoiceData, pdf: Buffer): Promise<void> {
   const to = data.customer.email;
-  if (!to) return;
+  if (!to || isNoSendTestEmail(to)) return;
 
   const user = process.env.OTP_EMAIL_USER?.trim();
   const appPassword = process.env.OTP_EMAIL_APP_PASSWORD?.trim();

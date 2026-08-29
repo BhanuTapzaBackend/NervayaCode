@@ -9,7 +9,7 @@ import Review from '@/lib/models/review.model';
 import { toObjectId } from '@/lib/utils/objectId.util';
 import { ITEM_TYPE, ORDER_STATUS, PAYMENT_STATUS } from '@/lib/constants/enums';
 
-const DIGITAL_ITEM_TYPES: string[] = [ITEM_TYPE.THERAPY, ITEM_TYPE.DRIFT_OFF];
+const DIGITAL_ITEM_TYPES: string[] = [ITEM_TYPE.THERAPY];
 
 export async function GET(req: NextRequest) {
   try {
@@ -44,6 +44,9 @@ export async function GET(req: NextRequest) {
       if (!Array.isArray(order.items)) continue;
       for (const item of order.items) {
         const itemType = item.itemType;
+        // Deep Rest has its own moderated review flow (gated on the assigned video,
+        // see createDriftOffReview) — never offer it through this generic list.
+        if (itemType === ITEM_TYPE.DRIFT_OFF) continue;
         const isDigital = DIGITAL_ITEM_TYPES.includes(itemType);
         const isReviewable = isDigital || order.orderStatus === ORDER_STATUS.DELIVERED;
         if (!isReviewable) continue;

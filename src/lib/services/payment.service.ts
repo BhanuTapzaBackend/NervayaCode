@@ -190,6 +190,9 @@ async function processPaymentSuccess(orderId: string, paymentId: string) {
               );
 
               await createDriftOffResponse(lockedOrder.userId.toString(), newDriftOffOrder._id.toString(), session);
+              // The order still carries the pre-payment placeholder itemId ('drift-off-session') —
+              // point it at the real DriftOffOrder so order-success can link to the questionnaire.
+              item.itemId = newDriftOffOrder._id;
             }
           }
         } else if (item.itemType === ITEM_TYPE.THERAPY) {
@@ -211,6 +214,10 @@ async function processPaymentSuccess(orderId: string, paymentId: string) {
             await releaseSlot({ therapistId: item.itemId.toString(), date, startTime: slot }, session);
           }
         }
+      }
+
+      if (lockedOrder.isModified('items')) {
+        await lockedOrder.save({ session });
       }
     });
 

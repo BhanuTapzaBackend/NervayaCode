@@ -1,11 +1,15 @@
 'use client';
 
-import { useState, useSyncExternalStore, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { Icon } from '@iconify/react';
 import { ICON_PLAY, ICON_EYE, ICON_ARROW_RIGHT } from '@/constants/icons';
-import { DRIFT_OFF_LANDING_VIDEO_URL, DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
+import {
+  DRIFT_OFF_LANDING_AUDIO_URL,
+  DRIFT_OFF_LANDING_THUMBNAIL,
+  DRIFT_OFF_SESSION_IMAGE,
+} from '@/lib/constants/driftOff.constants';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
@@ -13,23 +17,12 @@ import { cartApi } from '@/lib/api/cart';
 import { ROUTES } from '@/utils/routesConstants';
 import { toast } from 'sonner';
 import Button from '@/components/common/Button';
-import type { VideoPlayerProps } from '../VideoPlayer';
 import styles from './styles.module.css';
 
-const VideoPlayerDynamic = dynamic(() => import('../VideoPlayer'), {
-  ssr: false,
-}) as React.ComponentType<VideoPlayerProps>;
-
-const emptySubscribe = () => () => {};
-const getClientSnapshot = () => true;
-const getServerSnapshot = () => false;
-
 const DriftOffLandingHero = () => {
-  const hasMounted = useSyncExternalStore(emptySubscribe, getClientSnapshot, getServerSnapshot);
   const { isAuthenticated, initializing } = useAuth();
   const { refreshCart } = useCart();
   const router = useRouter();
-  const [playing, setPlaying] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [sessionPrice, setSessionPrice] = useState<number | null>(null);
 
@@ -110,29 +103,23 @@ const DriftOffLandingHero = () => {
 
       <div className={styles.heroRight}>
         <div className={styles.videoCard}>
-          <div className={styles.videoWrapper}>
-            {hasMounted && (
-              <VideoPlayerDynamic
-                url={DRIFT_OFF_LANDING_VIDEO_URL}
-                width="100%"
-                height="100%"
-                playing={playing}
-                controls
-                className={styles.playerAbsolute}
-                onPlay={() => setPlaying(true)}
-              />
-            )}
-            {!playing && (
-              <button
-                type="button"
-                className={styles.playButton}
-                onClick={() => setPlaying(true)}
-                aria-label="Play sample video"
-              >
-                <Icon icon={ICON_PLAY} width={18} height={18} aria-hidden />
-              </button>
-            )}
-          </div>
+          <a
+            href={DRIFT_OFF_LANDING_AUDIO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.videoWrapper}
+            aria-label="Listen to sample guided meditation (opens in a new tab)"
+          >
+            <Image
+              src={DRIFT_OFF_LANDING_THUMBNAIL}
+              alt="Deep Rest sample session"
+              fill
+              className={styles.thumbnailImage}
+            />
+            <span className={styles.playButton}>
+              <Icon icon={ICON_PLAY} width={18} height={18} aria-hidden />
+            </span>
+          </a>
           <div className={styles.videoMeta}>
             <div className={styles.videoMetaText}>
               <span className={styles.videoTitle}>

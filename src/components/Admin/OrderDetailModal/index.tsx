@@ -3,12 +3,12 @@
 import React from 'react';
 import Image from 'next/image';
 import { Icon } from '@iconify/react';
-import { ICON_BOX, ICON_CREDIT_CARD, ICON_LOCATION } from '@/constants/icons';
+import { ICON_BOX, ICON_CREDIT_CARD, ICON_LOCATION, ICON_USER } from '@/constants/icons';
 import Modal from '@/components/common/Modal';
 import { Badge } from '@/components/common';
 import { formatPrice } from '@/utils/cart.util';
 import { formatOrderId, orderStatusVariant, paymentStatusVariant } from '@/utils/order-status.util';
-import type { Order, OrderItem, ShippingAddress } from '@/types/supplement.types';
+import type { Order, OrderCustomerSummary, OrderItem, ShippingAddress } from '@/types/supplement.types';
 import styles from './styles.module.css';
 
 export interface OrderDetailModalProps {
@@ -43,6 +43,17 @@ function itemsSubtotal(items: OrderItem[]): number {
   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 }
 
+/** `userId` is populated by the admin query; older/unpopulated payloads stay a bare id. */
+function getCustomer(order: Order): OrderCustomerSummary | null {
+  const ref = order.userId as OrderCustomerSummary | string | null;
+  return typeof ref === 'object' && ref !== null && 'name' in ref ? ref : null;
+}
+
+function customerId(order: Order): string {
+  const customer = getCustomer(order);
+  return customer ? String(customer._id) : String(order.userId ?? '—');
+}
+
 export default function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
   if (!order) return null;
 
@@ -52,6 +63,11 @@ export default function OrderDetailModal({ order, onClose }: OrderDetailModalPro
   const extras = order.totalAmount - (subtotal - discount);
   const address = order.shippingAddress;
   const hasAddress = Boolean(address?.addressLine1 || address?.city);
+  const customer = getCustomer(order);
+  // Fall back to the shipping contact when the order predates user population.
+  const customerName = customer?.name ?? address?.name;
+  const customerPhone = customer?.phone ?? address?.phone;
+  const customerEmail = customer?.email;
 
   return (
     <Modal isOpen onClose={onClose} title={`Order ${formatOrderId(String(order._id))}`}>
@@ -93,11 +109,36 @@ export default function OrderDetailModal({ order, onClose }: OrderDetailModalPro
           </ul>
         </section>
 
+        <section className={styles.section} aria-label="Customer">
+          <h4 className={styles.sectionTitle}>
+            <Icon icon={ICON_USER} aria-hidden="true" />
+            Customer
+          </h4>
+          <dl className={styles.meta}>
+            <div className={styles.metaRow}>
+              <dt>Name</dt>
+              <dd>{customerName || '—'}</dd>
+            </div>
+            <div className={styles.metaRow}>
+              <dt>Phone</dt>
+              <dd className={styles.mono}>{customerPhone || '—'}</dd>
+            </div>
+            <div className={styles.metaRow}>
+              <dt>Email</dt>
+              <dd>{customerEmail || '—'}</dd>
+            </div>
+            <div className={styles.metaRow}>
+              <dt>Customer ID</dt>
+              <dd className={styles.mono}>{customerId(order)}</dd>
+            </div>
+          </dl>
+        </section>
+
         {hasAddress && (
-          <section className={styles.section} aria-label="Customer and shipping">
+          <section className={styles.section} aria-label="Shipping address">
             <h4 className={styles.sectionTitle}>
               <Icon icon={ICON_LOCATION} aria-hidden="true" />
-              Customer & Shipping
+              Shipping
             </h4>
             <p className={styles.addressName}>
               {address.name}
@@ -120,10 +161,6 @@ export default function OrderDetailModal({ order, onClose }: OrderDetailModalPro
             <div className={styles.metaRow}>
               <dt>Razorpay order</dt>
               <dd className={styles.mono}>{order.razorpayOrderId ?? '—'}</dd>
-            </div>
-            <div className={styles.metaRow}>
-              <dt>Customer ID</dt>
-              <dd className={styles.mono}>{String(order.userId)}</dd>
             </div>
           </dl>
         </section>

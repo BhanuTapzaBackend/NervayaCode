@@ -162,9 +162,17 @@ export interface UpdatePromoCodeDto extends Partial<CreatePromoCodeDto> {
   isActive?: boolean;
 }
 
+/** Shape of `Order.userId` once the admin queries populate it. */
+export interface OrderCustomerSummary {
+  _id: string;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+}
+
 export interface Order {
   _id: string;
-  userId: Types.ObjectId | string;
+  userId: Types.ObjectId | string | OrderCustomerSummary;
   items: OrderItem[];
   totalAmount: number;
   paymentId?: string;

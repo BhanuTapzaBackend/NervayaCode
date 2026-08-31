@@ -8,6 +8,7 @@ import { ITEM_TYPE, type ItemType } from '@/lib/constants/enums';
 import { DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
 import Session from '@/lib/models/session.model';
 import { toObjectId } from '@/lib/utils/objectId.util';
+import { supplementImage } from '@/utils/supplement.util';
 
 // NOTE: Services intentionally do NOT call handleError(). They throw domain
 // errors (ValidationError/AppError) and let DB errors propagate. The route
@@ -93,6 +94,7 @@ export async function addToCart(
 
     finalPrice = supplement.price;
     finalName = supplement.name;
+    resolvedImage = supplementImage(supplement);
   } else if (itemType === ITEM_TYPE.DRIFT_OFF) {
     // Deep Rest session has no stock check, but we need price
     if (!finalPrice || finalPrice <= 0) {

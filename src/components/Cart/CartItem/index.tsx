@@ -7,6 +7,7 @@ import { ITEM_TYPE, type ItemType } from '@/lib/constants/enums';
 import type { CartItem as CartItemType, Supplement } from '@/types/supplement.types';
 import { QuantitySelector } from '@/components/common';
 import { formatPrice } from '@/utils/cart.util';
+import { supplementImage } from '@/utils/supplement.util';
 import styles from './styles.module.css';
 
 /** Cap used for non-supplements and for supplements whose stock isn't known. */
@@ -30,7 +31,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, onQuantityChange, onRemove, d
 
   const defaultImage = isSupplement ? '/default-supplement.png' : '/drift-off-session.png';
   const itemName = item.name || supplement?.name || 'Session';
-  const itemImage = item.image || supplement?.image || defaultImage;
+  const itemImage = item.image || supplementImage(supplement) || defaultImage;
 
   /**
    * Server carts populate `itemId`, so stock comes from the Supplement. Guest carts

@@ -3,10 +3,12 @@ import connectDB from '@/lib/db/mongodb';
 import type { ConfigValue, ISystemConfigValueMap } from '@/types/systemConfig.types';
 
 export const configService = {
-  async get(key: string) {
+  async get(key: string): Promise<ConfigValue | null> {
     await connectDB();
     const config = await SystemConfig.findOne({ key });
-    return config ? config.value : null;
+    // Mixed in the schema, so the shape is only asserted at this boundary.
+    // Callers must still narrow — a value saved as text stays text.
+    return config ? (config.value as ConfigValue) : null;
   },
 
   async set(key: string, value: ConfigValue, updatedBy?: string, isPublic = false, description?: string) {
@@ -22,7 +24,7 @@ export const configService = {
     await connectDB();
     const configs = await SystemConfig.find({ isPublic: true });
     return configs.reduce<ISystemConfigValueMap>((acc, config) => {
-      acc[config.key] = config.value;
+      acc[config.key] = config.value as ConfigValue;
       return acc;
     }, {});
   },

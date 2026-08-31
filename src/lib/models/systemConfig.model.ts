@@ -1,9 +1,14 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import type { ConfigValue } from '@/types/systemConfig.types';
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface ISystemConfig extends Document {
   key: string;
-  value: ConfigValue;
+  /**
+   * Stored as `Mixed`, so typed `unknown` here rather than the recursive
+   * `ConfigValue`. Passing a recursive type through Mongoose's `Model<>`
+   * generics blows the instantiation-depth limit (TS2589). `configService` is
+   * the boundary that owns the value's shape.
+   */
+  value: unknown;
   description?: string;
   isPublic: boolean;
   updatedBy?: mongoose.Types.ObjectId;
@@ -27,4 +32,9 @@ if (process.env.NODE_ENV === 'development') {
   delete mongoose.models.SystemConfig;
 }
 
-export default mongoose.models.SystemConfig || mongoose.model<ISystemConfig>('SystemConfig', SystemConfigSchema);
+// Annotated explicitly, like every other model here.
+const SystemConfig: Model<ISystemConfig> =
+  (mongoose.models.SystemConfig as Model<ISystemConfig>) ||
+  mongoose.model<ISystemConfig>('SystemConfig', SystemConfigSchema);
+
+export default SystemConfig;

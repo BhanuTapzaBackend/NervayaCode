@@ -1,3 +1,4 @@
+import type { NpsCategory } from '@/utils/nps.util';
 declare global {
   interface Window {
     gtag?: (command: string, action: string, params?: Record<string, unknown>) => void;
@@ -9,11 +10,60 @@ declare global {
 
 export type ScrollDepthThreshold = 25 | 50 | 75 | 90;
 
+/**
+ * GA4 ecommerce events whose payload GTM expects to find nested under an
+ * `ecommerce` object. Anything else is pushed flat.
+ */
+const ECOMMERCE_EVENTS = new Set([
+  'view_item',
+  'view_item_list',
+  'select_item',
+  'add_to_cart',
+  'remove_from_cart',
+  'view_cart',
+  'begin_checkout',
+  'add_shipping_info',
+  'add_payment_info',
+  'purchase',
+  'refund',
+]);
+
+/** Fields that belong inside the `ecommerce` object rather than beside it. */
+const ECOMMERCE_FIELDS = [
+  'currency',
+  'value',
+  'items',
+  'coupon',
+  'transaction_id',
+  'shipping',
+  'tax',
+  'item_list_id',
+  'item_list_name',
+] as const;
+
 function sendGaEvent(eventName: string, params?: Record<string, unknown>): void {
   if (typeof window === 'undefined') return;
 
   if (process.env.NEXT_PUBLIC_GTM_ID) {
     window.dataLayer = window.dataLayer || [];
+
+    if (ECOMMERCE_EVENTS.has(eventName)) {
+      // Clear the previous event's ecommerce object first. Without this, GTM
+      // keeps the last `items` array and attributes it to the next event too.
+      window.dataLayer.push({ ecommerce: null });
+
+      const ecommerce: Record<string, unknown> = {};
+      for (const field of ECOMMERCE_FIELDS) {
+        if (params && field in params) ecommerce[field] = params[field];
+      }
+
+      // Fields stay duplicated at the top level so existing GTM variables that
+      // read them flat keep working; the nested copy is what GA4's built-in
+      // ecommerce mapping consumes.
+      window.dataLayer.push({ event: eventName, ...(params || {}), ecommerce });
+      return;
+    }
+
     window.dataLayer.push({
       event: eventName,
       ...(params || {}),
@@ -41,7 +91,6 @@ export function updateGaUserContext(context: {
   });
 }
 
-/*
 // 1. page_view
 export interface PageViewParams {
   page_url: string;
@@ -54,7 +103,6 @@ export interface PageViewParams {
 export function trackPageView(params: PageViewParams): void {
   sendGaEvent('page_view', params);
 }
-*/
 
 // 2. cta_click
 export interface CtaClickParams {
@@ -101,12 +149,10 @@ export function trackAddToCart(params: EcommerceParams): void {
   sendGaEvent('add_to_cart', params as unknown as Record<string, unknown>);
 }
 
-/*
 // 5. remove_from_cart
 export function trackRemoveFromCart(params: EcommerceParams): void {
   sendGaEvent('remove_from_cart', params as unknown as Record<string, unknown>);
 }
-*/
 
 // 6. begin_checkout
 export interface BeginCheckoutParams {
@@ -114,6 +160,8 @@ export interface BeginCheckoutParams {
   currency: string;
   item_count: number;
   modules_in_cart: string[];
+  /** Required by GA4 — without it the shopping funnel loses this step. */
+  items: ItemParams[];
   [key: string]: unknown;
 }
 export function trackBeginCheckout(params: BeginCheckoutParams): void {
@@ -126,6 +174,8 @@ export interface ShippingInfoParams {
   shipping_method: string;
   value: number;
   currency: string;
+  /** Required by GA4 — without it the shopping funnel loses this step. */
+  items: ItemParams[];
   shipping_details?: Record<string, unknown>;
   [key: string]: unknown;
 }
@@ -171,6 +221,9 @@ export interface LoggedInParams {
   [key: string]: unknown;
 }
 export function trackLoggedIn(params: LoggedInParams): void {
+  // GA4's recommended event name is `login`. `Logged_in` is kept because an
+  // existing GTM trigger may still match it; remove it once that is repointed.
+  sendGaEvent('login', params);
   sendGaEvent('Logged_in', params);
 }
 
@@ -211,33 +264,6 @@ export function trackAddPaymentInfo(params: PaymentInfoParams): void {
   sendGaEvent('add_payment_info', params);
 }
 
-/*
-// 13. view_item_list
-export interface ViewItemListParams {
-  item_list_name: string;
-  item_ids: string[];
-  page_type: string;
-  [key: string]: unknown;
-}
-export function trackViewItemList(params: ViewItemListParams): void {
-  sendGaEvent('view_item_list', params);
-}
-*/
-
-/*
-// 14. click_item (select_item in dataLayer example)
-export interface ClickItemParams {
-  item_id: string;
-  item_list_name: string;
-  position: number;
-  cta_name: string;
-  [key: string]: unknown;
-}
-export function trackClickItem(params: ClickItemParams): void {
-  sendGaEvent('select_item', params);
-}
-*/
-
 // 15. scroll_depth
 export interface ScrollDepthParams {
   percent_scrolled: number;
@@ -264,26 +290,6 @@ export function trackReviewViewed(params: { review_source: string; page_type: st
   sendGaEvent('review_viewed', params);
 }
 
-/*
-// 18. testimonial_viewed
-export function trackTestimonialViewed(params: { testimonial_id: string; page_type: string; [key: string]: unknown }): void {
-  sendGaEvent('testimonial_viewed', params);
-}
-*/
-
-/*
-// 19. video_played
-export interface VideoParams {
-  video_id: string;
-  video_position: string;
-  page_type: string;
-  [key: string]: unknown;
-}
-export function trackVideoPlayed(params: VideoParams): void {
-  sendGaEvent('video_played', params);
-}
-*/
-
 // 20. whatsapp_support_clicked
 export interface WhatsappParams {
   support_entry_point: string;
@@ -294,68 +300,6 @@ export interface WhatsappParams {
 export function trackWhatsappSupportClicked(params: WhatsappParams): void {
   sendGaEvent('whatsapp_support_clicked', params);
 }
-
-/*
-// 21. whatsapp_chat_started
-export function trackWhatsappChatStarted(params: WhatsappParams): void {
-  sendGaEvent('whatsapp_chat_started', params);
-}
-*/
-
-/*
-// 22. whatsapp_bot_interaction
-export interface BotParams {
-  bot_step: string;
-  bot_option_selected: string;
-  page_type: string;
-  [key: string]: unknown;
-}
-export function trackWhatsappBotInteraction(params: BotParams): void {
-  sendGaEvent('whatsapp_bot_interaction', params);
-}
-*/
-
-/*
-// 23. rating_submitted
-export interface RatingParams {
-  rating_value: number;
-  rating_target: 'product' | 'therapy' | 'assessment';
-  item_id?: string;
-  page_type: string;
-  [key: string]: unknown;
-}
-export function trackRatingSubmitted(params: RatingParams): void {
-  sendGaEvent('rating_submitted', params);
-}
-*/
-
-/*
-// 24. review_submitted
-export interface ReviewSubmittedParams {
-  rating_value: number;
-  review_length: number;
-  review_target: string;
-  item_id?: string;
-  page_type: string;
-  [key: string]: unknown;
-}
-export function trackReviewSubmitted(params: ReviewSubmittedParams): void {
-  sendGaEvent('review_submitted', params);
-}
-*/
-
-/*
-// 25. feedback_submitted
-export interface FeedbackParams {
-  feedback_type: 'complaint' | 'suggestion' | 'praise';
-  feedback_length: number;
-  page_type: string;
-  [key: string]: unknown;
-}
-export function trackFeedbackSubmitted(params: FeedbackParams): void {
-  sendGaEvent('feedback_submitted', params);
-}
-*/
 
 // 26. sleep_score_generated
 export interface SleepScoreParams {
@@ -418,22 +362,6 @@ export function trackTherapySlotSelected(params: TherapySlotParams): void {
   sendGaEvent('therapy_slot_selected', params);
 }
 
-/*
-// 31. nps_submitted
-export interface NpsParams {
-  nps_score: number;
-  nps_category: 'detractor' | 'passive' | 'promoter';
-  nps_context: string;
-  journey_stage: string;
-  comment_length: number;
-  page_type: string;
-  [key: string]: unknown;
-}
-export function trackNpsSubmitted(params: NpsParams): void {
-  sendGaEvent('nps_submitted', params);
-}
-*/
-
 // extra: therapy_booked
 export function trackTherapyBooked(params: TherapySlotParams): void {
   sendGaEvent('therapy_booked', params);
@@ -462,8 +390,60 @@ export function trackViewAudioPage(): void {
   sendGaEvent('view_audio_page', { page_type: 'audio' });
 }
 
+/**
+ * Deep Rest purchase.
+ *
+ * Fires GA4's standard `purchase` as well as the custom `audio_purchase`. Only
+ * `purchase` reaches GA4's monetisation reports, so on its own `audio_purchase`
+ * left Deep Rest revenue reading as zero.
+ */
 export function trackAudioPurchase(params: { order_id: string; value: number; currency: string }): void {
   sendGaEvent('audio_purchase', params);
+  sendGaEvent('purchase', {
+    transaction_id: params.order_id,
+    value: params.value,
+    currency: params.currency,
+    items: [
+      {
+        item_id: params.order_id,
+        item_name: 'Deep Rest Session',
+        item_category: 'Digital',
+        price: params.value,
+        quantity: 1,
+        currency: params.currency,
+        page_type: '/deep-rest',
+      },
+    ],
+  });
+}
+
+/**
+ * Review submitted. Carries `rating_value`, so there is no separate
+ * `rating_submitted` event — the review form is the only rating surface, and
+ * firing both would double-count one action.
+ */
+export interface ReviewSubmittedParams {
+  rating_value: number;
+  review_length: number;
+  review_target: string;
+  item_id?: string;
+  page_type: string;
+  [key: string]: unknown;
+}
+export function trackReviewSubmitted(params: ReviewSubmittedParams): void {
+  sendGaEvent('review_submitted', params);
+}
+
+export interface NpsParams {
+  nps_score: number;
+  nps_category: NpsCategory;
+  nps_context: string;
+  comment_length: number;
+  page_type: string;
+  [key: string]: unknown;
+}
+export function trackNpsSubmitted(params: NpsParams): void {
+  sendGaEvent('nps_submitted', params);
 }
 
 export function trackLeadSubmitted(params: { lead_type: string; source_page: string; [key: string]: unknown }): void {

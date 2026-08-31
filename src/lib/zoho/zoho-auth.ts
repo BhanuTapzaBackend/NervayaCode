@@ -21,17 +21,45 @@ function assertEnvVar(name: string): string {
 }
 
 /**
- * Fetches a fresh Zoho OAuth Access Token using the stored Refresh Token.
+ * Zoho console values are routinely copied with a trailing slash. Appending a
+ * path to one produces a double slash, which Zoho answers with 404 rather than
+ * normalising — so every base URL is trimmed before use.
+ */
+function assertBaseUrl(name: string): string {
+  return assertEnvVar(name).replace(/\/+$/, '');
+}
+
+/** Trimmed `ZOHO_API_URL`, e.g. `https://www.zohoapis.in`. */
+export function getZohoApiBaseUrl(): string {
+  return assertBaseUrl('ZOHO_API_URL');
+}
+
+/**
+ * Cached access token, shared by every push in the same warm lambda.
  *
- * Called inside every API route handler to guarantee the token is always valid.
- * Zoho tokens expire in 3600 seconds; the overhead of one extra POST request
- * per serverless invocation is acceptable and far safer than caching.
+ * Zoho rate-limits refresh-token → access-token exchanges (roughly 15 per 10
+ * minutes per refresh token) and answers HTTP 400 once exceeded. Fetching a
+ * fresh token on every push burns that budget fast: a handful of signups plus a
+ * purchase in the same window is enough to start failing. Vercel reuses warm
+ * lambdas, so a module-level cache is both safe and the standard approach.
+ */
+let cachedToken: { value: string; expiresAt: number } | null = null;
+
+/** Refresh this long before real expiry, so an in-flight request cannot age out. */
+const TOKEN_EXPIRY_MARGIN_MS = 5 * 60 * 1000;
+
+/**
+ * Returns a valid Zoho OAuth access token, reusing a cached one when possible.
  *
  * @returns A valid Zoho OAuth access token string.
  * @throws {AppError} when env vars are missing or Zoho returns an error.
  */
 export async function getZohoAccessToken(): Promise<string> {
-  const accountsUrl = assertEnvVar('ZOHO_ACCOUNTS_URL');
+  if (cachedToken && cachedToken.expiresAt > Date.now()) {
+    return cachedToken.value;
+  }
+
+  const accountsUrl = assertBaseUrl('ZOHO_ACCOUNTS_URL');
   const clientId = assertEnvVar('ZOHO_CLIENT_ID');
   const clientSecret = assertEnvVar('ZOHO_CLIENT_SECRET');
   const refreshToken = assertEnvVar('ZOHO_REFRESH_TOKEN');
@@ -62,6 +90,12 @@ export async function getZohoAccessToken(): Promise<string> {
   if (!data.access_token) {
     throw new AppError('Zoho returned no access_token in response', 502);
   }
+
+  const lifetimeMs = (data.expires_in ?? 3600) * 1000;
+  cachedToken = {
+    value: data.access_token,
+    expiresAt: Date.now() + Math.max(0, lifetimeMs - TOKEN_EXPIRY_MARGIN_MS),
+  };
 
   return data.access_token;
 }

@@ -8,6 +8,8 @@ import { feedbackApi } from '@/lib/api/feedback';
 import { useModalDismiss } from '@/hooks/useModalDismiss';
 import { toast } from 'sonner';
 import styles from './styles.module.css';
+import { trackNpsSubmitted } from '@/utils/analytics';
+import { npsCategoryFor } from '@/utils/nps.util';
 
 const FEEDBACK_GIVEN_KEY = 'nervaya_feedback_given';
 
@@ -51,10 +53,18 @@ export function FeedbackWidget() {
     if (score === null) return;
     setState('submitting');
     try {
+      const trimmedComment = comment.trim();
       await feedbackApi.submit({
         score,
-        comment: comment.trim() || undefined,
+        comment: trimmedComment || undefined,
         pageUrl: window.location.pathname,
+      });
+      trackNpsSubmitted({
+        nps_score: score,
+        nps_category: npsCategoryFor(score),
+        nps_context: 'floating_widget',
+        comment_length: trimmedComment.length,
+        page_type: window.location.pathname,
       });
       localStorage.setItem(FEEDBACK_GIVEN_KEY, 'true');
       setHasGivenFeedback(true);

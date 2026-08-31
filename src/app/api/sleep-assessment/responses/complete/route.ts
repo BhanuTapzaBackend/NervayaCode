@@ -17,26 +17,23 @@ export async function POST(req: NextRequest) {
     const response = await completeAssessment(authResult.user.userId);
 
     // Push to Zoho CRM — fire-and-forget, never blocks the user response.
-    // Fetches the user's name, email, and phone (phone ready for future collection)
-    // then upserts the lead: new users → create, returning users → update.
+    // Signup is phone-first and email is optional, so the lead is keyed on
+    // whichever identifiers the user actually has.
     (async () => {
       try {
-        const [{ default: User }, { pushAssessmentLeadToZoho }] = await Promise.all([
+        const [{ default: User }, { pushAssessmentLeadToZoho, pushLeadSafely }] = await Promise.all([
           import('@/lib/models/user.model'),
           import('@/lib/zoho/zoho-crm.service'),
         ]);
         const user = await User.findById(authResult.user.userId).select('name email phone').lean();
-        if (user && user.email && user.name) {
+        if (user?.name && (user.email || user.phone)) {
           const scoreLabel = getSleepScoreLabel(response);
-          await pushAssessmentLeadToZoho(
-            user.name,
-            user.email,
-            scoreLabel,
-            user.phone ?? undefined, // phone: populated automatically when collected in future
+          pushLeadSafely('sleep assessment', () =>
+            pushAssessmentLeadToZoho(user.name, user.email ?? undefined, scoreLabel, user.phone ?? undefined),
           );
         }
-      } catch {
-        // Silently swallow — Zoho errors must never affect the user
+      } catch (error) {
+        console.error('[Zoho] sleep assessment lead lookup failed:', error);
       }
     })();
 

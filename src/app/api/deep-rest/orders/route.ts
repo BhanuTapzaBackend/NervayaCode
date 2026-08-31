@@ -5,6 +5,7 @@ import { handleError } from '@/lib/utils/error.util';
 import { requireAuth } from '@/lib/middleware/auth.middleware';
 import { ROLES } from '@/lib/constants/roles';
 import { DRIFT_OFF_SESSION_PRICE } from '@/lib/constants/driftOff.constants';
+import { DEEP_REST_SESSION_PRICE_CONFIG_KEY } from '@/lib/constants/deepRest.constants';
 import { configService } from '@/lib/services/config.service';
 
 export async function GET(request: NextRequest) {
@@ -29,8 +30,11 @@ export async function POST(request: NextRequest) {
     const authResult = await requireAuth(request, [ROLES.CUSTOMER, ROLES.ADMIN]);
     if (authResult instanceof NextResponse) return authResult;
 
-    const dbPrice = await configService.get('driftOffSessionPrice');
-    const finalPrice = dbPrice !== null ? dbPrice : DRIFT_OFF_SESSION_PRICE;
+    // Same guard as GET /api/deep-rest/plan, which is what the user was quoted.
+    // A non-numeric config value (an admin saving "499" as text) would otherwise
+    // be charged as-is here while the plan page fell back to the constant.
+    const dbPrice = await configService.get(DEEP_REST_SESSION_PRICE_CONFIG_KEY);
+    const finalPrice = typeof dbPrice === 'number' ? dbPrice : DRIFT_OFF_SESSION_PRICE;
 
     const order = await createDriftOffOrder(authResult.user.userId, finalPrice);
 

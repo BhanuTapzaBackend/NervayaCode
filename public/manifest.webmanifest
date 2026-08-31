@@ -1,7 +1,7 @@
 {
-  "name": "Nervaya — Your Mental Health Companion",
+  "name": "Nervaya — Your Sleep Wellness Companion",
   "short_name": "Nervaya",
-  "description": "Nervaya — Your Mental Health Companion",
+  "description": "Nervaya — Your Sleep Wellness Companion",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",

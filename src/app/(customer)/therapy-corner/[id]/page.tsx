@@ -191,7 +191,7 @@ export default function TherapistProfilePage() {
                         </p>
                         <p style={{ margin: 0 }}>
                           Our compassionate approach combines evidence-based techniques with personalized care to
-                          support your mental wellness journey.
+                          support your sleep wellness journey.
                         </p>
                       </>
                     )}

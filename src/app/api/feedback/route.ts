@@ -29,6 +29,32 @@ export async function POST(req: NextRequest) {
       pageUrl: typeof pageUrl === 'string' ? pageUrl : '',
     });
 
+    // Push the NPS response to Zoho — fire-and-forget, never blocks the user.
+    // A detractor is the most actionable thing customer success can see.
+    (async () => {
+      try {
+        const [{ default: User }, { pushNpsLeadToZoho, pushLeadSafely }] = await Promise.all([
+          import('@/lib/models/user.model'),
+          import('@/lib/zoho/zoho-crm.service'),
+        ]);
+        const user = await User.findById(authResult.user.userId).select('name email phone').lean();
+        if (user?.name && (user.email || user.phone)) {
+          pushLeadSafely('nps', () =>
+            pushNpsLeadToZoho({
+              name: user.name,
+              email: user.email ?? undefined,
+              phone: user.phone ?? undefined,
+              score,
+              comment: typeof comment === 'string' ? comment : undefined,
+              pageUrl: typeof pageUrl === 'string' ? pageUrl : undefined,
+            }),
+          );
+        }
+      } catch (error) {
+        console.error('[Zoho] nps lead lookup failed:', error);
+      }
+    })();
+
     return NextResponse.json(successResponse('Feedback submitted successfully', feedback, 201), { status: 201 });
   } catch (error) {
     const { message, statusCode, error: errData } = handleError(error);

@@ -43,18 +43,25 @@ export async function POST(req: NextRequest) {
       time,
     });
 
-    // Push to Zoho CRM — fire-and-forget, redundant to the frontend push
+    // Push to Zoho CRM — fire-and-forget. This is the only producer; the client
+    // no longer pushes a second lead under a competing Lead_Source.
+    //
+    // A phone-call booking has no email, so none is sent. The old placeholder
+    // ('no-email@nervaya.com') was shared by every such lead and, being a dedup
+    // field, collapsed unrelated bookings onto one CRM record.
     (async () => {
       try {
-        const { pushSupportLeadToZoho } = await import('@/lib/zoho/zoho-crm.service');
-        await pushSupportLeadToZoho(
-          `${firstName} ${lastName}`,
-          connectionType === 'Video Call' ? email : 'no-email@nervaya.com',
-          `Automated consultation request via ${connectionType} at ${date} ${time}`,
-          mobile,
+        const { pushConsultationLeadToZoho, pushLeadSafely } = await import('@/lib/zoho/zoho-crm.service');
+        pushLeadSafely('consultation', () =>
+          pushConsultationLeadToZoho({
+            name: `${firstName} ${lastName}`,
+            email: connectionType === 'Video Call' ? email : undefined,
+            phone: mobile,
+            message: `Automated consultation request via ${connectionType} at ${date} ${time}`,
+          }),
         );
-      } catch {
-        // Silently swallow errors
+      } catch (error) {
+        console.error('[Zoho] consultation lead push failed:', error);
       }
     })();
 

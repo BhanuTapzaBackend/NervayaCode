@@ -19,19 +19,22 @@ export async function POST(request: NextRequest) {
 
     const response = await completeDriftOffResponse(authResult.user.userId, driftOffOrderId);
 
-    // Push to Zoho CRM — fire-and-forget
+    // Push to Zoho CRM — fire-and-forget. Email is optional on phone-first
+    // signups, so the lead is keyed on whichever identifiers exist.
     (async () => {
       try {
-        const [{ default: User }, { pushDeepRestLeadToZoho }] = await Promise.all([
+        const [{ default: User }, { pushDeepRestLeadToZoho, pushLeadSafely }] = await Promise.all([
           import('@/lib/models/user.model'),
           import('@/lib/zoho/zoho-crm.service'),
         ]);
         const user = await User.findById(authResult.user.userId).select('name email phone').lean();
-        if (user && user.email && user.name) {
-          await pushDeepRestLeadToZoho(user.name, user.email, user.phone ?? undefined);
+        if (user?.name && (user.email || user.phone)) {
+          pushLeadSafely('deep rest', () =>
+            pushDeepRestLeadToZoho(user.name, user.email ?? undefined, user.phone ?? undefined),
+          );
         }
-      } catch {
-        // Silently swallow errors
+      } catch (error) {
+        console.error('[Zoho] deep rest lead lookup failed:', error);
       }
     })();
 

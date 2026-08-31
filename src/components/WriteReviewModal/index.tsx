@@ -10,6 +10,7 @@ import { useModalDismiss } from '@/hooks/useModalDismiss';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import styles from './styles.module.css';
+import { trackReviewSubmitted } from '@/utils/analytics';
 
 type ModalState = 'idle' | 'selectItem' | 'writeReview' | 'submitting' | 'success';
 
@@ -63,7 +64,15 @@ export function WriteReviewModal() {
     if (!selectedItem || rating === 0) return;
     setState('submitting');
     try {
-      await reviewsApi.create(selectedItem.itemId, rating, comment.trim() || undefined, selectedItem.itemType);
+      const trimmedComment = comment.trim();
+      await reviewsApi.create(selectedItem.itemId, rating, trimmedComment || undefined, selectedItem.itemType);
+      trackReviewSubmitted({
+        rating_value: rating,
+        review_length: trimmedComment.length,
+        review_target: selectedItem.itemType,
+        item_id: selectedItem.itemId,
+        page_type: window.location.pathname,
+      });
       setState('success');
       setTimeout(() => setState('idle'), 2000);
     } catch {

@@ -9,6 +9,7 @@ import { formatPrice, getCartItemCount } from '@/utils/cart.util';
 import { getShippingCost } from '@/utils/shipping.util';
 import { trackViewCart, trackBeginCheckout } from '@/utils/analytics';
 import styles from './styles.module.css';
+import { cartItemsToGaItems } from '@/utils/ga-items.util';
 
 interface CartSummaryProps {
   cart: Cart;
@@ -67,7 +68,9 @@ const CartSummary: React.FC<CartSummaryProps> = ({ cart, onCheckout, loading = f
                 value: total,
                 currency: 'INR',
                 item_count: itemCount,
-                modules_in_cart: cart.items.map(() => 'supplements'),
+                // Was hardcoded to 'supplements' for every row regardless of type.
+                modules_in_cart: [...new Set(cart.items.map((item) => item.itemType))],
+                items: cartItemsToGaItems(cart, '/cart'),
               });
               onCheckout?.();
             }}

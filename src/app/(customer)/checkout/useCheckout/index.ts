@@ -7,36 +7,15 @@ import { cartApi } from '@/lib/api/cart';
 import { useCart } from '@/context/CartContext';
 import { usePhoneGate } from '@/hooks/usePhoneGate';
 import type { ApiResponse } from '@/lib/api/types';
-import type { Cart, Order, ShippingAddress, SavedAddress, Supplement } from '@/types/supplement.types';
+import type { Cart, Order, ShippingAddress, SavedAddress } from '@/types/supplement.types';
+import { cartItemsToGaItems } from '@/utils/ga-items.util';
 import {
   trackBeginCheckout,
   trackAddPaymentInfo,
   trackCouponApplied,
   trackAddShippingInfo,
   trackPurchaseFailed,
-  type ItemParams,
 } from '@/utils/analytics';
-
-function cartItemsToGaItems(cart: Cart): ItemParams[] {
-  return cart.items.map((item) => {
-    const isSupplement = item.itemType === ITEM_TYPE.SUPPLEMENT;
-    const supplement =
-      isSupplement && typeof item.itemId === 'object' && item.itemId !== null && 'name' in item.itemId
-        ? (item.itemId as Supplement)
-        : null;
-    const id = typeof item.itemId === 'object' ? supplement?._id : item.itemId;
-    const name = item.name || supplement?.name || String(id);
-    return {
-      item_id: String(id),
-      item_name: name,
-      item_category: isSupplement ? 'Supplements' : 'Digital',
-      price: item.price,
-      quantity: item.quantity,
-      currency: 'INR',
-      page_type: '/checkout',
-    };
-  });
-}
 
 interface PaymentCreateResponse {
   success: boolean;
@@ -88,7 +67,9 @@ export function useCheckout() {
             currency: 'INR',
             value: response.data.totalAmount,
             item_count: response.data.items.length,
-            modules_in_cart: ['supplements'],
+            // Was hardcoded to 'supplements' regardless of what was in the cart.
+            modules_in_cart: [...new Set(response.data.items.map((item) => item.itemType))],
+            items: cartItemsToGaItems(response.data, '/checkout'),
           });
         }
       }
@@ -281,13 +262,14 @@ export function useCheckout() {
           shipping_method: 'standard',
           value: cart.totalAmount - promoDiscount,
           currency: 'INR',
+          items: cartItemsToGaItems(cart, '/checkout'),
         });
       }
       trackAddPaymentInfo({
         currency: 'INR',
         value: cart.totalAmount - promoDiscount,
         payment_type: 'Razorpay',
-        items: cartItemsToGaItems(cart),
+        items: cartItemsToGaItems(cart, '/checkout'),
         ...(appliedPromoCode ? { coupon: appliedPromoCode } : {}),
       });
       const orderPayload = {

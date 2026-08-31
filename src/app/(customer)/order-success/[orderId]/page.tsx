@@ -57,6 +57,20 @@ export default function OrderSuccessPage() {
 
   useEffect(() => {
     if (!order) return;
+
+    // `purchase` must fire once per order. This effect re-runs on refresh and
+    // back-navigation, and GA4 does not reliably deduplicate by transaction_id,
+    // so a repeat would inflate revenue. sessionStorage (not a ref) is what
+    // survives the reload that causes it.
+    const purchaseKey = `ga-purchase-sent:${order._id}`;
+    try {
+      if (sessionStorage.getItem(purchaseKey)) return;
+      sessionStorage.setItem(purchaseKey, '1');
+    } catch {
+      // Private mode / storage disabled: fall through and track anyway. An
+      // occasional duplicate beats losing the event entirely.
+    }
+
     const subtotalForShipping = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const orderIsDigital = order.items.every(
       (item) => item.itemType === ITEM_TYPE.DRIFT_OFF || item.itemType === ITEM_TYPE.THERAPY,

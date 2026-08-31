@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata, Viewport } from 'next';
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';
 import { Analytics } from '@vercel/analytics/react';
@@ -34,15 +35,15 @@ export const metadata: Metadata = {
     default: 'Nervaya',
     template: '%s | Nervaya',
   },
-  description: 'Nervaya - Your Mental Health Companion',
+  description: 'Nervaya - Your Sleep Wellness Companion',
   applicationName: 'Nervaya',
   manifest: '/manifest.webmanifest',
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Nervaya - Your Mental Health Companion',
-    description: 'Nervaya - Your Mental Health Companion',
+    title: 'Nervaya - Your Sleep Wellness Companion',
+    description: 'Nervaya - Your Sleep Wellness Companion',
     url: '/',
     siteName: 'Nervaya',
     type: 'website',
@@ -101,7 +102,12 @@ export default function RootLayout({
       <body style={{ '--bg-main': `url(${IMAGES.BACKGROUND_MAIN})` } as React.CSSProperties}>
         <Providers>
           <BodyRouteClass />
-          <EngagementTracker />
+          {/* usePageView reads useSearchParams, which opts a route out of static
+              prerendering unless it sits behind a Suspense boundary. This tracker
+              renders null, so the fallback is nothing. */}
+          <Suspense fallback={null}>
+            <EngagementTracker />
+          </Suspense>
           {children}
         </Providers>
         <Analytics />

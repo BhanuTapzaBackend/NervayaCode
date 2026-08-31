@@ -17,6 +17,8 @@ import { ROUTES } from '@/utils/routesConstants';
 import StatusState from '@/components/common/StatusState';
 import styles from './styles.module.css';
 import { DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
+import { trackRemoveFromCart } from '@/utils/analytics';
+import { cartItemsToGaItems } from '@/utils/ga-items.util';
 
 export default function CartPage() {
   const router = useRouter();
@@ -89,7 +91,18 @@ export default function CartPage() {
     setUpdating(true);
     try {
       setError(null);
+      // Captured before the removal, while the item is still in the cart.
+      const removed = cart?.items.find(
+        (item) => String(typeof item.itemId === 'object' ? item.itemId?._id : item.itemId) === itemId,
+      );
       await removeItem(itemId, itemType);
+      if (cart && removed) {
+        trackRemoveFromCart({
+          currency: 'INR',
+          value: removed.price * removed.quantity,
+          items: cartItemsToGaItems({ ...cart, items: [removed] }, '/cart'),
+        });
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to remove item';
       setError(message);

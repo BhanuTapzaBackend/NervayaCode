@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getZohoAccessToken } from '@/lib/zoho/zoho-auth';
-import { ZohoCRMResponse, ZohoLeadPayload, CreateLeadRequest } from '@/lib/zoho/types';
+import { ZohoLeadPayload, CreateLeadRequest } from '@/lib/zoho/types';
+import { pushLeadToZoho } from '@/lib/zoho/zoho-crm.service';
 import { successResponse, errorResponse } from '@/lib/utils/response.util';
 import { handleError, AppError } from '@/lib/utils/error.util';
+import { checkZohoLeadRateLimit } from '@/lib/utils/rate-limit.util';
+import { getClientIp } from '@/lib/utils/request.util';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/zoho/lead
@@ -25,55 +27,34 @@ function buildLeadPayload(body: CreateLeadRequest): ZohoLeadPayload {
 
 export async function POST(request: NextRequest) {
   try {
+    // Public endpoint: the signup form pushes a lead before an account exists,
+    // so there is no session to authenticate. Cap per IP so it cannot be used
+    // to flood the CRM.
+    if (!(await checkZohoLeadRateLimit(getClientIp(request)))) {
+      return NextResponse.json(errorResponse('Too many lead submissions. Please try again later.', null, 429), {
+        status: 429,
+      });
+    }
+
     const body = (await request.json()) as CreateLeadRequest;
 
-    // Validate required fields
     if (!body.lastName?.trim()) {
       throw new AppError('lastName is required for Zoho leads', 400);
     }
 
-    const accessToken = await getZohoAccessToken();
-    const apiUrl = process.env.ZOHO_API_URL;
-
-    if (!apiUrl) {
-      throw new AppError('ZOHO_API_URL is missing', 500);
+    // Zoho deduplicates on identifiers; with neither there is nothing to match
+    // against and every submission would create a fresh duplicate.
+    if (!body.email?.trim() && !body.phone?.trim()) {
+      throw new AppError('Either email or phone is required for Zoho leads', 400);
     }
 
-    const payload = buildLeadPayload(body);
-    const duplicateCheckFields = ['Email'];
-    if (payload.Phone) duplicateCheckFields.push('Phone');
+    // Shares pushLeadToZoho with the server-side touchpoints so both paths use
+    // the same base URL handling and the same duplicate_check_fields rule.
+    await pushLeadToZoho(buildLeadPayload(body));
 
-    // Push to Zoho CRM using UPSERT logic
-    const zohoResponse = await fetch(`${apiUrl}/crm/v3/Leads/upsert`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Zoho-oauthtoken ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: [payload],
-        duplicate_check_fields: duplicateCheckFields,
-      }),
+    return NextResponse.json(successResponse('Lead successfully synced to Zoho CRM', { status: 'success' }), {
+      status: 200,
     });
-
-    if (!zohoResponse.ok) {
-      throw new AppError(`Zoho API error: ${zohoResponse.status}`, 502);
-    }
-
-    const zohoData = (await zohoResponse.json()) as ZohoCRMResponse;
-    const record = zohoData.data?.[0];
-
-    if (record?.status === 'error') {
-      throw new AppError(`Zoho rejected lead: ${record.message}`, 422);
-    }
-
-    return NextResponse.json(
-      successResponse('Lead successfully synced to Zoho CRM', {
-        zohoRecordId: record?.details?.id ?? null,
-        status: record?.status ?? 'unknown',
-      }),
-      { status: 200 },
-    );
   } catch (error) {
     const { message, statusCode, error: errData } = handleError(error);
     return NextResponse.json(errorResponse(message, errData, statusCode), { status: statusCode });

@@ -233,6 +233,11 @@ async function processPaymentSuccess(orderId: string, paymentId: string) {
       console.error('[payment] order confirmation failed:', error);
     });
 
+    // Record the purchase against the buyer's CRM lead, also post-commit and
+    // fire-and-forget. Until this existed the CRM knew who signed up but never
+    // who bought.
+    pushPurchaseToCrm(orderId);
+
     return { success: true };
   } catch (error) {
     // Stock failure: transaction rolled back all changes. Now mark order as refunded and initiate refund.
@@ -316,4 +321,38 @@ export async function handlePaymentWebhook(razorpayOrderId: string, paymentId: s
     );
   }
   return { success: true };
+}
+
+/**
+ * Push a paid order to Zoho CRM. Never throws: a CRM outage must not affect a
+ * payment that has already succeeded.
+ */
+function pushPurchaseToCrm(orderId: string): void {
+  void (async () => {
+    try {
+      const [order, { pushPurchaseLeadToZoho, pushLeadSafely }] = await Promise.all([
+        Order.findById(orderId).lean(),
+        import('@/lib/zoho/zoho-crm.service'),
+      ]);
+      if (!order) return;
+
+      const user = await User.findById(order.userId).select('name email phone').lean();
+      if (!user?.name || (!user.email && !user.phone)) return;
+
+      const channels = [...new Set(order.items.map((item) => item.itemType))].join(' + ');
+      pushLeadSafely('purchase', () =>
+        pushPurchaseLeadToZoho({
+          name: user.name,
+          email: user.email ?? undefined,
+          phone: user.phone ?? undefined,
+          orderId: String(order._id),
+          amount: order.totalAmount,
+          channel: channels ? `${channels} order` : 'Order',
+          items: order.items.map((item) => ({ name: item.name, quantity: item.quantity, price: item.price })),
+        }),
+      );
+    } catch (error) {
+      console.error('[Zoho] purchase lead lookup failed:', error);
+    }
+  })();
 }

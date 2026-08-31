@@ -105,6 +105,19 @@ export async function checkOTPSendLimit(identifier: string): Promise<OTPSendLimi
   return { allowed: true, sendCount: entry.sendCount, resetTime: entry.expiresAt.getTime() };
 }
 
+/**
+ * `/api/zoho/lead` is a public write path into the CRM — unauthenticated by
+ * design, because the signup form pushes a lead before an account exists. The
+ * cap is per-IP so a script cannot flood Zoho with junk records.
+ */
+const MAX_ZOHO_LEAD_PUSHES = 10;
+const ZOHO_LEAD_WINDOW_MS = 10 * 60 * 1000;
+
+export async function checkZohoLeadRateLimit(identifier: string): Promise<boolean> {
+  const result = await checkWindow('zoho-lead', identifier, MAX_ZOHO_LEAD_PUSHES, ZOHO_LEAD_WINDOW_MS);
+  return result.allowed;
+}
+
 export async function checkOTPVerifyRateLimit(identifier: string): Promise<boolean> {
   const result = await checkWindow('otp-verify', identifier, MAX_OTP_VERIFY_ATTEMPTS, OTP_VERIFY_WINDOW_MS);
   return result.allowed;

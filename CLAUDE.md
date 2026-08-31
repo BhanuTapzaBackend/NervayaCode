@@ -76,7 +76,15 @@ The sleep therapy program was renamed from "Drift Off" to "Deep Rest". Code stil
 
 ### Zoho CRM Integration
 
-Fire-and-forget lead tracking at signup, sleep assessment, Deep Rest completion, and contact forms. All calls wrapped in `.catch(() => undefined)` — Zoho outages never block users. Uses UPSERT with `duplicate_check_fields: ["Phone"]` (falls back to `["Email"]` when no phone is present).
+Fire-and-forget lead tracking at signup, sleep assessment, Deep Rest completion, free consultations, and paid orders. Nothing blocks a user: pushes go through `pushLeadSafely()`, which logs failures via `console.error` rather than swallowing them — a silent `.catch(() => undefined)` is how a misconfigured base URL went unnoticed.
+
+Uses UPSERT on `/crm/v3/Leads/upsert` with `duplicate_check_fields` built from **whichever identifiers the payload carries** (Phone and/or Email). Signup is phone-first and email is optional, so no touchpoint may require an email — a lead with neither identifier is rejected rather than written, because Zoho cannot deduplicate it.
+
+**Base URLs must not have a trailing slash.** `ZOHO_ACCOUNTS_URL` and `ZOHO_API_URL` have paths appended to them; `https://accounts.zoho.in/` yields `//oauth/v2/token`, which Zoho answers with 404. `assertBaseUrl()` in `zoho-auth.ts` now trims them, but keep the env values clean too.
+
+Lead sources emitted (one producer each — never push the same event from both client and server, or the second push overwrites `Lead_Source`): `Nervaya Signup`, `Sleep Assessment`, `Deep Rest Assessment`, `Free Consultation`, `Support Enquiry`. Purchases deliberately omit `Lead_Source` so they don't overwrite the original attribution.
+
+`POST /api/zoho/lead` is intentionally public — the signup form pushes a lead before an account exists — so it is rate-limited per IP (`checkZohoLeadRateLimit`).
 
 ### OTP & WhatsApp
 
@@ -101,7 +109,7 @@ Signup is two-stage: `pendingSignup` (phone-keyed, TTL 10 min) holds the name un
 
 **Required:** `MONGODB_URI`, `JWT_SECRET`, `CLOUDINARY_CLOUD_NAME`/`API_KEY`/`API_SECRET`, `RAZORPAY_KEY_ID`/`KEY_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_OTP_TEMPLATE_NAME`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET`
 
-**Optional:** `JWT_EXPIRES_IN` (overrides the derived session length; leave unset so the token and cookie stay in sync), `WHATSAPP_BUSINESS_ACCOUNT_ID`, `WHATSAPP_API_VERSION` (default `v21.0`), `OTP_EMAIL_USER`/`OTP_EMAIL_APP_PASSWORD`/`OTP_EMAIL_FROM_NAME` (email receipts only), `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_GTM_ID`, `ZOHO_CLIENT_ID`/`ZOHO_CLIENT_SECRET`/`ZOHO_REFRESH_TOKEN`, `NEXT_PUBLIC_APP_URL` (absolute site origin used in meeting links/emails)
+**Optional:** `JWT_EXPIRES_IN` (overrides the derived session length; leave unset so the token and cookie stay in sync), `WHATSAPP_BUSINESS_ACCOUNT_ID`, `WHATSAPP_API_VERSION` (default `v21.0`), `OTP_EMAIL_USER`/`OTP_EMAIL_APP_PASSWORD`/`OTP_EMAIL_FROM_NAME` (email receipts only), `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_GTM_ID`, `ZOHO_CLIENT_ID`/`ZOHO_CLIENT_SECRET`/`ZOHO_REFRESH_TOKEN`/`ZOHO_ACCOUNTS_URL`/`ZOHO_API_URL` (all five required together — Zoho is skipped entirely if any is missing; see the Zoho section below), `NEXT_PUBLIC_APP_URL` (absolute site origin used in meeting links/emails)
 
 ### Therapy Session Video (Jitsi / JaaS)
 

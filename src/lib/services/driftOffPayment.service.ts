@@ -91,6 +91,7 @@ export async function verifyDriftOffPayment(
  */
 async function settleDriftOffOrder(driftOffOrderId: string, paymentId: string, userId: string): Promise<void> {
   const session = await mongoose.startSession();
+  let settledAmount: number | null = null;
   try {
     await session.withTransaction(async () => {
       const current = await DriftOffOrder.findById(driftOffOrderId).session(session);
@@ -102,8 +103,45 @@ async function settleDriftOffOrder(driftOffOrderId: string, paymentId: string, u
       }).session(session);
 
       await createDriftOffResponse(userId, driftOffOrderId, session);
+      settledAmount = current.amount;
     });
   } finally {
     await session.endSession();
   }
+
+  // Post-commit, fire-and-forget. Skipped on the idempotent replay so a retried
+  // verification does not push the same purchase twice.
+  if (settledAmount !== null) {
+    pushDeepRestPurchaseToCrm(driftOffOrderId, userId, settledAmount);
+  }
+}
+
+/**
+ * Record a paid Deep Rest order against the buyer's CRM lead. Never throws — the
+ * payment has already succeeded and must not be affected by a CRM outage.
+ */
+function pushDeepRestPurchaseToCrm(driftOffOrderId: string, userId: string, amount: number): void {
+  void (async () => {
+    try {
+      const [user, { pushPurchaseLeadToZoho, pushLeadSafely }] = await Promise.all([
+        User.findById(userId).select('name email phone').lean(),
+        import('@/lib/zoho/zoho-crm.service'),
+      ]);
+      if (!user?.name || (!user.email && !user.phone)) return;
+
+      pushLeadSafely('deep rest purchase', () =>
+        pushPurchaseLeadToZoho({
+          name: user.name,
+          email: user.email ?? undefined,
+          phone: user.phone ?? undefined,
+          orderId: driftOffOrderId,
+          amount,
+          channel: 'Deep Rest program',
+          items: [{ name: 'Deep Rest Session', quantity: 1, price: amount }],
+        }),
+      );
+    } catch (error) {
+      console.error('[Zoho] deep rest purchase lead lookup failed:', error);
+    }
+  })();
 }

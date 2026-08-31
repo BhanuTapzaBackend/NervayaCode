@@ -13,7 +13,6 @@ import { trackLeadSubmitted } from '@/utils/analytics';
 import axios from 'axios';
 import { TherapistSlot } from '@/types/session.types';
 import type { PublicSlot } from '@/types/consultation.types';
-import { useZohoLead } from '@/hooks/useZohoLead';
 
 interface AboutUsConsultationProps {
   centerCard?: boolean;
@@ -21,7 +20,6 @@ interface AboutUsConsultationProps {
 
 const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) => {
   const pathname = usePathname();
-  const { pushLead } = useZohoLead();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -163,16 +161,6 @@ const AboutUsConsultation = ({ centerCard = false }: AboutUsConsultationProps) =
         lead_type: 'free_1_on_1_assistance',
         source_page: pathname,
         connection_type: formData.connectionType,
-      });
-
-      // Push to Zoho CRM — fire-and-forget
-      pushLead({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email || undefined,
-        phone: formData.mobile || undefined,
-        source: 'Free Consultation',
-        message: `Consultation scheduled for ${toDateString(formData.date)} at ${formData.time} via ${formData.connectionType}`,
       });
 
       // Reset form

@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
     let userDisplayName: string | undefined;
-    const user = await User.findById(authResult.user.userId).select('name').lean();
+    // email/phone are for the Zoho push below, so one query covers both uses.
+    const user = await User.findById(authResult.user.userId).select('name email phone').lean();
     if (user?.name) userDisplayName = user.name;
 
     const review = await create(
@@ -40,6 +41,27 @@ export async function POST(request: NextRequest) {
       userDisplayName,
       itemType,
     );
+
+    // Push the review to Zoho — fire-and-forget, never blocks the user.
+    (async () => {
+      try {
+        const { pushReviewLeadToZoho, pushLeadSafely } = await import('@/lib/zoho/zoho-crm.service');
+        if (user?.name && (user.email || user.phone)) {
+          pushLeadSafely('review', () =>
+            pushReviewLeadToZoho({
+              name: user.name,
+              email: user.email ?? undefined,
+              phone: user.phone ?? undefined,
+              rating,
+              itemType,
+              comment: typeof comment === 'string' ? comment : undefined,
+            }),
+          );
+        }
+      } catch (error) {
+        console.error('[Zoho] review lead lookup failed:', error);
+      }
+    })();
 
     return NextResponse.json(successResponse('Review submitted successfully', review));
   } catch (error) {

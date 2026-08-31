@@ -2,6 +2,8 @@ import Order, { IOrder, IOrderItem } from '@/lib/models/order.model';
 import Cart from '@/lib/models/cart.model';
 import Supplement from '@/lib/models/supplement.model';
 import Therapist from '@/lib/models/therapist.model';
+// Imported for its side-effect of registering the schema: getAllOrders populates `userId`.
+import '@/lib/models/user.model';
 import connectDB from '@/lib/db/mongodb';
 import { ValidationError } from '@/lib/utils/error.util';
 import { Types } from 'mongoose';
@@ -19,6 +21,7 @@ import { getShippingCost } from '@/utils/shipping.util';
 import { DRIFT_OFF_SESSION_IMAGE } from '@/lib/constants/driftOff.constants';
 import { toObjectId } from '@/lib/utils/objectId.util';
 import { isHeldByAnother } from '@/lib/services/slot-hold.service';
+import { supplementImage } from '@/utils/supplement.util';
 
 export interface CreateOrderParams {
   shippingAddress?: IOrder['shippingAddress'];
@@ -63,7 +66,7 @@ export async function createOrder(userId: string, params: CreateOrderParams) {
         name: supplement.name,
         quantity: cartItem.quantity,
         price: supplement.price,
-        image: supplement.image,
+        image: supplementImage(supplement),
       });
     } else {
       if (cartItem.itemType === ITEM_TYPE.THERAPY) {
@@ -162,7 +165,7 @@ export async function createDirectOrder(userId: string, params: DirectOrderParam
 
     finalPrice = supplement.price;
     finalName = supplement.name;
-    resolvedImage = supplement.image || '';
+    resolvedImage = supplementImage(supplement);
   } else if (params.itemType === ITEM_TYPE.DRIFT_OFF) {
     if (!finalPrice || finalPrice <= 0) throw new ValidationError('Price is required for Deep Rest items');
     if (!finalName) finalName = 'Deep Rest Session';
@@ -228,6 +231,47 @@ export async function createDirectOrder(userId: string, params: DirectOrderParam
   return await Order.findById(order._id);
 }
 
+/**
+ * `OrderItem.itemId` is Mixed, so a supplement item can hold a non-ObjectId
+ * (seed/legacy rows carry values like "seed-item"). Feeding those to a query
+ * throws a CastError, so only real ids may reach the `$in`.
+ */
+function isObjectIdString(value: string): boolean {
+  return /^[0-9a-fA-F]{24}$/.test(value);
+}
+
+/**
+ * Order items snapshot the product image at purchase time, but supplements moved
+ * their artwork into `images` and left the legacy `image` empty, so every stored
+ * supplement item has `image: ''`. Backfill those from the product at read time
+ * so all order views (admin, My Orders, receipts) show a thumbnail.
+ */
+async function withResolvedItemImages<T extends { items: IOrderItem[] }>(orders: T[]): Promise<T[]> {
+  const missingIds = new Set(
+    orders.flatMap((order) =>
+      order.items
+        .filter((item) => item.itemType === ITEM_TYPE.SUPPLEMENT && !item.image)
+        .map((item) => String(item.itemId))
+        .filter(isObjectIdString),
+    ),
+  );
+  if (missingIds.size === 0) return orders;
+
+  const supplements = await Supplement.find({ _id: { $in: [...missingIds] } })
+    .select('image images')
+    .lean();
+  const imageById = new Map(supplements.map((s) => [String(s._id), supplementImage(s)]));
+
+  for (const order of orders) {
+    for (const item of order.items) {
+      if (item.itemType !== ITEM_TYPE.SUPPLEMENT || item.image) continue;
+      // Unknown or non-ObjectId items keep their empty image; the UI shows its fallback.
+      item.image = imageById.get(String(item.itemId)) ?? item.image;
+    }
+  }
+  return orders;
+}
+
 export async function getOrderById(orderId: string) {
   await connectDB();
 
@@ -238,7 +282,8 @@ export async function getOrderById(orderId: string) {
   if (!order) {
     throw new ValidationError('Order not found');
   }
-  return order;
+  const [resolved] = await withResolvedItemImages([order]);
+  return resolved;
 }
 
 export interface OrderFilters {
@@ -301,11 +346,24 @@ export async function getAllOrders(
   const skip = (Math.max(1, page) - 1) * Math.max(1, Math.min(limit, 100));
   const safeLimit = Math.max(1, Math.min(limit, 100));
   const [data, total] = await Promise.all([
-    Order.find(filter).sort({ createdAt: -1 }).skip(skip).limit(safeLimit).lean(),
+    // Admin needs the buyer's identity, not a raw ObjectId — therapy/Deep Rest
+    // orders carry no shipping address, so this is the only customer info there is.
+    Order.find(filter)
+      .populate('userId', 'name email phone')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(safeLimit)
+      .lean(),
     Order.countDocuments(filter),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / safeLimit));
-  return { data, total, page: Math.max(1, page), limit: safeLimit, totalPages };
+  return {
+    data: await withResolvedItemImages(data),
+    total,
+    page: Math.max(1, page),
+    limit: safeLimit,
+    totalPages,
+  };
 }
 
 export async function getUserOrders(userId: string) {
@@ -326,7 +384,7 @@ export async function getUserOrders(userId: string) {
     }))
     .filter((order) => order.items.length > 0);
 
-  return orders as unknown as IOrder[];
+  return (await withResolvedItemImages(orders)) as unknown as IOrder[];
 }
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus) {

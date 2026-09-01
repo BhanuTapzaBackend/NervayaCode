@@ -10,6 +10,16 @@ export interface PreparedInvoice {
   invoiceNumber: string;
   pdf: Buffer;
   data: InvoiceData;
+  /**
+   * Where the WhatsApp confirmation goes — the account's OTP-verified number,
+   * never the one typed into the shipping form.
+   *
+   * These are not the same thing and must not be conflated: the checkout field
+   * is a courier contact stored as bare 10 digits with no country code, and in
+   * practice it usually belongs to someone else (the recipient, a relative).
+   * Only the account number is verified, E.164, and known to be on WhatsApp.
+   */
+  whatsappPhone?: string;
 }
 
 /**
@@ -99,8 +109,9 @@ export async function prepareInvoiceForOrder(orderId: string): Promise<PreparedI
     paymentReference: order.paymentId,
     customer: {
       name: address?.name || user?.name || 'Customer',
-      // The shipping address carries its own phone, so an account without one
-      // still invoices correctly. `|| undefined` collapses the null case.
+      // Printed on the invoice as the delivery contact — the courier's number to
+      // ring, which is why the shipping form's value wins here. This is a display
+      // detail only; `whatsappPhone` below decides where the message is sent.
       phone: address?.phone || user?.phone || undefined,
       email: user?.email ?? undefined,
       addressLines: address
@@ -124,5 +135,5 @@ export async function prepareInvoiceForOrder(orderId: string): Promise<PreparedI
 
   await Order.findByIdAndUpdate(orderId, { invoiceNumber });
 
-  return { invoiceNumber, pdf, data };
+  return { invoiceNumber, pdf, data, whatsappPhone: user?.phone ?? undefined };
 }

@@ -31,8 +31,7 @@ function pdfFilename(invoiceNumber: string): string {
   return `${invoiceNumber.replace(/\//g, '-')}.pdf`;
 }
 
-async function sendWhatsApp(data: InvoiceData, pdf: Buffer): Promise<void> {
-  const phone = data.customer.phone;
+async function sendWhatsApp(data: InvoiceData, pdf: Buffer, phone: string | undefined): Promise<void> {
   if (!phone) return;
 
   // Upload to Meta's media store rather than passing a link: a link makes
@@ -102,9 +101,9 @@ export async function sendOrderConfirmation(orderId: string): Promise<void> {
   const prepared = await prepareInvoiceForOrder(orderId);
   if (!prepared) return;
 
-  const { data, pdf } = prepared;
+  const { data, pdf, whatsappPhone } = prepared;
 
-  const results = await Promise.allSettled([sendWhatsApp(data, pdf), sendEmail(data, pdf)]);
+  const results = await Promise.allSettled([sendWhatsApp(data, pdf, whatsappPhone), sendEmail(data, pdf)]);
   for (const [index, result] of results.entries()) {
     if (result.status === 'rejected') {
       console.error(`[order-confirmation] ${index === 0 ? 'WhatsApp' : 'email'} failed for ${orderId}:`, result.reason);

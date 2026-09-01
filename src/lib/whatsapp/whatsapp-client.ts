@@ -58,6 +58,21 @@ export function hasWhatsAppCredentials(): boolean {
 }
 
 /**
+ * Graph wants the recipient without the leading "+", but a bare national number
+ * is not the same thing as one with the country code stripped — Meta will route
+ * `8409179911` somewhere else entirely, or nowhere. Checkout collects exactly
+ * that shape (10 digits, no country code), so anything shorter than a full
+ * international number is rejected here rather than sent into the void.
+ */
+function toGraphRecipient(toE164: string): string {
+  const digits = toE164.trim().replace(/^\+/, '');
+  if (!/^\d{11,15}$/.test(digits)) {
+    throw new WhatsAppSendError(`Recipient "${toE164}" is not in E.164 form (country code required)`);
+  }
+  return digits;
+}
+
+/**
  * Upload a file to WhatsApp's own media store and return its media id.
  *
  * Preferred over handing Meta a `link`: Meta fetches a link from the public
@@ -151,7 +166,7 @@ async function sendTemplate(
     throw new WhatsAppSendError('WhatsApp is not configured');
   }
 
-  const to = toE164.replace(/^\+/, '');
+  const to = toGraphRecipient(toE164);
   const url = `https://graph.facebook.com/${base.apiVersion}/${base.phoneNumberId}/messages`;
 
   const payload = {
@@ -224,8 +239,7 @@ export async function sendOtpTemplate(toE164: string, code: string, purpose: str
     throw new WhatsAppSendError('WhatsApp is not configured');
   }
 
-  // Graph API expects the recipient without the leading "+".
-  const to = toE164.replace(/^\+/, '');
+  const to = toGraphRecipient(toE164);
   const url = `https://graph.facebook.com/${config.apiVersion}/${config.phoneNumberId}/messages`;
 
   const payload = {

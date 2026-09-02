@@ -132,9 +132,14 @@ async function processPaymentSuccess(orderId: string, paymentId: string) {
   // Therapy sessions created inside the transaction; finalized (meet link + notifications)
   // AFTER commit so external I/O and the link write never block/conflict with the transaction.
   const therapyToFinalize: { session: ISession; date: string; startTime: string }[] = [];
+  // verify and webhook BOTH land here for every normal payment; only the caller
+  // that wins the PENDING → PAID race may run the post-commit side-effects, or
+  // the customer receives the confirmation (WhatsApp + email) twice.
+  let claimedByThisCall = false;
   try {
     await session.withTransaction(async () => {
       therapyToFinalize.length = 0; // reset on transaction retry
+      claimedByThisCall = false;
       // Optimistic lock: only one caller can claim the order from PENDING → PAID
       const lockedOrder = await Order.findOneAndUpdate(
         { _id: orderId, paymentStatus: PAYMENT_STATUS.PENDING },
@@ -143,6 +148,7 @@ async function processPaymentSuccess(orderId: string, paymentId: string) {
       );
 
       if (!lockedOrder) return; // Already processed or not found — idempotent exit
+      claimedByThisCall = true;
 
       // Deduct stock atomically for supplements — throws StockError to roll back entire transaction
       for (const item of lockedOrder.items) {
@@ -221,6 +227,11 @@ async function processPaymentSuccess(orderId: string, paymentId: string) {
         await lockedOrder.save({ session });
       }
     });
+
+    // The losing caller changed nothing — the winner owns every side-effect below.
+    if (!claimedByThisCall) {
+      return { success: true };
+    }
 
     // Finalize therapy sessions outside the committed transaction (meet link + notifications).
     for (const t of therapyToFinalize) {

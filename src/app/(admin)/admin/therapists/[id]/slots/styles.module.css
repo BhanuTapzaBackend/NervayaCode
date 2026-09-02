@@ -1,9 +1,8 @@
 /* Full-bleed: negate .main-content padding (40px) + admin container padding (24px/16px/64px) */
 .fullPage {
-  margin-top: calc(-1 * max(var(--spacing-xl, 40px), var(--navbar-safe-gap, 32px)) - var(--spacing-lg, 24px));
-  margin-left: calc(-1 * var(--spacing-xl, 40px) - var(--spacing-md, 16px));
-  margin-right: calc(-1 * var(--spacing-xl, 40px) - var(--spacing-md, 16px));
-  margin-bottom: calc(-1 * var(--spacing-xl, 40px) - var(--spacing-2xl, 64px));
+  margin: calc(-1 * max(var(--spacing-xl, 40px), var(--navbar-safe-gap, 32px)) - var(--spacing-lg, 24px))
+    calc(-1 * var(--spacing-xl, 40px) - var(--spacing-md, 16px))
+    calc(-1 * var(--spacing-xl, 40px) - var(--spacing-2xl, 64px));
   height: calc(100vh - var(--navbar-height, 82px));
   display: flex;
   flex-direction: column;
@@ -14,10 +13,8 @@
 
 @media (max-width: 770px) {
   .fullPage {
-    margin-top: calc(-1 * max(var(--spacing-lg, 24px), var(--navbar-safe-gap, 24px)) - var(--spacing-md, 16px));
-    margin-left: calc(-1 * var(--spacing-lg, 24px) - var(--spacing-md, 16px));
-    margin-right: calc(-1 * var(--spacing-lg, 24px) - var(--spacing-md, 16px));
-    margin-bottom: calc(-1 * var(--spacing-lg, 24px));
+    margin: calc(-1 * max(var(--spacing-lg, 24px), var(--navbar-safe-gap, 24px)) - var(--spacing-md, 16px))
+      calc(-1 * var(--spacing-lg, 24px) - var(--spacing-md, 16px)) calc(-1 * var(--spacing-lg, 24px));
     height: calc(100vh - var(--navbar-height, 74px));
   }
 }

@@ -20,6 +20,7 @@
   --color-accent-light: #7a55e0;
   --color-accent-soft: #a78bfa;
   --color-accent-highlight: #c4a5ff;
+
   /* Light, readable purple based on #34145f */
   --color-accent-dim: rgba(var(--color-accent-rgb), 0.1);
   --color-accent-dim-hover: rgba(var(--color-accent-rgb), 0.06);
@@ -44,24 +45,25 @@
      Each band has rgb / solid / soft-bg / text variants so consumers can
      compose backgrounds, borders, and accessible text without hex literals. */
   --color-calm-mild-rgb: 164, 180, 148;
+
   /* Soft Sage */
   --color-calm-mild: rgb(var(--color-calm-mild-rgb));
   --color-calm-mild-bg: rgba(var(--color-calm-mild-rgb), 0.18);
   --color-calm-mild-text: #4e6048;
-
   --color-calm-moderate-rgb: 150, 170, 198;
+
   /* Soft Sky Blue — calm, non-alarming (no amber/yellow); mental-wellness safe */
   --color-calm-moderate: rgb(var(--color-calm-moderate-rgb));
   --color-calm-moderate-bg: rgba(var(--color-calm-moderate-rgb), 0.2);
   --color-calm-moderate-text: #3c4a5e;
-
   --color-calm-severe-rgb: 168, 154, 196;
+
   /* Soft Lavender — calm, supportive (no red); soothing scale: sage → sky → lavender */
   --color-calm-severe: rgb(var(--color-calm-severe-rgb));
   --color-calm-severe-bg: rgba(var(--color-calm-severe-rgb), 0.2);
   --color-calm-severe-text: #4a3f63;
-
   --color-calm-none-rgb: 165, 197, 173;
+
   /* Soft Mint */
   --color-calm-none: rgb(var(--color-calm-none-rgb));
   --color-calm-none-bg: rgba(var(--color-calm-none-rgb), 0.18);
@@ -73,7 +75,7 @@
   --gradient-dark: linear-gradient(135deg, #09021d 0%, #1a0a3e 50%, #2d1566 100%);
 
   /* ── Surfaces & Backgrounds ── */
-  --color-background: #ffffff;
+  --color-background: #fff;
   --color-background-page: #f8f9fc;
   --color-background-alt: #f1f5f9;
   --color-background-dark: #09021d;
@@ -86,7 +88,7 @@
   --color-text-secondary: #64748b;
   --color-text-tertiary: #94a3b8;
   --color-text-disabled: #cbd5e1;
-  --color-text-on-dark: #ffffff;
+  --color-text-on-dark: #fff;
   --color-text-on-dark-muted: rgba(255, 255, 255, 0.6);
   --color-text-on-dark-dim: rgba(255, 255, 255, 0.3);
 
@@ -186,5 +188,5 @@
   --color-text-slate-300: #334155;
   --color-text-slate-400: #475569;
   --color-white-dim: rgba(0, 0, 0, 0.05);
-  --color-white-bright: #ffffff;
+  --color-white-bright: #fff;
 }

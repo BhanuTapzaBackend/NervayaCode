@@ -138,6 +138,7 @@
   .wrap {
     grid-template-columns: 1fr;
   }
+
   .illustration {
     min-height: 320px;
     border-top: 1px solid var(--color-border-subtle);
@@ -149,6 +150,7 @@
     grid-template-columns: 1fr;
     gap: var(--space-5);
   }
+
   .arrow {
     display: none;
   }

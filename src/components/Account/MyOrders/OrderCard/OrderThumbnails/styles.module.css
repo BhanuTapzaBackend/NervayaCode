@@ -23,11 +23,10 @@
 
 /* Three: a full-height lead image with two stacked beside it. */
 .three {
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  grid-template-areas:
-    'lead second'
-    'lead third';
+  grid-template:
+    'lead second' 1fr
+    'lead third' 1fr
+    / 1fr 1fr;
 }
 
 .three > .tile:first-child {

@@ -188,6 +188,7 @@
   .legend {
     display: none;
   }
+
   .therapistChip {
     display: none;
   }
@@ -198,6 +199,7 @@
     padding: 0 8px;
     height: 46px;
   }
+
   .title {
     font-size: 0.9375rem;
   }

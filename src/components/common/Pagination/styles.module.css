@@ -128,7 +128,7 @@
 }
 
 .paginationButton:hover:not(:disabled),
-.paginationNumber:hover:not(:disabled):not(.paginationNumberActive) {
+.paginationNumber:hover:not(:disabled, .paginationNumberActive) {
   border-color: var(--color-accent);
   color: var(--color-accent);
   background: var(--color-accent-dim);

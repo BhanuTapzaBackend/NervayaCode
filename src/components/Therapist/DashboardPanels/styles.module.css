@@ -65,12 +65,15 @@
 .dotSuccess {
   background: var(--color-success);
 }
+
 .dotWarning {
   background: var(--color-warning);
 }
+
 .dotNeutral {
   background: var(--color-text-tertiary);
 }
+
 .dotError {
   background: var(--color-error);
 }

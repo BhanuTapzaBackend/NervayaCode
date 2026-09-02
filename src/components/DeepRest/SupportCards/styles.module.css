@@ -23,6 +23,10 @@
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
+
+  /* Unified Card Theme: Lavender/Indigo */
+  background: var(--color-accent-surface);
+  border: 1px solid var(--color-border);
 }
 
 @media (max-width: 768px) {
@@ -41,12 +45,6 @@
   }
 }
 
-/* Unified Card Theme: Lavender/Indigo */
-.supportCard {
-  background: var(--color-accent-surface);
-  border: 1px solid var(--color-border);
-}
-
 .supportCard .supportIcon {
   background: var(--color-background);
   color: var(--color-accent);
@@ -56,9 +54,6 @@
 .supportCard:hover {
   border-color: var(--color-accent-surface-border-strong);
   background: var(--color-accent-surface-hover);
-}
-
-.supportCard:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
@@ -90,7 +85,7 @@
   color: var(--color-text-primary);
   line-height: 1.1;
   letter-spacing: var(--tracking-h3);
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.75rem;
 }
 
 @media (max-width: 768px) {

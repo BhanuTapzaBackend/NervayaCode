@@ -86,7 +86,6 @@
   font-weight: var(--weight-semibold);
   text-shadow: 0 2px 4px var(--color-overlay-dark);
   overflow-wrap: break-word;
-  word-wrap: break-word;
 }
 
 @media (max-width: 480px) {

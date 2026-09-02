@@ -1,6 +1,6 @@
-@import '../styles/colors.css';
-@import '../styles/spacing.css';
-@import '../styles/animations.css';
+@import url('../styles/colors.css');
+@import url('../styles/spacing.css');
+@import url('../styles/animations.css');
 
 /* Stacking scale.
  *
@@ -11,6 +11,7 @@
  * pickers impossible to use. Anything that floats belongs on this scale. */
 :root {
   --z-modal-overlay: 5000;
+
   /* Popovers, selects and menus that can be opened FROM inside a modal, so they
      must sit above its overlay. */
   --z-floating: 5100;
@@ -68,9 +69,8 @@ html::-webkit-scrollbar {
 body {
   max-width: 100vw;
   min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding-top: var(--navbar-height);
+  overflow: hidden auto;
+  padding-top: var(--navbar-height) !important;
   color: var(--color-text-body);
   background: var(--color-cream-bg);
   font-family: var(--font-body);
@@ -78,10 +78,6 @@ body {
   line-height: var(--leading-relaxed);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  padding-top: var(--navbar-height) !important;
 }
 
 /* The therapist area renders its own top bar inside TherapistShell and does not
@@ -374,7 +370,6 @@ ol[data-sonner-toaster] [data-sonner-toast],
 [data-sonner-toast],
 .sonner-toast {
   background: var(--normal-bg) !important;
-  background-color: var(--normal-bg) !important;
   border: 1px solid var(--normal-border) !important;
   color: var(--normal-text) !important;
   border-radius: var(--radius-lg) !important;
@@ -390,7 +385,6 @@ ol[data-sonner-toaster] .sonner-toast[data-type='success'],
 [data-sonner-toast][data-type='success'],
 .sonner-toast[data-type='success'] {
   background: var(--success-bg) !important;
-  background-color: var(--success-bg) !important;
   border: 1px solid var(--success-border) !important;
   color: var(--success-text) !important;
 }
@@ -400,7 +394,6 @@ ol[data-sonner-toaster] .sonner-toast[data-type='error'],
 [data-sonner-toast][data-type='error'],
 .sonner-toast[data-type='error'] {
   background: var(--error-bg) !important;
-  background-color: var(--error-bg) !important;
   border: 1px solid var(--error-border) !important;
   color: var(--error-text) !important;
 }
@@ -410,7 +403,6 @@ ol[data-sonner-toaster] .sonner-toast[data-type='info'],
 [data-sonner-toast][data-type='info'],
 .sonner-toast[data-type='info'] {
   background: var(--info-bg) !important;
-  background-color: var(--info-bg) !important;
   border: 1px solid var(--info-border) !important;
   color: var(--info-text) !important;
 }
@@ -420,7 +412,6 @@ ol[data-sonner-toaster] .sonner-toast[data-type='warning'],
 [data-sonner-toast][data-type='warning'],
 .sonner-toast[data-type='warning'] {
   background: var(--warning-bg) !important;
-  background-color: var(--warning-bg) !important;
   border: 1px solid var(--warning-border) !important;
   color: var(--warning-text) !important;
 }

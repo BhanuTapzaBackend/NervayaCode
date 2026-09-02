@@ -1017,20 +1017,6 @@
   flex: 1;
 }
 
-.contactIcon {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
-  color: var(--color-text-on-dark);
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.125rem;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.25);
-}
-
 @media (max-width: 480px) {
   .contactIcon {
     width: 44px;

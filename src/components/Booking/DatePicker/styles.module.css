@@ -153,7 +153,7 @@
   aspect-ratio: 1;
 }
 
-.day:hover:not(.dayDisabled):not(.daySelected) {
+.day:hover:not(.dayDisabled, .daySelected) {
   background: var(--color-background-alt);
   color: var(--color-accent);
 }

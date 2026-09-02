@@ -51,6 +51,7 @@
   height: 42px;
   flex-shrink: 0;
   border-radius: var(--radius-full);
+
   /* Flat fallback first: if color-mix fails to parse, the whole `background`
      declaration is dropped and the chip disappears. */
   background: rgba(139, 92, 246, 0.12);
@@ -61,9 +62,11 @@
 .iconViolet {
   --chip-color: var(--color-tile-violet);
 }
+
 .iconEmerald {
   --chip-color: var(--color-tile-emerald);
 }
+
 .iconAmber {
   --chip-color: var(--color-tile-amber);
 }

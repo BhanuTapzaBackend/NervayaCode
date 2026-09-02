@@ -167,8 +167,8 @@
 /* ── Grid ──────────────────────────────────────────────────── */
 .gridScroll {
   position: relative;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: auto hidden;
+
   /* globals.css hides scrollbars app-wide via `*::-webkit-scrollbar`, and
      `scrollbar-width` only reaches Firefox — so this region has to re-enable
      the WebKit one explicitly or the horizontal scroll is undiscoverable on
@@ -214,6 +214,7 @@
 
 .gutterHead {
   font-size: var(--text-label);
+
   /* --color-text-tertiary is 2.56:1 on white — below the 4.5:1 AA threshold. */
   color: var(--color-text-secondary);
 }
@@ -262,6 +263,7 @@
   font-size: var(--text-label);
   color: var(--color-text-secondary);
   font-variant-numeric: tabular-nums;
+
   /* Nudge up so the label aligns with its gridline rather than the row below. */
   transform: translateY(-0.5em);
 }

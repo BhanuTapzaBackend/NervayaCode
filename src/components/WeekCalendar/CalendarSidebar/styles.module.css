@@ -59,7 +59,7 @@
   color: var(--color-text-muted, var(--color-text-secondary));
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  margin: 0 0 4px 0;
+  margin: 0 0 4px;
 }
 
 /* ── Session duration ── */
@@ -327,6 +327,7 @@
 .summaryTime {
   color: var(--color-text-body);
   font-variant-numeric: tabular-nums;
+
   /* Read-only text, so it can ellipsise safely instead of clipping an input. */
   overflow: hidden;
   text-overflow: ellipsis;

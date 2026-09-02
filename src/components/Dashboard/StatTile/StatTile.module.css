@@ -29,6 +29,7 @@
 
 .iconWrap {
   --tile-icon-color: var(--color-accent);
+
   width: 48px;
   height: 48px;
   border-radius: 10px;

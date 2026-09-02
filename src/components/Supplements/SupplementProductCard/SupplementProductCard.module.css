@@ -138,7 +138,7 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   transition: color var(--transition-base);
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 @media (max-width: 480px) {
@@ -181,9 +181,8 @@
 
 .priceRow {
   display: flex;
-  flex-direction: row;
+  flex-flow: row wrap;
   align-items: baseline;
-  flex-wrap: wrap;
   gap: var(--spacing-sm);
   margin-top: auto;
   padding-top: var(--spacing-sm);

@@ -116,8 +116,7 @@
 }
 
 .plus {
-  align-self: center;
-  justify-self: center;
+  place-self: center center;
   display: inline-flex;
   align-items: center;
   justify-content: center;

@@ -21,6 +21,7 @@
 
 .drawer {
   --drawer-divider: rgba(215, 192, 255, 0.18);
+
   display: contents;
 }
 
@@ -305,6 +306,7 @@
       opacity: 0;
       transform: translateY(-4px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);

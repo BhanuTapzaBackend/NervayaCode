@@ -41,6 +41,7 @@
   border: none;
   outline: none;
   color: var(--auth-text);
+
   /* min 1rem (16px) keeps iOS from zooming the page on focus */
   font-size: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
   font-family: inherit;

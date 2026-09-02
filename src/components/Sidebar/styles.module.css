@@ -86,8 +86,7 @@
 .nav {
   padding-top: 3px;
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   display: flex;
   flex-direction: column;
   scrollbar-width: thin;

@@ -34,13 +34,11 @@ export function useAuthForm(options: UseAuthFormOptions = {}) {
 
     const savedPhone = sessionStorage.getItem('nervaya_auth_phone');
     if (savedPhone) {
-       
       setPhone(savedPhone);
     }
 
     const savedName = sessionStorage.getItem('nervaya_auth_name');
     if (savedName) {
-       
       setName(savedName);
     }
   }, []);

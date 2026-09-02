@@ -9,19 +9,19 @@
   /* ── Card palette (LIGHT in both themes, like the reference) ──
      Only the background image adapts to day/night; the floating form card
      stays light so it always reads cleanly over the artwork. */
-  --auth-card-bg: #ffffff;
+  --auth-card-bg: #fff;
   --auth-card-border: rgba(17, 12, 46, 0.07);
   --auth-text: #1e1b4b;
   --auth-text-muted: #6b7280;
   --auth-accent: var(--color-accent);
   --auth-accent-ring: rgba(83, 34, 213, 0.13);
   --auth-input-bg: #f6f5fb;
-  --auth-input-bg-focus: #ffffff;
+  --auth-input-bg-focus: #fff;
   --auth-input-border: #e6e3f2;
   --auth-icon: #9a93b8;
   --auth-btn-bg: linear-gradient(135deg, #6d28d9 0%, #5322d5 100%);
   --auth-btn-bg-hover: linear-gradient(135deg, #5b21b6 0%, #4521a8 100%);
-  --auth-btn-text: #ffffff;
+  --auth-btn-text: #fff;
 
   /* ── Background (Light "morning" theme default) ──────────── */
   --auth-page-bg: linear-gradient(180deg, var(--color-accent-surface) 0%, var(--color-cream-bg) 100%);
@@ -29,6 +29,7 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
+
   /* Full-bleed: the split-screen card fills the whole viewport (no navbar, no
      card chrome). Stretch the card edge-to-edge and stay scrollable when the
      stacked mobile layout is taller than the viewport. */
@@ -73,6 +74,7 @@
   .backgroundImage {
     display: none;
   }
+
   .backgroundImageMobile {
     display: block;
   }
@@ -83,6 +85,7 @@
     opacity: 0;
     transform: scale(1.02);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -142,6 +145,7 @@
     align-items: center;
     justify-content: center;
   }
+
   .formPanel {
     padding: 2rem 1.5rem;
     gap: 1.25rem;
@@ -152,6 +156,7 @@
   .formPanelWrap {
     padding: 1rem;
   }
+
   .formPanel {
     padding: 1.75rem 1.25rem;
     gap: 1rem;
@@ -280,6 +285,7 @@
   align-items: center;
   gap: 0.75rem;
   margin: 1.125rem 0;
+
   /* The rules are drawn as pseudo-element flex children so the label sits in
      a real gap rather than on top of a painted line. */
 }
@@ -307,6 +313,7 @@
     opacity: 0;
     transform: translateY(6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

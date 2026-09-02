@@ -6,9 +6,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+
   /* Fill the (equal-height) grid cell so the meta row can pin to the bottom
      and align consistently across both bundle cards. */
   height: 100%;
+
   /* Drive child layout (image + text stacking) from the card's own width,
      so the mini adapts whether it's in a 2- or 3-card bundle. */
   container-type: inline-size;
@@ -77,6 +79,7 @@
   border-top: 1px dashed var(--color-border-subtle);
   font-size: var(--text-caption);
   color: var(--color-text-secondary);
+
   /* Pin to the card bottom so the bottom text aligns across both cards. */
   margin-top: auto;
 }

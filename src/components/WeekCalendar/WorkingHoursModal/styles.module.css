@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+
   /* Wide enough that a day name plus two time selects never wrap — the whole
      reason this moved out of the sidebar. Capped so it stays readable and
      collapses cleanly on a phone. */

@@ -77,6 +77,11 @@ export async function create(
       comment: comment ?? '',
       userDisplayName: userDisplayName ?? '',
       itemType,
+      // Pre-moderation, same policy as Deep Rest: every new — or edited —
+      // review stays hidden until an admin approves it from /admin/reviews.
+      // Aggregates only count visible reviews, so pending ones don't move the
+      // product rating either.
+      isVisible: false,
     },
     { new: true, upsert: true, runValidators: true },
   );

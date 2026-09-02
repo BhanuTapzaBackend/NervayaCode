@@ -3,6 +3,7 @@
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+
   /* Prevent shrinkwrap when this section is used inside a
      `display: flex; align-items: center` parent — without it,
      the inner scrolling track inherits an oversized intrinsic
@@ -66,7 +67,6 @@
   box-shadow: var(--shadow-sm);
   transition: box-shadow var(--transition-base);
   overflow-wrap: anywhere;
-  word-break: break-word;
   box-sizing: border-box;
 }
 
@@ -147,7 +147,6 @@
   color: var(--color-text-secondary);
   font-style: italic;
   overflow-wrap: anywhere;
-  word-break: break-word;
 }
 
 /* Pagination dots */
@@ -227,6 +226,7 @@
   from {
     transform: translateX(0);
   }
+
   to {
     transform: translateX(calc(-50% - 8px));
   }

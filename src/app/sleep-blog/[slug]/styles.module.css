@@ -110,8 +110,7 @@
 
 .metaBar {
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
+  flex-flow: row nowrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-5);
@@ -403,6 +402,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
+
   /* Caps a runaway CTA without stretching a normal one. */
   max-width: min(100%, 40rem);
   min-height: 52px;

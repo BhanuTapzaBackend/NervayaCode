@@ -1,0 +1,52 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "selector-class-pattern": null,
+    "custom-property-pattern": null,
+    "keyframes-name-pattern": null,
+    "no-descending-specificity": null,
+    "media-feature-range-notation": "prefix",
+    "color-function-notation": "legacy",
+    "color-function-alias-notation": null,
+    "alpha-value-notation": "number",
+    "property-no-vendor-prefix": null,
+    "value-no-vendor-prefix": null,
+    "selector-pseudo-class-no-unknown": [
+      true,
+      {
+        "ignorePseudoClasses": ["global", "local"]
+      }
+    ],
+    "color-no-hex": [
+      true,
+      {
+        "message": "FRONTEND_STANDARDS.md §5.2: no raw hex colors — use a design token from src/styles/colors.css (var(--…))."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/styles/**/*.css", "src/app/globals.css"],
+      "rules": {
+        "color-no-hex": null
+      }
+    },
+    {
+      "files": [
+        "src/components/LoginSignupForm/styles.module.css",
+        "src/components/LandingPageCards/styles.module.css",
+        "src/components/SleepAssessment/AssessmentContainer/RecommendationView/TherapistSelectionModal/styles.module.css",
+        "src/components/Support/ChatWithUs/styles.module.css",
+        "src/components/common/TherapistAvatar/styles.module.css",
+        "src/components/WeekCalendar/WorkingHoursModal/styles.module.css",
+        "src/components/Therapist/TherapistShell/styles.module.css",
+        "src/components/PhoneCollectionModal/styles.module.css",
+        "src/components/BottomNavigation/BottomNavigation.module.css",
+        "src/components/Account/MySessions/TherapySessionCard/styles.module.css"
+      ],
+      "rules": {
+        "color-no-hex": null
+      }
+    }
+  ]
+}

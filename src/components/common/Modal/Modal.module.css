@@ -1,9 +1,6 @@
 .overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: var(--color-overlay-dark);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -33,6 +30,7 @@
     opacity: 0;
     transform: scale(0.97) translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -114,6 +112,7 @@
     from {
       transform: translateY(100%);
     }
+
     to {
       transform: translateY(0);
     }

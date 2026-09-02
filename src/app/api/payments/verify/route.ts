@@ -5,6 +5,11 @@ import { handleError } from '@/lib/utils/error.util';
 import { requireAuth } from '@/lib/middleware/auth.middleware';
 import { ROLES } from '@/lib/constants/roles';
 
+// The order confirmation (PDF build + Meta media upload + WhatsApp + SMTP) runs
+// via after() once the response is sent, but after() work is still bounded by the
+// function's maxDuration — Vercel's 10–15s default silently kills it mid-send.
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     const authResult = await requireAuth(request, [ROLES.CUSTOMER, ROLES.ADMIN]);

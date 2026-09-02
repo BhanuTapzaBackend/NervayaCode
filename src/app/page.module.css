@@ -11,10 +11,8 @@
 .heroSection {
   position: relative;
   z-index: 1;
-  padding-top: calc(var(--spacing-2xl, 4rem) + 4rem);
-  padding-left: var(--spacing-xl, 2rem);
-  padding-right: var(--spacing-xl, 2rem);
-  padding-bottom: var(--spacing-2xl, 4rem);
+  padding: calc(var(--spacing-2xl, 4rem) + 4rem) var(--spacing-xl, 2rem) var(--spacing-2xl, 4rem)
+    var(--spacing-xl, 2rem);
   max-width: 1240px;
   margin: 0 auto;
   display: grid;
@@ -34,10 +32,7 @@
 
 @media (max-width: 768px) {
   .heroSection {
-    padding-top: calc(var(--spacing-xl, 2rem) + 2rem);
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: var(--spacing-xl, 2rem);
+    padding: calc(var(--spacing-xl, 2rem) + 2rem) 20px var(--spacing-xl, 2rem) 20px;
   }
 }
 
@@ -123,8 +118,7 @@
 
 .buttonGroup {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-flow: row wrap;
   justify-content: flex-start;
   gap: var(--spacing-md, 1rem);
   width: 100%;
@@ -241,7 +235,7 @@
 .visualPanel {
   position: absolute;
   z-index: 2;
-  inset: 0.8rem 0.2rem 0.2rem 0.2rem;
+  inset: 0.8rem 0.2rem 0.2rem;
   border-radius: 46% 54% 57% 43% / 46% 42% 58% 54%;
   overflow: hidden;
   border: 1px solid rgba(220, 203, 255, 0.18);

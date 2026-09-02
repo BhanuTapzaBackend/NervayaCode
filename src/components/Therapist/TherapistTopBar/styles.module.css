@@ -65,6 +65,7 @@
   width: 38px;
   height: 38px;
   border-radius: var(--radius-full);
+
   /* Flat rgba first so the chip still has a background if color-mix fails to
      parse — otherwise the whole declaration is dropped and it goes invisible. */
   background: rgba(83, 34, 213, 0.12);
@@ -96,6 +97,7 @@
   background: none;
   border: none;
   border-radius: var(--radius);
+
   /* --color-text-tertiary is 2.56:1 on white — under the 3:1 UI threshold. */
   color: var(--color-text-secondary);
   cursor: pointer;

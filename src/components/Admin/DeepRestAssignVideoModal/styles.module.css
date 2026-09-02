@@ -5,11 +5,11 @@
 .modalSubtitle {
   font-size: 0.85rem;
   color: var(--color-text-secondary);
-  margin: -8px 0 16px 0;
+  margin: -8px 0 16px;
 }
 
 .requestHint {
-  margin: 0 0 20px 0;
+  margin: 0 0 20px;
   padding: 12px 14px;
   border-radius: 14px;
   background: var(--color-accent-dim);

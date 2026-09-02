@@ -4,6 +4,10 @@ import { successResponse, errorResponse } from '@/lib/utils/response.util';
 import { handleError } from '@/lib/utils/error.util';
 import crypto from 'crypto';
 
+// Same budget as /api/payments/verify: the post-response confirmation work
+// (PDF + Meta upload + WhatsApp + SMTP) must fit inside maxDuration.
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     const rawBody = await request.text();

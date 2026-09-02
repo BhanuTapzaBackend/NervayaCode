@@ -27,12 +27,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--spacing-xs, 4px);
-  /* opacity: 0; removed to make icons always visible */
-  transition: opacity var(--transition-base);
-}
 
-.editButton {
-  opacity: 0.5;
+  /* opacity: 0; removed to make icons always visible */
   transition: opacity var(--transition-base);
 }
 
@@ -42,6 +38,8 @@
 }
 
 .editButton {
+  opacity: 0.5;
+  transition: opacity var(--transition-base);
   background: none;
   border: none;
   color: var(--color-primary-400, var(--color-accent-soft));

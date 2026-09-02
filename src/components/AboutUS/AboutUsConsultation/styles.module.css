@@ -3,6 +3,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -636,6 +637,7 @@
     min-height: 44px;
   }
 }
+
 .datetimeSelection {
   grid-column: 1 / -1;
   display: flex;

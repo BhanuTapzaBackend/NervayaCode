@@ -8,11 +8,13 @@
   flex-direction: column;
   gap: var(--space-5);
   padding: var(--space-5) var(--space-5) var(--space-5);
+
   /* Solid, local, opaque. No remote background image, no backdrop-filter, no
      background-attachment: fixed — that combination is what collapses under
      software compositing in the shared sidebar. */
   background: var(--t-nav-bg);
   overflow-y: auto;
+
   /* `scrollbar-width` is Firefox-only, and globals.css hides the WebKit
      scrollbar app-wide, so re-enable it here — the nav can overflow on a short
      viewport and there would otherwise be no indication. */
@@ -48,6 +50,7 @@
 .logo {
   width: 132px;
   height: auto;
+
   /* The asset is a JPG on a dark ground — it blends because --t-nav-bg is the
      same dark the navbar uses. Do not lighten the sidebar without swapping in
      a transparent logo, or a pale rectangle appears around it. */
@@ -151,9 +154,11 @@
 .dotCompleted {
   background: var(--color-success);
 }
+
 .dotPending {
   background: var(--color-warning);
 }
+
 .dotCancelled {
   background: var(--color-error);
 }
@@ -207,9 +212,11 @@
     left: 0;
     z-index: 50;
     width: 244px;
+
     /* transform, never width: animating width forces a layout pass every frame
        on a composited layer. */
     transform: translateX(-100%);
+
     /* `visibility` pairs with transform so the closed drawer is genuinely
        hidden, not just parked off-screen where it still takes focus. It is a
        discrete property, so the delay lets the slide-out finish first. */

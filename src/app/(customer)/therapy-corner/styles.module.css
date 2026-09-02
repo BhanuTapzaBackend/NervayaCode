@@ -623,6 +623,7 @@
   background-color: var(--color-white-bright);
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
+
   /* Explicitly maintain background-position to prevent icon shift */
   background-position: right var(--space-5) center;
 }

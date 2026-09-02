@@ -146,6 +146,9 @@
 .orderActions {
   margin-top: auto;
   padding-top: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 .viewOrderLink {
@@ -167,4 +170,26 @@
 
 .viewOrderLink:hover {
   background: var(--color-accent-dim);
+}
+
+.reviewLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-accent);
+  color: var(--color-text-on-dark);
+  border: 1px solid var(--color-accent);
+  border-radius: 10px;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-body);
+  cursor: pointer;
+  transition: all var(--transition-base) ease;
+  width: max-content;
+  justify-content: center;
+}
+
+.reviewLink:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
 }

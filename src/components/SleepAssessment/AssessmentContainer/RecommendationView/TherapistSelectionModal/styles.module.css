@@ -16,6 +16,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -48,6 +49,7 @@
     transform: translateY(20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -80,6 +82,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   /* The icon is 22px; the TARGET must not be. Anything under ~44px is hard to
      hit reliably with a thumb, and this is the only way out of the dialog on a
      phone once the list is scrolled. */
@@ -395,6 +398,7 @@
   .bookingGrid {
     grid-template-columns: minmax(0, 1fr);
   }
+
   .dateSection {
     max-width: 340px;
   }
@@ -405,16 +409,19 @@
     grid-template-columns: 1fr;
     gap: var(--space-4);
   }
+
   /* Released from the sticky column so the page scrolls as one list. */
   .therapistPane {
     position: static;
     max-height: none;
   }
+
   /* Full width on a phone; the desktop cap only exists to stop the day cells
      growing with the column. */
   .dateSection {
     max-width: none;
   }
+
   /* Compact cards: five of these at desktop height filled the screen twice
      over before the calendar came into view. */
   .therapistCard {
@@ -422,6 +429,7 @@
     gap: var(--space-3);
     padding: 8px 12px;
   }
+
   .avatarWrap {
     width: 44px;
     height: 44px;
@@ -435,10 +443,12 @@
     padding-left: var(--space-5);
     padding-right: var(--space-5);
   }
+
   .footer {
     flex-direction: column;
     align-items: stretch;
   }
+
   .confirm {
     width: 100%;
   }
@@ -500,6 +510,7 @@
   font-weight: var(--weight-semibold);
   padding: 8px 14px;
   cursor: pointer;
+
   /* Comfortable thumb target. */
   min-height: 44px;
 }

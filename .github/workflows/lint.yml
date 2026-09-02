@@ -1,0 +1,29 @@
+name: Lint & Format Check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      # --ignore-scripts: CI needs no husky install or native postinstalls to lint.
+      - run: npm ci --ignore-scripts
+      # `format` (write mode) never fails a build; `format:check` does.
+      - run: npm run format:check
+      # eslint-suppressions.json is the ratchet baseline: pre-existing
+      # violations are exempt, any NEW violation fails this step, and the
+      # baseline may only shrink (FRONTEND_STANDARDS.md §13/§16).
+      - run: npm run lint
+      - run: npm run typecheck
+      # .stylelintrc.json overrides baseline the legacy hex files the same way.
+      - run: npm run lint:styles

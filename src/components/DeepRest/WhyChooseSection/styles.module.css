@@ -85,7 +85,6 @@
   color: var(--color-foreground);
   margin: 0 0 var(--spacing-sm) 0;
   overflow-wrap: break-word;
-  word-wrap: break-word;
   text-align: left;
 }
 
@@ -101,7 +100,6 @@
   line-height: var(--leading-relaxed);
   color: var(--color-text-muted);
   overflow-wrap: break-word;
-  word-wrap: break-word;
   text-align: left;
 }
 

@@ -5,7 +5,16 @@ import { Order } from '@/types/supplement.types';
 import { OrderThumbnails } from './OrderThumbnails';
 import { formatPrice } from '@/utils/cart.util';
 import { Icon } from '@iconify/react';
-import { ICON_CALENDAR_LUCIDE, ICON_HASHTAG, ICON_MAP_PIN, ICON_COPY, ICON_CHEVRON_RIGHT } from '@/constants/icons';
+import {
+  ICON_CALENDAR_LUCIDE,
+  ICON_HASHTAG,
+  ICON_MAP_PIN,
+  ICON_COPY,
+  ICON_CHEVRON_RIGHT,
+  ICON_STAR,
+} from '@/constants/icons';
+import { PAYMENT_STATUS, ORDER_STATUS, ITEM_TYPE } from '@/lib/constants/enums';
+import { openReviewModal } from '@/constants/events';
 import styles from './styles.module.css';
 
 interface OrderCardProps {
@@ -15,6 +24,20 @@ interface OrderCardProps {
 
 export const OrderCard: React.FC<OrderCardProps> = ({ order, onViewDetails }) => {
   const firstItem = order.items?.[0] || { name: 'Order Items', quantity: 1, price: 0 };
+  // Paid, live orders can be reviewed (single supplement or a bundle — the modal
+  // shows this order's items). Deep Rest is excluded: it has its own moderated
+  // review flow. The modal is scoped by item ids, not the order id, because the
+  // reviewable list dedupes repeat purchases onto the newest order.
+  const reviewableItemIds = (order.items ?? [])
+    .filter((item) => item.itemType !== ITEM_TYPE.DRIFT_OFF)
+    .map((item) => {
+      const raw = item.itemId as { _id?: string } | string;
+      return typeof raw === 'object' && raw?._id ? raw._id : String(raw);
+    });
+  const canReview =
+    order.paymentStatus === PAYMENT_STATUS.PAID &&
+    order.orderStatus !== ORDER_STATUS.CANCELLED &&
+    reviewableItemIds.length > 0;
 
   return (
     <li className={styles.orderCard}>
@@ -84,6 +107,15 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onViewDetails }) =>
           <button onClick={() => onViewDetails(order)} className={styles.viewOrderLink}>
             View Order Details <Icon icon={ICON_CHEVRON_RIGHT} />
           </button>
+          {canReview && (
+            <button
+              onClick={() => openReviewModal(reviewableItemIds)}
+              className={styles.reviewLink}
+              aria-label={`Rate and review items from order ${order._id.slice(-8)}`}
+            >
+              <Icon icon={ICON_STAR} /> Rate & Review
+            </button>
+          )}
         </div>
       </div>
     </li>

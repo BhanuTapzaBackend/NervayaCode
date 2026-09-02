@@ -138,6 +138,7 @@
     min-height: clamp(420px, 78vw, 520px);
     align-items: center;
   }
+
   /* Pull the illustration behind the copy and lift the scrim so text
      stays legible on smaller screens. */
   .scrim {
@@ -150,9 +151,11 @@
       transparent 100%
     );
   }
+
   .backdropImg {
     object-position: center top;
   }
+
   .inner {
     max-width: 100%;
     padding: var(--space-8) var(--space-6) var(--space-9);
@@ -163,10 +166,12 @@
   .hero {
     margin: calc(var(--space-5) * -1) calc(var(--space-4) * -1) 0;
   }
+
   .inner {
     padding: var(--space-7) var(--space-5) var(--space-8);
     gap: var(--space-4);
   }
+
   .trustbar {
     flex-direction: column;
     align-items: flex-start;

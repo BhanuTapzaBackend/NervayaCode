@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix .",
+    "lint:styles": "stylelint \"src/**/*.css\"",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "prepare": "husky",
     "test:e2e": "playwright test",
     "test:e2e:report": "playwright show-report e2e/.artifacts/html-report",
@@ -56,6 +59,8 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
     "sharp": "^0.34.5",
+    "stylelint": "^17.14.1",
+    "stylelint-config-standard": "^40.0.0",
     "tsx": "^4.21.0",
     "typescript": "5.9.3"
   },
@@ -64,7 +69,11 @@
       "prettier --write",
       "eslint --fix"
     ],
-    "*.{json,md,yml,yaml,css}": [
+    "*.css": [
+      "stylelint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
       "prettier --write"
     ]
   },

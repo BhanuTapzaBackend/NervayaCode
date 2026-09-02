@@ -79,7 +79,6 @@
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
-  word-wrap: break-word;
   overflow-wrap: break-word;
   position: relative;
 }

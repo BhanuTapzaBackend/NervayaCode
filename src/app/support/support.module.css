@@ -1,6 +1,7 @@
 .page {
   display: flex;
   flex-direction: column;
+
   /* Cancel the global .main-content navbar safe-gap so the full-bleed
      hero sits flush against the navbar (no white strip on top). */
   margin-top: calc(var(--navbar-safe-gap) * -1);
@@ -68,6 +69,7 @@
   .page {
     padding: var(--space-5) var(--space-4);
   }
+
   .pageInner {
     gap: var(--space-6);
   }

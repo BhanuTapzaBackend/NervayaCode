@@ -5,8 +5,7 @@
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  column-gap: var(--spacing-md);
-  row-gap: var(--spacing-xs);
+  gap: var(--spacing-xs) var(--spacing-md);
   margin-bottom: var(--spacing-sm);
 }
 

@@ -128,7 +128,7 @@
   .title {
     font-size: 20px;
     line-height: 1.25;
-    word-break: break-word;
+    overflow-wrap: break-word;
   }
 }
 

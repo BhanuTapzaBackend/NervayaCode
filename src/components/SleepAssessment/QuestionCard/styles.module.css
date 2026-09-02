@@ -8,6 +8,7 @@
   --qc-placeholder: var(--color-text-tertiary);
   --qc-radio-border: var(--color-border-light);
   --qc-selected-bg: var(--color-accent-dim);
+
   width: 100%;
 
   .questionLabel {

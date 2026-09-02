@@ -44,6 +44,7 @@
 @media (max-width: 768px) {
   .navbarLogo img {
     height: 140px;
+
     /* Shift the logo image itself further left on mobile only */
     transform: translateX(-65px);
   }

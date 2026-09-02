@@ -1,5 +1,6 @@
 .cartItem {
   display: flex;
+
   /* This card is reused in the narrow checkout column, where the viewport media
      queries below never fire because only the *container* is narrow. Wrapping
      lets the line total drop to its own row instead of spilling out of the card. */
@@ -74,7 +75,7 @@
   font-size: 1.125rem;
   font-weight: var(--weight-bold);
   color: var(--color-text-primary);
-  margin: 0 0 4px 0;
+  margin: 0 0 4px;
   letter-spacing: -0.01em;
 }
 
@@ -137,6 +138,7 @@
   align-items: center;
   justify-content: flex-end;
   min-width: 120px;
+
   /* Stays right-aligned whether it shares the row or wraps below it. */
   margin-left: auto;
 }

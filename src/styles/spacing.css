@@ -8,7 +8,7 @@
   /* ── Font Families ── */
   --font-heading: var(--font-outfit), 'Outfit', system-ui, sans-serif;
   --font-body: var(--font-inter), 'Inter', system-ui, sans-serif;
-  --font-mono: 'Geist Mono', 'SF Mono', Menlo, Monaco, Consolas, monospace;
+  --font-mono: 'Geist Mono', 'SF Mono', menlo, monaco, consolas, monospace;
 
   /* ── Font Sizes (Stripe-inspired scale) ── */
   --text-display: 3.5rem; /* 56px — Hero headlines */
@@ -133,13 +133,11 @@
     --text-body-lg: 1rem;
     --text-body: 0.875rem;
     --text-caption: 0.8125rem;
-
     --tracking-display: -0.8px;
     --tracking-h1: -0.6px;
     --tracking-h2: -0.4px;
     --tracking-h3: -0.2px;
     --tracking-h4: normal;
-
     --navbar-height: var(--navbar-height-mobile);
     --navbar-padding-x: var(--navbar-padding-x-mobile);
     --page-gutter: 22px;
@@ -153,7 +151,6 @@
     --text-h2: 1.25rem;
     --text-h3: 1.125rem;
     --text-h4: 1rem;
-
     --tracking-display: -0.5px;
     --tracking-h1: -0.4px;
     --page-gutter: 18px;

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { reviewsApi, type ReviewableItem } from '@/lib/api/reviews';
+import { REVIEWABLE_ITEMS_UPDATED_EVENT } from '@/constants/events';
 
 export function useReviewableItems(enabled = true) {
   const pathname = usePathname();
@@ -8,19 +9,23 @@ export function useReviewableItems(enabled = true) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchItems = useCallback(async () => {
+  // Returns the fetched items so callers that need them immediately (the review
+  // modal auto-selecting a single scoped item) don't race the state update.
+  const fetchItems = useCallback(async (): Promise<ReviewableItem[]> => {
     try {
       setIsLoading(true);
       setError(null);
       const response = await reviewsApi.getReviewableItems();
       if (response.success && response.data) {
         setData(response.data);
-      } else {
-        setData([]);
+        return response.data;
       }
+      setData([]);
+      return [];
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load reviewable items');
       setData([]);
+      return [];
     } finally {
       setIsLoading(false);
     }
@@ -60,10 +65,10 @@ export function useReviewableItems(enabled = true) {
     const handler = () => {
       void fetchItems();
     };
-    window.addEventListener('reviewable-items-updated', handler);
+    window.addEventListener(REVIEWABLE_ITEMS_UPDATED_EVENT, handler);
     window.addEventListener('auth-state-changed', handler);
     return () => {
-      window.removeEventListener('reviewable-items-updated', handler);
+      window.removeEventListener(REVIEWABLE_ITEMS_UPDATED_EVENT, handler);
       window.removeEventListener('auth-state-changed', handler);
     };
   }, [fetchItems]);

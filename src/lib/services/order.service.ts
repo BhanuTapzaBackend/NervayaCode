@@ -246,7 +246,18 @@ function isObjectIdString(value: string): boolean {
  * supplement item has `image: ''`. Backfill those from the product at read time
  * so all order views (admin, My Orders, receipts) show a thumbnail.
  */
-async function withResolvedItemImages<T extends { items: IOrderItem[] }>(orders: T[]): Promise<T[]> {
+export async function withResolvedItemImages<T extends { items: IOrderItem[] }>(orders: T[]): Promise<T[]> {
+  // Deep Rest items bought through the cart snapshot no artwork at all
+  // (`cartItem.image || ''`), so give them the static programme image first —
+  // order cards and the review picker must never show a blank tile.
+  for (const order of orders) {
+    for (const item of order.items) {
+      if (item.itemType === ITEM_TYPE.DRIFT_OFF && !item.image) {
+        item.image = DRIFT_OFF_SESSION_IMAGE;
+      }
+    }
+  }
+
   const missingIds = new Set(
     orders.flatMap((order) =>
       order.items

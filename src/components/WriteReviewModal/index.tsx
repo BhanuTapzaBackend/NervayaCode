@@ -7,6 +7,8 @@ import { ROLES } from '@/lib/constants/roles';
 import { reviewsApi, type ReviewableItem } from '@/lib/api/reviews';
 import { useReviewableItems } from '@/queries/reviews/useReviewableItems';
 import { useModalDismiss } from '@/hooks/useModalDismiss';
+import { ItemPicker } from './ItemPicker';
+import { OPEN_REVIEW_MODAL_EVENT, notifyReviewableItemsUpdated, type OpenReviewModalDetail } from '@/constants/events';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import styles from './styles.module.css';
@@ -18,6 +20,11 @@ export function WriteReviewModal() {
   const { user } = useAuthContext();
   const { isExpanded, registerButton } = useFloatingActions();
   const [state, setState] = useState<ModalState>('idle');
+  // When opened from an order card or a product page, the picker shows only
+  // those items; a single match skips the picker entirely.
+  const [filterItemIds, setFilterItemIds] = useState<string[] | null>(null);
+  // Product-page opens jump straight to the form with no picker to go back to.
+  const [directOpen, setDirectOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ReviewableItem | null>(null);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -33,14 +40,50 @@ export function WriteReviewModal() {
     return registerButton();
   }, [showFloatingButton, registerButton]);
 
-  const handleOpen = useCallback(() => {
-    setState('selectItem');
-    setSelectedItem(null);
-    setRating(0);
-    setHoverRating(0);
-    setComment('');
-    refetch();
-  }, [refetch]);
+  const handleOpen = useCallback(
+    async (detail?: OpenReviewModalDetail) => {
+      setRating(0);
+      setHoverRating(0);
+      setComment('');
+
+      // Direct product review (Amazon-style, no purchase required): straight to
+      // the form — the picker never enters the picture.
+      if (detail?.item) {
+        setDirectOpen(true);
+        setFilterItemIds(null);
+        setSelectedItem({ ...detail.item, orderId: '', orderDate: new Date().toISOString() });
+        setState('writeReview');
+        return;
+      }
+
+      const scoped = detail?.itemIds && detail.itemIds.length > 0 ? detail.itemIds : null;
+      setDirectOpen(false);
+      setState('selectItem');
+      setFilterItemIds(scoped);
+      setSelectedItem(null);
+      const items = await refetch();
+      if (!scoped) return;
+      // A scoped open (an order with one reviewable item) skips the picker. The
+      // functional update keeps a modal the user has already closed from
+      // reopening once the fetch lands.
+      const matches = items.filter((item) => scoped.includes(item.itemId));
+      if (matches.length === 1) {
+        setSelectedItem(matches[0]);
+        setState((current) => (current === 'selectItem' ? 'writeReview' : current));
+      }
+    },
+    [refetch],
+  );
+
+  // "Rate & Review" buttons live far from this modal (mounted once in
+  // Providers), so they open it through the open-review-modal DOM event.
+  useEffect(() => {
+    const onOpenRequest = (event: Event): void => {
+      void handleOpen((event as CustomEvent<OpenReviewModalDetail>).detail);
+    };
+    window.addEventListener(OPEN_REVIEW_MODAL_EVENT, onOpenRequest);
+    return () => window.removeEventListener(OPEN_REVIEW_MODAL_EVENT, onOpenRequest);
+  }, [handleOpen]);
 
   const handleClose = useCallback(() => {
     setState('idle');
@@ -74,6 +117,7 @@ export function WriteReviewModal() {
         page_type: window.location.pathname,
       });
       setState('success');
+      notifyReviewableItemsUpdated();
       setTimeout(() => setState('idle'), 2000);
     } catch {
       toast.error('Failed to submit review. Please try again.');
@@ -83,16 +127,16 @@ export function WriteReviewModal() {
 
   if (!isCustomer) return null;
 
-  const formatDate = (dateStr: string): string => {
-    return new Date(dateStr).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
-  };
+  const visibleItems = filterItemIds
+    ? reviewableItems.filter((item) => filterItemIds.includes(item.itemId))
+    : reviewableItems;
 
   return (
     <>
       {showFloatingButton && (
         <button
           className={`${styles.floatingButton} ${!isExpanded ? styles.collapsed : ''}`}
-          onClick={handleOpen}
+          onClick={() => void handleOpen()}
           aria-label="Write a review"
           aria-hidden={!isExpanded}
           tabIndex={!isExpanded ? -1 : undefined}
@@ -125,7 +169,9 @@ export function WriteReviewModal() {
                   </svg>
                 </div>
                 <h3 className={styles.successTitle}>Thank you for your review!</h3>
-                <p className={styles.successText}>Your review helps other customers make informed decisions.</p>
+                <p className={styles.successText}>
+                  Your review has been submitted and will appear once it&apos;s approved by our team.
+                </p>
               </div>
             ) : (
               <>
@@ -157,57 +203,12 @@ export function WriteReviewModal() {
 
                 <div className={styles.body}>
                   {state === 'selectItem' && (
-                    <>
-                      <p className={styles.stepLabel}>Select an order to review:</p>
-                      {itemsLoading ? (
-                        <p className={styles.loadingText}>Loading your orders...</p>
-                      ) : reviewableItems.length === 0 ? (
-                        <div className={styles.emptyState}>
-                          <p>No items to review right now.</p>
-                          <p className={styles.emptyHint}>
-                            Items from delivered orders that you haven&apos;t reviewed yet will appear here.
-                          </p>
-                        </div>
-                      ) : (
-                        <div className={styles.itemList}>
-                          {reviewableItems.map((item) => (
-                            <button
-                              key={`${item.itemId}_${item.itemType}`}
-                              className={styles.itemCard}
-                              onClick={() => handleSelectItem(item)}
-                            >
-                              <div className={styles.itemImage}>
-                                {item.image ? (
-                                  <Image src={item.image} alt={item.name} width={48} height={48} />
-                                ) : (
-                                  <div className={styles.itemImagePlaceholder} />
-                                )}
-                              </div>
-                              <div className={styles.itemInfo}>
-                                <span className={styles.itemName}>{item.name}</span>
-                                <span className={styles.itemMeta}>
-                                  {item.itemType === 'DriftOff' ? 'Deep Rest' : item.itemType} ·{' '}
-                                  {formatDate(item.orderDate)}
-                                </span>
-                              </div>
-                              <svg
-                                className={styles.chevron}
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <polyline points="9 18 15 12 9 6" />
-                              </svg>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </>
+                    <ItemPicker
+                      items={visibleItems}
+                      isLoading={itemsLoading}
+                      isScoped={filterItemIds !== null}
+                      onSelect={handleSelectItem}
+                    />
                   )}
 
                   {(state === 'writeReview' || state === 'submitting') && selectedItem && (
@@ -230,9 +231,11 @@ export function WriteReviewModal() {
                             </span>
                           </div>
                         </div>
-                        <button className={styles.changeButton} onClick={handleBack}>
-                          Change
-                        </button>
+                        {!directOpen && (
+                          <button className={styles.changeButton} onClick={handleBack}>
+                            Change
+                          </button>
+                        )}
                       </div>
 
                       <p className={styles.ratingLabel}>How would you rate this product?</p>
@@ -277,8 +280,12 @@ export function WriteReviewModal() {
 
                 {(state === 'writeReview' || state === 'submitting') && (
                   <div className={styles.footer}>
-                    <button className={styles.cancelButton} onClick={handleBack} disabled={state === 'submitting'}>
-                      Back
+                    <button
+                      className={styles.cancelButton}
+                      onClick={directOpen ? handleClose : handleBack}
+                      disabled={state === 'submitting'}
+                    >
+                      {directOpen ? 'Cancel' : 'Back'}
                     </button>
                     <button
                       className={styles.submitButton}

@@ -8,6 +8,10 @@ import { Icon } from '@iconify/react';
 import ReviewCard from '../ReviewCard';
 import { IMAGES } from '@/utils/imageConstants';
 import { reviewsApi } from '@/lib/api/reviews';
+import { openReviewModalForItem, REVIEWABLE_ITEMS_UPDATED_EVENT } from '@/constants/events';
+import { useAuthContext } from '@/context/AuthContext';
+import { ROLES } from '@/lib/constants/roles';
+import { ITEM_TYPE } from '@/lib/constants/enums';
 import type { Supplement, Review, StarDistribution } from '@/types/supplement.types';
 import { usePathname } from 'next/navigation';
 import { trackReviewViewed } from '@/utils/analytics';
@@ -18,9 +22,24 @@ interface TabReviewsProps {
 }
 
 const TabReviews: React.FC<TabReviewsProps> = ({ supplement }) => {
+  const { user } = useAuthContext();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // The shared review modal (mounted in Providers) only renders for customers,
+  // so only offer the button to them. Amazon-style: no purchase required — the
+  // form opens directly for this product, and a repeat submission updates the
+  // customer's existing review.
+  const canWriteReview = user?.role === ROLES.CUSTOMER;
+  const handleWriteReview = (): void => {
+    openReviewModalForItem({
+      itemId: supplement._id,
+      itemType: ITEM_TYPE.SUPPLEMENT,
+      name: supplement.name,
+      image: supplement.image || supplement.images?.[0] || '',
+    });
+  };
 
   const fetchReviews = useCallback(async () => {
     setLoading(true);
@@ -47,6 +66,15 @@ const TabReviews: React.FC<TabReviewsProps> = ({ supplement }) => {
       item_id: supplement._id,
     });
   }, [fetchReviews, pathname, supplement._id]);
+
+  // A review submitted through the modal should appear here without a reload.
+  useEffect(() => {
+    const handler = (): void => {
+      void fetchReviews();
+    };
+    window.addEventListener(REVIEWABLE_ITEMS_UPDATED_EVENT, handler);
+    return () => window.removeEventListener(REVIEWABLE_ITEMS_UPDATED_EVENT, handler);
+  }, [fetchReviews]);
 
   const averageRating = supplement.averageRating ?? 0;
   const reviewCount = supplement.reviewCount ?? 0;
@@ -100,6 +128,11 @@ const TabReviews: React.FC<TabReviewsProps> = ({ supplement }) => {
           />
           <h3 className={styles.emptyTitle}>No reviews yet</h3>
           <p className={styles.emptyMessage}>Be the first to review this product.</p>
+          {canWriteReview && (
+            <button type="button" className={styles.writeReviewButton} onClick={handleWriteReview}>
+              Write a Review
+            </button>
+          )}
         </div>
       </div>
     );
@@ -112,6 +145,11 @@ const TabReviews: React.FC<TabReviewsProps> = ({ supplement }) => {
           <span className={styles.ratingNumber}>{averageRating.toFixed(1)}</span>
           <StarRating rating={averageRating} size="lg" />
           <span className={styles.reviewCount}>{reviewCount} reviews</span>
+          {canWriteReview && (
+            <button type="button" className={styles.writeReviewButton} onClick={handleWriteReview}>
+              Write a Review
+            </button>
+          )}
         </div>
         <div className={styles.distribution}>
           {([5, 4, 3, 2, 1] as const).map((star) => {

@@ -39,8 +39,36 @@ const eslintConfig = defineConfig([
       '@next/next/no-img-element': 'error',
       '@next/next/no-html-link-for-pages': 'error',
 
-      // General code quality rules
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      // ── Project rules (FRONTEND_STANDARDS.md §16 enforcement) ──────────
+      // Pre-existing violations live in eslint-suppressions.json (the
+      // ratchet baseline): `eslint .` passes today, any NEW violation fails,
+      // and the baseline may only shrink (`eslint . --prune-suppressions`
+      // after cleanups). Never regenerate it to admit new violations.
+
+      // §6.7 — console.log must not ship; warn/error are the required
+      // channel for fire-and-forget failures (§3.6).
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+      // §2.1 — components/hooks never talk HTTP directly; the axios client
+      // is reachable only from the tier-1 layer (override block below).
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@/lib/axios',
+              message:
+                'FRONTEND_STANDARDS.md §2.1: only src/lib/api/** may import the axios client. ' +
+                'Call a src/lib/api/<domain>.ts function from a src/queries hook instead.',
+            },
+            {
+              name: 'axios',
+              message:
+                'FRONTEND_STANDARDS.md §2.3: one axios instance (src/lib/axios.ts). ' +
+                'Import the shared client via the src/lib/api service layer, not the axios package.',
+            },
+          ],
+        },
+      ],
       'no-debugger': 'error',
       'no-alert': 'warn',
       'no-var': 'error',
@@ -70,6 +98,22 @@ const eslintConfig = defineConfig([
       'space-infix-ops': 'error',
       'space-unary-ops': ['error', { words: true, nonwords: false }],
       'spaced-comment': ['error', 'always', { exceptions: ['-', '+'] }],
+    },
+  },
+  // §1.3 — component size cap (hard MUST at 300; ~200 is the SHOULD).
+  // skipBlankLines/skipComments so the cap measures code, not headers.
+  {
+    files: ['**/*.tsx'],
+    rules: {
+      'max-lines': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
+    },
+  },
+  // Tier-1 service layer: the only place allowed to import the axios client
+  // (and axios.ts itself is the only importer of the axios package).
+  {
+    files: ['src/lib/api/**/*.ts', 'src/lib/axios.ts'],
+    rules: {
+      'no-restricted-imports': 'off',
     },
   },
   {

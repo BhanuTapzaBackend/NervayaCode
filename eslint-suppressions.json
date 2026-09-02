@@ -1,0 +1,128 @@
+{
+  "e2e/global-setup.ts": {
+    "no-console": {
+      "count": 5
+    }
+  },
+  "e2e/scripts/seed-worst-case-assessment.ts": {
+    "no-console": {
+      "count": 1
+    }
+  },
+  "src/app/(admin)/admin/promo-codes/page.tsx": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/app/(admin)/admin/supplements/add/page.tsx": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/app/(admin)/admin/supplements/edit/[id]/page.tsx": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/app/(admin)/admin/supplements/page.tsx": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/app/(customer)/account/page.tsx": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/app/(customer)/checkout/useCheckout/index.ts": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/app/(customer)/deep-rest/questionnaire/page.tsx": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/app/(customer)/sleep-assessment/page.tsx": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/app/(customer)/therapy-corner/[id]/page.tsx": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/app/(customer)/therapy-corner/page.tsx": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/components/AboutUS/AboutUsConsultation/index.tsx": {
+    "max-lines": {
+      "count": 1
+    },
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/components/Account/MyOrders/index.tsx": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/components/Admin/LiveEditor/AdminLiveEditor.tsx": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/components/Admin/SupplementForm/index.tsx": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/components/Booking/BookingModal/index.tsx": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/components/SleepAssessment/AssessmentContainer/RecommendationView/usePlanSession.ts": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/components/SleepAssessment/AssessmentContainer/useAssessmentState.ts": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/components/WeekCalendar/SlotModal/index.tsx": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/context/AuthContext.tsx": {
+    "max-lines": {
+      "count": 1
+    },
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/context/CartContext.tsx": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/lib/whatsapp/whatsapp-client.ts": {
+    "no-restricted-imports": {
+      "count": 1
+    }
+  },
+  "src/utils/privacyPolicyData.tsx": {
+    "max-lines": {
+      "count": 1
+    }
+  }
+}
